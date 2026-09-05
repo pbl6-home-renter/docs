@@ -1,7 +1,7 @@
 # Business Rules (Frozen v1.0)
 
 > **Status:** 🟡 DRAFT — being finalized in P1-07. Do not change without PM approval + change-control (Notion decision log).
-> Source of truth inputs: `../phase-0/requirement.md` (scope SoT), `../phase-0/feature-list.md` (Modules 1–6), `../phase-0/discovery/decisions.md` (D1–D29 + decision graph appendix), `../phase-0/discovery/market-roommate-models.md` (D21/D22/D26), `../phase-0/discovery/short-vs-long-term-analysis.md` (D23).
+> Source of truth inputs: `../requirement.md` (scope SoT), `../phase-0/feature-list.md` (Modules 1–6), `../phase-0/discovery/decisions.md` (D1–D29 + decision graph appendix), `../phase-0/discovery/market-roommate-models.md` (D21/D22/D26), `../phase-0/discovery/short-vs-long-term-analysis.md` (D23).
 
 ## 1. Room / Building
 

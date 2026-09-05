@@ -133,4 +133,4 @@
 - `discovery/assumptions-risks.md` — constraints, risks, feasibility verdicts (P0-03)
 - `discovery/decisions.md` — D1–D29 scope decisions (D12 skipped)
 - `market-analysis.md` — competitor features & gaps
-- `requirement.md` — course requirements & proposed topic
+- `../requirement.md` — course requirements & proposed topic (scope SoT)

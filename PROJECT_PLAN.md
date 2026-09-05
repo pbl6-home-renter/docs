@@ -99,6 +99,7 @@ See `issues/README.md` for the issue list and coverage map.
 
 - **Setup (resources approved):** create 4 repos + this docs hub; seed each with `README.md` + `AGENTS.md` + branch protection; set up Linear board, Notion wiki, Drive structure; invite members.
 - Backlog into Linear with priorities; user stories + use cases.
+- **User flow per-role** (tenant / landlord / admin / shared) → `pm/phase-1/discovery/user_flow/` (verified via P1-19) — SoT cho navigation/UI, input cho UI design (P1-05).
 - Freeze business rules: room/contract/invoice/payment/roommate/issue/AI flows.
 - **Checkpoint W5 (M1):** present requirement + business rules; collect teacher feedback; update `requirement.md`.
 

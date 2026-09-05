@@ -50,8 +50,9 @@
 | File | Nội dung | Liên quan |
 |------|----------|-----------|
 | `user-behavior-workflow.md` | End-to-end User Behavior Story (A→Z rental lifecycle) verifying D16/D17/D18/D22/D25/D29 interlock + failure-mode audit | D16–D29 cross-check |
+| `../../phase-1/discovery/user_flow/` | **User-flow per-role** (tenant / landlord / admin / shared) — SoT cho navigation/UI, verify qua P1-19 | P1-19, P1-05 |
 
 ## Ghi chú
 
-- Canonic scope: `pm/phase-0/requirement.md` (scope) + `pm/phase-0/PROJECT_PLAN.md` (schedule). Business rules sẽ freeze tại `pm/phase-1/business-rules.md` (P1-07).
+- Canonic scope: `pm/requirement.md` (scope) + `pm/PROJECT_PLAN.md` (schedule). Business rules sẽ freeze tại `pm/phase-1/business-rules.md` (P1-07).
 - Decision flow: research artifact → quyết định ở `decisions.md` → phản ánh vào `feature-list.md` + `business-rules.md`.

@@ -1,7 +1,7 @@
 # Product Sketch — PBL6
 
 > **Purpose:** customer-ready sketch consolidated from P0-03 discovery (`discovery/vision.md`, `discovery/assumptions-risks.md`, `discovery/decisions.md` D1–D29) + `feature-list.md`.
-> Walk through in ~30 min with the customer; incorporate feedback into `requirement.md` (scope SoT).
+> Walk through in ~30 min with the customer; incorporate feedback into `../requirement.md` (scope SoT).
 
 ## 1. Problem & target users
 

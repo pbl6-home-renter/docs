@@ -65,7 +65,7 @@ The two models are **not the same workflow with different settings** — they ar
 - **"We studied the market."** Specialized tools already win: Smoobu/ezCloud for short-term, Mona House/KiotViet for long-term. A student team cannot out-ship either in 14 weeks; we focus where we can deliver real value.
 - **"We are not closing the door."** `property_type` and the schema stay extensible. If short-term is needed later (post-course, or a future phase), it slots in as a new module without rework — this is informed scoping, not a limitation.
 - **"Our AI features fit long-term."** Roommate matching and OCR utility closing are long-term-specific. They have no meaningful short-term equivalent, so our AI investment is protected.
-- **"Scope is the source of truth."** `pm/phase-0/requirement.md` defines long-term. Adding short-term is scope creep without PM/teacher-approved change control.
+- **"Scope is the source of truth."** `pm/requirement.md` defines long-term. Adding short-term is scope creep without PM/teacher-approved change control.
 
 ---
 

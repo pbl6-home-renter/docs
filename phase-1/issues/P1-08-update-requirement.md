@@ -29,7 +29,7 @@ Lock the MVP cut (24 features per `feature-list.md`) in `requirement.md` and fix
 
 ## Deliverable
 
-Updated `pm/phase-0/requirement.md` (locked MVP) + C4 resolved in `discovery/decisions.md`.
+Updated `pm/requirement.md` (locked MVP) + C4 resolved in `discovery/decisions.md`.
 
 ## Definition of Done
 

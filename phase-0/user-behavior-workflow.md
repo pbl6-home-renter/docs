@@ -5,6 +5,8 @@
 > **Đối tượng kiểm chứng (source of truth):** `discovery/decisions.md` (D16, D17, D18, D22, D25, D29) · `feature-list.md` · `business-rules.md` (draft P1-07) · `product-sketch.md` · `tech-feasibility.md`.
 >
 > **Trạng thái:** 🟡 Bản kiểm chứng (draft) — sinh ra để soi lỗi luồng; mọi cập nhật cần PM duyệt (không đổi scope vượt `requirement.md` khi chưa có PM chấp thuận).
+>
+> **User-flow chi tiết theo vai trò:** bản per-role (tenant / landlord / admin / shared) sống tại `pm/phase-1/discovery/user_flow/` (verify qua P1-19) — là **source of truth cho navigation/UI**. Tài liệu này giữ vai trò **kiểm chứng A→Z 1 vòng đời** (soi lỗi luồng & đối soát quyết định); hai bản bổ trợ cho nhau, không trùng lặp.
 
 ---
 

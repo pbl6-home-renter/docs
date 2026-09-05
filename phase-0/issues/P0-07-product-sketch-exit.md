@@ -39,7 +39,7 @@ Final issue of Phase 0. `product-sketch.md` was consolidated from P0-03 discover
 - `pm/phase-0/product-sketch.md` — ✅ customer-ready (completed this session).
 - `pm/phase-0/discovery/exit-criteria.md` — ✅ checklist + phase review result + hand-off brief.
   - `pm/phase-0/discovery/decisions.md` — D1–D29 (no new customer-driven decision yet; C3 tracks future).
-  - `pm/phase-0/requirement.md` — no change from customer (already synced to D1–D29 this session).
+  - `pm/requirement.md` — no change from customer (already synced to D1–D29 this session).
 
 ## Definition of Done
 

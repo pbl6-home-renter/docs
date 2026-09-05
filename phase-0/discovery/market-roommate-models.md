@@ -3,7 +3,7 @@
 > Research draft for PBL6 long-term rental platform (landlord web + tenant mobile), Vietnam.
 > Audience: students / young workers. Language: English (bilingual Vietnamese later).
 > Status: ✅ **FINALIZED** (29/08) — PM decision locked as D21/D22/D26. Observed models & trade-offs below are the rationale.
-> Source of truth for scope: `pm/phase-0/requirement.md`.
+> Source of truth for scope: `pm/requirement.md`.
 
 ---
 

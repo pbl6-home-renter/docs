@@ -3,6 +3,10 @@
 > Scope của Phase 1 theo `PROJECT_PLAN.md` §5: setup 4 repos + docs hub, chuẩn hoá quy ước, đóng băng nghiệp vụ.
 > **Lưu ý:** Các việc vận hành/ngoài code (Linear board, tạo repo GitHub + branch protection, đồng bộ Apidog) do **PM tự xử lý & nhắc** — không nằm trong các issue ở đây. Các issue trong `issues/` tập trung vào **quyết định kỹ thuật của FE & Mobile** (feature map → setup tech stack → quy ước chung → thiết kế UI).
 
+## User Flow (per-role SoT)
+
+> User flow theo từng vai trò được soạn tại **`discovery/user_flow/`** (4 file: tenant / landlord / admin / shared), dùng làm **source of truth cho navigation/UI** → input cho P1-05 và Phase 2. Xác nhận & hoàn thiện qua **P1-19**. Tham chiếu chéo với bản kiểm chứng A→Z: `pm/phase-0/user-behavior-workflow.md`.
+
 ## Nội dung Phase 1
 
 | Bước | Issue | Chủ đề | Trạng thái |
@@ -22,7 +26,7 @@ P1-01 Feature map  ──► (input cho) P1-02 FE, P1-03 Mobile   (biết mình 
                      P1-04 Quy ước chung (sau khi chốt tech stack)
                               │
                               ▼
-                     P1-05 UI design (dùng feature map + tech stack)
+             P1-19 User-flow (dùng business-rules P1-07 + feature map) ──► P1-05 UI design
 ```
 
 ## Các việc PM tự nhắc (không tạo issue)
