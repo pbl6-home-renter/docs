@@ -2,7 +2,7 @@
 
 **Status:** 🟡 Open
 **Assignee:** PM (soạn bản nháp) · **FE + Mobile** (verify)
-**Depends on:** `feature-list.md`, `user-behavior-workflow.md`, `discovery/decisions.md`
+**Depends on:** `../../phase-0/feature-list.md`, `../discovery/user_flow/` (per-role SoT), `../discovery/decisions.md`
 **Deliverable:** Bảng mapping đã xác nhận (dùng làm input cho P1-02 / P1-03 / P1-05) → lưu `discovery/product-platform-map.md`
 
 ---
@@ -20,7 +20,7 @@ Vì vậy: phần **"Verdict cần từ FE & Mobile"** ở dưới là phần c�
 ## Input tham chiếu (source of truth — cũng chỉ là căn cứ, không cứng nhắc)
 
 - `pm/phase-0/feature-list.md` — danh mục 37 feature + priority (**dùng làm danh sách gợi ý, không phải bắt buộc**).
-- `pm/phase-0/user-behavior-workflow.md` — luồng nghiệp vụ theo từng giai đoạn + ai làm trên màn hình nào.
+- `pm/phase-1/discovery/user_flow/` — luồng nghiệp vụ theo từng vai trò (tenant / landlord / admin / shared) + ai làm trên màn hình nào.
 - `pm/phase-0/discovery/decisions.md` — quyết định D1–D29 (đặc biệt D13 cross-platform, D19 no-import, D22 bill config, D29 landlord-solo).
 
 ## Chú thích nhãn
@@ -130,7 +130,7 @@ Vì vậy: phần **"Verdict cần từ FE & Mobile"** ở dưới là phần c�
 
 ## Verdict cần từ FE & Mobile
 
-Bảng trên là **bản nháp tham khảo**. Vui lòng đối chiếu với `feature-list.md` + `user-behavior-workflow.md` + `decisions.md` và **chủ động góp ý chỉnh sửa** (không chỉ xác nhận):
+Bảng trên là **bản nháp tham khảo**. Vui lòng đối chiếu với `feature-list.md` + `discovery/user_flow/` + `decisions.md` và **chủ động góp ý chỉnh sửa** (không chỉ xác nhận):
 
 1. **Sai sót platform nào?** (feature bị gán thiếu/sai web-mobile)
 2. **Primary/secondary có đúng với khối lượng thực tế bạn định build?**

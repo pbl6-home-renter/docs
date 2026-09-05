@@ -12,7 +12,7 @@
 
 | ID | Title | Assignee | Status | Depends on | Deliverable |
 |----|-------|----------|--------|------------|-------------|
-| [P1-01](P1-01-feature-platform-map.md) | Feature → Platform Map | PM (draft) + FE + Mobile (verify) | 🟡 Open | `feature-list.md`, `user-behavior-workflow.md`, `decisions.md` | `discovery/product-platform-map.md` (đã verify) |
+| [P1-01](P1-01-feature-platform-map.md) | Feature → Platform Map | PM (draft) + FE + Mobile (verify) | 🟡 Open | `feature-list.md`, `discovery/user_flow/`, `decisions.md` | `discovery/product-platform-map.md` (đã verify) |
 | [P1-02](P1-02-fe-setup.md) | FE Web setup (tech / library / convention / agent skill) | FE | 🟡 Open | P1-01 | `discovery/fe-proposal.md` |
 | [P1-03](P1-03-mobile-setup.md) | Mobile setup (tech / library / convention / agent skill) | Mobile | 🟡 Open | P1-01 | `discovery/mobile-proposal.md` |
 | [P1-04](P1-04-shared-conventions.md) | Shared conventions (validation / error / format / image / API) | FE + Mobile (propose) · PM (chốt) | 🟡 Open | P1-02, P1-03 | `discovery/shared-conventions.md` |

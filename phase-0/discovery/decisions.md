@@ -2,24 +2,19 @@
 
 > Quyết định được ghi tại đây; khi Notion decision log hoạt động, migrate sang đó.
 > Tham chiếu chéo: `vision.md`, `assumptions-risks.md`, issue `P0-03`.
-> **ID span D1–D29.** Đã loại/hợp nhất để tránh chồng lấn: **D2→D28** (AI matching), **D6 bỏ** (quy trình 1 lần, đã xong), **D8→D28** (AI matching), **D14→D18** (ký hợp đồng), **D23→D9** (dài hạn-only), **D27→D17** (tạm trú), **D15 bỏ** (Contract Explainer khỏi AI scope — AI chỉ còn 2 feature). D12 không tồn tại (skipped). Giữ ID ổn định để tham chiếu chéo trong repo không đổi.
+> **ID span D1–D29.** Đã loại/hợp nhất để tránh chồng lấn: **D2→D28** (AI matching), **D6 bỏ** (quy trình 1 lần, đã xong), **D8→D28** (AI matching), **D14→D18** (ký hợp đồng), **D23→D9** (dài hạn-only), **D27→D17** (tạm trú), **D15 bỏ** (Contract Explainer khỏi AI scope — AI chỉ còn 2 feature). D12 không tồn tại (skipped). **Bỏ khỏi log 05/09 (nội dung đã nằm gọn trong doc gốc, gọn log):** **D3 → `requirement.md`** (LLM adapter), **D5 → `AGENTS.md`** (song ngữ docs), **D7 → `requirement.md`/`vision.md` §5** (integration-first), **D10 → `vision.md` §1** (segment mục tiêu), **D19 → `feature-list.md`** 1.6/6.6 (bỏ import). Tham chiếu chéo còn lại trỏ về các doc đó. Giữ ID ổn định để tham chiếu chéo trong repo không đổi. Quyết định Phase 1: xem `../../phase-1/discovery/decisions.md` (D30+).
 
 ## Index
 
 | ID | Date | Decision | Status |
 |---|---|---|---|
 | D1 | 2026-08-22 | Định vị vision: **nền tảng hai chiều** (landlord ops + tenant portal cùng vòng đời) | ✅ Accepted |
-| D3 | 2026-08-22 | LLM **provider-agnostic** (adapter, cấu hình qua env); Gemini giữ nguyên làm evidence đo chi phí | ✅ Accepted |
 | D4 | 2026-08-22 | Chia tiền ở ghép ("Không gian phòng") → **Phase 1+** | ✅ Accepted |
-| D5 | 2026-08-22 | Docs discovery **song ngữ Việt–Anh** (thân VI, heading song ngữ) — ngoại lệ có chủ ý so với convention English trong AGENTS.md | ✅ Accepted |
-| D7 | 2026-08-22 | Triết lý **Integration-first** (chi tiết bên dưới) | ✅ Accepted |
 | D9 | 2026-08-22 | Scope **dài hạn only** — từ chối bổ sung homestay/cho thuê ngắn hạn (29/08 reaffirm bằng phân tích, hấp thụ D23) | ✅ Accepted |
-| D10 | 2026-08-22 | Segment mục tiêu For-clause: **sinh viên + người đi làm** dẫn đầu; chủ trọ vẫn là paying customer | ✅ Accepted |
 | D13 | 2026-08-23 | **Cross-platform role coverage**: web + mobile đều phục vụ cả landlord lẫn tenant (staging primary → secondary) | ✅ Accepted |
 | D16 | 2026-08-27 | **Cấu hình đơn giá điện/nước:** landlord default (global) + ghi đè tòa/phòng | ✅ Accepted |
 | D17 | 2026-08-27 / 31 | **CCCD & tạm trú:** lưu ảnh CCCD 1 lần tại e-contract; **OCR trích info CCCD = MVP** (31/08, feature 5.6); khai báo tạm trú/tạm vắng đầy đủ → Phase 1+; research API DVC = spike only (hấp thụ D27) | ✅ Accepted |
 | D18 | 2026-08-29 / 31 | **Contract signing (chữ ký số/OTP không giá trị pháp lý):** app sinh mẫu HĐ → user up file **ký tay 2 bên** (wet-sign) làm artifact pháp lý; **bỏ OTP/PIN/`e_ack`** (31/08). Hấp thụ D14 | ✅ Accepted |
-| D19 | 2026-08-29 | **Bỏ tính năng import (bulk ops 1.6/6.6):** user non-tech → drop import; giữ export CSV/XLSX nếu cần | ✅ Accepted |
 | D20 | 2026-08-29 | **Dashboard chủ trọ MVP:** màn hình lịch phòng trống/đang thuê trực quan + biểu đồ doanh thu/công nợ realtime (nâng 1.3 + 3.7) | ✅ Accepted |
 | D21 | 2026-08-29 / 31 | **Ghép bạn: chủ trọ CÓ quyền set yêu cầu/ràng buộc** (max người/phòng, policy giới tính, nội quy, budget-range = hard filter); **không** duyệt/veto từng cặp cá nhân (Model a — R1) | ✅ Accepted |
 | D22 | 2026-08-29 | **HĐ ở ghép: 1 HĐ đại diện (lead ký) + payment config linh hoạt:** landlord chọn (1) đại diện thanh toán HOẶC (2) hóa đơn chia sẻ nhiều người (app track phần góp + trạng thái trả). D4 full split → Phase 1+ | ✅ Accepted |
@@ -38,34 +33,11 @@
 - **Alternatives rejected:** automation chủ trọ làm trung tâm (mất khác biệt giai đoạn "Ở"); tenant-first (lệch core quản lý của `requirement.md`).
 - **Impact:** Câu vision nêu cả hai phía; value prop canvas 3 personas trong `vision.md`. Xem **D29**: tenant portal là optional/passive — hai chiều chỉ áp dụng KHI tenant có account; hệ thống vẫn chạy nếu tenant không login (landlord vận hành một mình).
 
-## D3 — LLM provider-agnostic
-
-- **Context:** AGENTS.md/requirement ghi OpenAI API, nhưng feasibility đo thật trên Gemini (~$0.024/call) với fallback rule-based.
-- **Decision:** FastAPI viết adapter theo interface chung; provider cấu hình qua env. Không khóa OpenAI.
-- **Alternatives rejected:** OpenAI-only (phải đo lại chi phí/test lại prompt); Gemini-only (trái stack gốc).
-- **Impact:** Khi chốt provider thực tế cần cập nhật stack note trong AGENTS.md; số liệu chi phí trích từ `ai-feasibility.md` vẫn hợp lệ.
-
 ## D4 — Bill splitting → Phase 1+
 
 - **Context:** Concept "Không gian phòng + Trưởng phòng + chia tiền" (ux-mobile Module 2.3) vượt core của `requirement.md`; thêm bài toán phân quyền + trạng thái đóng tiền cho team 5 người.
 - **Decision:** Đẩy Phase 1+; không đưa vào value prop MVP.
 - **Impact:** `p0-02/discovery-ux-mobile.md` Module 2.3 giờ là Phase 1+ — Mobile annotate lại tài liệu của mình; PM nhắc tại daily sync.
-
-## D5 — Docs song ngữ Việt–Anh
-
-- **Context:** AGENTS.md quy định English cho docs, nhưng toàn bộ deliverable discovery hiện tại (P0-01/P0-02) viết tiếng Việt và tài liệu dễ được đưa thầy xem.
-- **Decision:** Ngoại lệ có chủ ý: thân tiếng Việt, tiêu đề mục song ngữ Việt–Anh. Ghi nhận để tránh bị coi là vi phạm convention vô ý thức.
-- **Impact:** `vision.md` + `assumptions-risks.md` theo format này.
-
-## D7 — Integration-first (own data & compute, delegate external comms)
-
-- **Context:** PM muốn tránh build lại hạ tầng xã hội/chat vốn đã có sẵn. Phân tích khả thi cho thấy delegate được lớp giao tiếp ngoài app, nhưng lớp dữ liệu/tính toán bắt buộc phải own.
-- **Decision:**
-  - FCM push = kênh thông báo chính của app.
-  - Excel/Sheets = biên nhập/xuất CSV/XLSX; Google Sheets API 2 chiều out of scope.
-  - App own: OCR chốt số, sinh hóa đơn, đối soát QR/webhook, vòng đời hợp đồng, biên bản timestamp.
-  - **Giao tiếp nghiệp vụ trong app** = Property Chat (D24′). Kênh liên lạc **ngoài app** với tenant không login = dynamic-QR / tiền mặt / giấy / kênh ngoài (SĐT).
-- **Impact:** Nguyên tắc sản phẩm trong `vision.md` §5; phân tích F3/F4 trong `assumptions-risks.md`; chú ý: D24′ loại Zalo khỏi kênh sản phẩm.
 
 ## D9 — Scope dài hạn only, từ chối homestay/cho thuê ngắn hạn
 
@@ -77,12 +49,6 @@
   - 13–14 tuần × team 5 người: làm sâu một lifecycle > làm nông hai lifecycle (đúng tiêu chí SE của môn học).
 - **Cập nhật 29/08 (hấp thụ D23):** thầy yêu cầu chứng minh khả thi/không khả thi kết hợp → `short-vs-long-term-analysis.md` chốt **bất khả thi trong 13–14 tuần** (+60–80% scope). Giữ D9 nguyên vẹn; dùng file analysis làm talking point khi bảo vệ thầy.
 - **Impact:** `vision.md` §7 Scope Boundary; risk R3 cập nhật; `product-sketch.md` §5 link file `short-vs-long-term-analysis.md`.
-
-## D10 — Segment mục tiêu trong câu vision
-
-- **Context:** PM muốn nêu rõ khách hàng mục tiêu là sinh viên và người đi làm.
-- **Decision:** For-clause dẫn đầu bằng **sinh viên và người đi làm** đang thuê phòng trọ/căn hộ mini tại đô thị; chủ trọ quản lý 10–100 phòng vẫn là paying customer phục vụ họ. Định vị hai chiều (D1) giữ nguyên.
-- **Impact:** `vision.md` §1 (bản tiếng Việt + English rendering); value prop persona Minh/Linh trở thành segment chính phía tenant.
 
 ---
 
@@ -130,12 +96,6 @@
 - **Hấp thụ D14 (phần còn giá trị):** `signature_mode` duy nhất còn là `template_upload` (không còn enum `e_sign`/`e_ack`); "một bên từ chối ký điện tử" **không tồn tại nữa** — luôn ký giấy + up file (đúng Integration-first D7); **parse/OCR PDF → field có cấu trúc** (deposit, monthly_rent, rates, dates, terms) + giữ file gốc làm chứng cứ.
 - **Impact:** `feature-list.md` 3.1 đổi cơ chế ký; `business-rules.md` §2 cập nhật; `tech-feasibility.md` schema Contract bỏ `transaction_pin_hash`/`e_ack`, `signature_mode` = enum 1 giá trị; `exit-criteria.md` bỏ cơ chế PIN.
 
-## D19 — Bỏ tính năng import
-
-- **Context:** User non-tech → bulk import (1.6/6.6) ít giá trị, tăng phức tạp onboarding.
-- **Decision:** **Drop import hoàn toàn.** Giữ export CSV/XLSX (6.6) nếu cần thiết; landlord nhập thủ công trên web (luồng chính).
-- **Impact:** `feature-list.md` 1.6/6.6 bỏ import; `requirement.md` bỏ mention import.
-
 ## D20 — Dashboard chủ trọ MVP
 
 - **Context:** Thầy (27/08) yêu cầu màn hình theo dõi lịch phòng trống/đang thuê trực quan + biểu đồ doanh thu/công nợ realtime.
@@ -171,7 +131,7 @@
   - **Không dùng Zalo làm kênh sản phẩm.**
 - **Effort:** ~3 tuần toàn team (1 tuần/người parallel) — **con số TBD, cần BE/FE/Mobile xác nhận** (`realtime-feasibility.md` §4). Fallback nếu effort quá: cắt `@issue`+issue-panel sang phase sau, MVP chỉ chat realtime + bot auto-remind.
 - **Điều kiện teacher:** thầy đã đồng ý hướng socket; **chi tiết (conversation/bot/command) cần thầy duyệt** trước khi implement.
-- **Impact:** `business-rules.md` §6, `feature-list.md` 2.7/6.6, `user-behavior-workflow.md`, DB schema (P1-18), `requirement.md` (scope).
+- **Impact:** `business-rules.md` §6, `feature-list.md` 2.7/6.6, `discovery/user_flow/` (chat per-role), DB schema (P1-18), `requirement.md` (scope).
 
 ## D25 — Ownership DB model: 1 owner per room (chốt theo ownership-model.md)
 
@@ -196,7 +156,7 @@
 
 ## D29 — Landlord-can-operate-solo resilience (MANDATORY)
 
-- **Context:** User non-tech (D19) + thầy muốn tăng vòng đời app. Thực tế: nhiều tenant (sinh viên/người thuê) sẽ không bao giờ login app. Cần đảm bảo hệ thống vẫn vận hành trơn tru khi **tenant KHÔNG login**.
+- **Context:** User non-tech (bỏ import — `feature-list.md`) + thầy muốn tăng vòng đời app. Thực tế: nhiều tenant (sinh viên/người thuê) sẽ không bao giờ login app. Cần đảm bảo hệ thống vẫn vận hành trơn tru khi **tenant KHÔNG login**.
 - **Decision (NGUYÊN TẮC BẮT BUỘC):** hệ thống **PHẢI** vận hành được với **zero tenant login**. Landlord làm toàn bộ vòng đời một mình: tạo HĐ (D18), up CCCD (D17), chốt số điện nước (OCR), xuất hóa đơn, đẩy cho tenant qua **dynamic-QR (quét bằng app ngân hàng bất kỳ) / tiền mặt / giấy / kênh ngoài**, đối soát. Tenant touchpoints delegated — tenant app là **optional/passive**, không bắt buộc.
 - **Roommate matching (D21/D28) không bị ảnh hưởng:** chỉ chạy cho tenant **CÓ account**; tenant không account = vắng mặt khỏi pool (edge case bình thường, không blocker).
 - **Impact:** `requirement.md` (scope), `business-rules.md` §8, `feature-list.md`, `product-sketch.md`; stress-test chi tiết tại **Phụ lục B** bên dưới; P1-13 cập nhật theo D29.
@@ -214,7 +174,7 @@
 Các quyết định tạo thành một chuỗi thống nhất, không phải lựa chọn rời rạc:
 
 1. **D1 (two-sided)** đặt tầm nhìn: landlord ops + tenant portal trong cùng vòng đời — spine mọi thứ treo vào.
-2. **D7 (integration-first)** → own data/compute (OCR, hóa đơn, QR recon); giao tiếp nghiệp vụ qua **Property Chat (D24′)**; FCM là kênh thông báo. Bật khả năng cho **D29** (tenant ở ngoài app của ta).
+2. **Integration-first** (xem `requirement.md` / `vision.md` §5) → own data/compute (OCR, hóa đơn, QR recon); giao tiếp nghiệp vụ qua **Property Chat (D24′)**; FCM là kênh thông báo. Bật khả năng cho **D29** (tenant ở ngoài app của ta).
 3. **D9 (long-term-only)** → loại ngắn hạn; chứng minh bất khả thi (analysis doc, hấp thụ D23). Schema mở (`property_type`).
 4. **D13 (cross-platform roles)** → web + mobile đều phục vụ landlord & tenant (primary/secondary staged).
 5. **D18 (contract signing, hấp thụ D14)** → thầy: chữ ký số/OTP không giá trị pháp lý → app sinh mẫu HĐ, user up file **ký tay 2 bên** (wet-sign) làm artifact; **bỏ OTP/PIN hoàn toàn** (31/08).
@@ -223,7 +183,7 @@ Các quyết định tạo thành một chuỗi thống nhất, không phải l�
 8. **D28 (AI matching, hấp thụ D8)** → Stretch; spec do AI (P1-13). Chỉ chạy cho tenant opted-in.
 9. **D21 (landlord CÓ quyền set yêu cầu)** → landlord set hard-filter ràng buộc phòng (occupancy/gender/rules/budget), không vet từng cá nhân (PDPD-safe).
 10. **D26 (tenant history)** → platform-internal, consent-based; không cross-platform credit (PDPD 2023). Đã chốt **Stretch**.
-11. **D19 (bỏ import)** + **D20 (dashboard chủ trọ)** → focus landlord non-tech; realtime occupancy/revenue/debt dashboard.
+11. **Bỏ import** (xem `feature-list.md` 1.6/6.6) + **D20 (dashboard chủ trọ)** → focus landlord non-tech; realtime occupancy/revenue/debt dashboard.
 12. **D25 (ownership, chốt theo `ownership-model.md`)** → nhiều chủ trên 1 tòa, **1 chủ / phòng** (`Room.ownerId` NOT NULL); Floor optional; **bỏ manager/delegation trong MVP**.
 13. **D17 (tạm trú; research spike P1-15)** → research spike only; implement Phase 1+.
 14. **D29 (resilience, mandatory)** → nối tất cả: hệ thống sống sót khi tenant không bao giờ login.
@@ -252,7 +212,7 @@ Các quyết định tạo thành một chuỗi thống nhất, không phải l�
 
 ## D. Talking Points cho thầy
 
-- User non-tech (D19) → resilience là **điểm mạnh**, không phải thiếu sót: landlord-first ops, tenant optional.
+- User non-tech (bỏ import) → resilience là **điểm mạnh**, không phải thiếu sót: landlord-first ops, tenant optional.
 - Thể hiện sự trưởng thành về SE: **graceful degradation** — hệ thống không sập khi một phía (tenant) vắng mặt.
 - Vẫn giữ định vị hai chiều (D1): khi tenant CÓ account, họ được trải nghiệm đầy đủ (tìm phòng, thanh toán QR, ghép bạn AI).
 

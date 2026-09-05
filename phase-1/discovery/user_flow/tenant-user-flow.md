@@ -298,6 +298,8 @@ flowchart TD
 
 **Read-only tuyệt đối** — không có nút thêm/xóa thành viên ở đây, kể cả với lead tenant.
 
+**Liên kết tính phí:** `head_count` (số thành viên trong HĐ) là **nguồn đếm** cho đơn giá **nước** `per_head` (khoán theo người) và phí `per_head` — **điện KHÔNG dùng head_count, tính theo kWh** (D33). Tenant thấy số người đang tính ở chi tiết hóa đơn (xem `utility-billing-calculations.md` §3/§5/§6/§7).
+
 ### Flow 3.5 — Hóa đơn (rẽ nhánh theo payment config)
 
 ```mermaid
@@ -324,14 +326,17 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    Start(["Xem chi tiết 1 hóa đơn"]) --> Detail["Số tiền, kỳ, hạn thanh toán,\nchi tiết điện/nước"]
-    Detail --> Choose{"Chọn kênh thanh toán"}
+    Start(["Xem chi tiết 1 hóa đơn"]) --> Detail["Số tiền tổng, kỳ, hạn thanh toán,\nchi tiết từng dòng: tiền phòng + điện + nước (chỉ số cũ → mới → lượng → bậc/đơn giá → thành tiền) + phí định kỳ + phí khác"]
+    Detail --> Status{"Trạng thái hóa đơn?"}
+    Status -->|"partially_paid"| PartialNote["Hiển thị 'Đã thu X / còn nợ Y'\nnút thanh toán phần còn lại - D33③"]
+    Status -->|"paid / overpay"| HistoryTab["Khi mở tab History: nhắc 'thu dư Z' / 'đã trả đủ'\n- chỉ nhắc, không tự động hoàn tiền D33"]
+    Status -->|"pending / overdue"| Choose{"Chọn kênh thanh toán"}
     Choose -->|"Online"| QR["Quét QR động /\nVNPay / MoMo"]
     QR --> Webhook[["Webhook đối soát tự động"]]
-    Webhook --> Paid1["Trạng thái: Đã thanh toán"]
+    Webhook --> Paid1["Trạng thái: Đã thanh toán / Đã thu một phần (theo Σ)"]
     Choose -->|"Tiền mặt"| Cash[/"Trả tiền mặt trực tiếp\ncho landlord"/]
     Cash --> Confirm[["Landlord xác nhận thủ công"]]
-    Confirm --> Paid2["Trạng thái: Đã thanh toán"]
+    Confirm --> Paid2["Trạng thái: Đã thanh toán / Đã thu một phần (theo Σ)"]
 
     style Start fill:#faeeda,stroke:#ba7517
     style Detail fill:#faeeda,stroke:#ba7517
@@ -340,6 +345,8 @@ flowchart TD
     style Paid2 fill:#eaf3de,stroke:#639922
     style Cash fill:#f1efe8,stroke:#5f5e5a,stroke-dasharray: 5 5
 ```
+
+**Lưu ý minh bạch phí:** màn chi tiết hóa đơn hiển thị đầy đủ **breakdown** — tiền phòng (có prorate nếu tháng đầu/cuối), điện & nước theo từng bậc/đơn giá với lượng tiêu thụ thực, và các **phí định kỳ** (Wifi, vệ sinh, gửi xe, QLVH...) kèm cách tính (`fee_kind`). Chi tiết cách tính & ví dụ số → `utility-billing-calculations.md`.
 
 **Nhắc quá hạn:** nếu hóa đơn quá hạn, bot tự động post card nhắc vào Property Chat riêng phòng (xem Flow 3.7) — không có màn hình riêng cho việc này, chỉ là 1 loại card trong chat.
 
@@ -461,7 +468,7 @@ flowchart TD
 | 13 | Xem hợp đồng | 3 | Có |
 | 14 | Danh sách thành viên + phần góp | 3 | Có |
 | 15 | Danh sách hóa đơn | 3 | Có |
-| 16 | Chi tiết hóa đơn + thanh toán | 3 | Có |
+| 16 | Chi tiết hóa đơn + breakdown (điện/nước/phí định kỳ) + thanh toán | 3 | Có |
 | 17 | Property Chat riêng phòng | 3 | Có |
 | 18 | Property Chat chung tòa | 3 | Có |
 | 19 | Form tạo sự cố (@issue) | 3 | Có |

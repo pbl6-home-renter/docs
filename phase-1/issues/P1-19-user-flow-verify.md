@@ -12,7 +12,7 @@
 
 > **Source of truth (SoT):** `business-rules.md` (frozen P1-07) · `feature-list.md` (Modules 1–6) · `discovery/decisions.md` (D13/D16/D17/D18/D21/D22/D25/D26/D29).
 >
-> **Quan hệ với doc kiểm chứng cũ:** `pm/phase-0/user-behavior-workflow.md` là bản kiểm chứng A→Z (1 vòng đời, soi lỗi luồng). `user_flow/` ở phase-1 là bản **chi tiết theo vai trò (per-role)** — dùng làm **navigation/UI SoT** cho P1-05, không thay thế doc kiểm chứng.
+> **Quan hệ với bản kiểm chứng A→Z cũ:** doc `phase-0/user-behavior-workflow.md` đã **bị xóa** (lệch nhiều so với quyết định hiện hành, 2026-09-06). `user_flow/` ở phase-1 là bản **duy nhất còn lại, chi tiết theo vai trò (per-role)** — dùng làm **navigation/UI SoT** cho P1-05. Mọi verify luồng giờ đối chiếu trực tiếp bản per-role này với `business-rules.md` + `decisions.md`.
 
 ---
 
