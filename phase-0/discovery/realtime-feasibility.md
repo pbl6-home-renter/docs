@@ -3,7 +3,7 @@
 - **Issue:** P1-14 | **Assignee:** BE | **Reviewers:** PM (scope), Mobile (socket client), FE (web socket client)
 - **Status:** 🟡 Feasibility study — awaiting teacher finalization (chi tiết chat chưa chốt) + BE effort fill-in
 - **Decision ref:** D24′ (Property Chat — final, chờ teacher duyệt chi tiết)
-- **Related:** `decisions.md` D24/D24′, `business-rules.md` §6, `feature-list.md` 2.7/6.6, `user-behavior-workflow.md`, `tech-feasibility.md` §5
+- **Related:** `decisions.md` D24/D24′, `business-rules.md` §6, `feature-list.md` 2.7/6.6, `../../phase-1/discovery/user_flow/landlord_user_flow.md` + `../../phase-1/discovery/user_flow/tenant-user-flow.md` §6, `tech-feasibility.md` §5
 
 ---
 
@@ -309,7 +309,7 @@ IssueReport (TÁI DÙNG entity hiện tại)
 - [ ] **BE:** xác nhận effort breakdown §4.2 (spike Socket.io gateway 1 ngày nếu cần) → điền TBD.
 - [ ] **FE/Mobile:** xác nhận effort + spike socket client.
 - [ ] **PM:** trình teacher scope A′ (chat 2 conversation + bot + @issue + mention) để thầy duyệt chi tiết → xác nhận D24′ (final).
-- [ ] **PM/BE:** cập nhật `business-rules.md` §6, `feature-list.md` 2.7/6.6, `user-behavior-workflow.md`, DB schema (P1-18).
+- [ ] **PM/BE:** cập nhật `business-rules.md` §6, `feature-list.md` 2.7/6.6, `discovery/user_flow/` (chat per-role), DB schema (P1-18).
 - [ ] **PM:** chốt mô hình Settings §3.11 (1 tab, default→override, 4 nhóm, view theo role) → cập nhật `requirement.md` + `feature-list.md` nếu duyệt.
 
 ---

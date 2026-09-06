@@ -5,7 +5,7 @@
 
 ## User Flow (per-role SoT)
 
-> User flow theo từng vai trò được soạn tại **`discovery/user_flow/`** (4 file: tenant / landlord / admin / shared), dùng làm **source of truth cho navigation/UI** → input cho P1-05 và Phase 2. Xác nhận & hoàn thiện qua **P1-19**. Tham chiếu chéo với bản kiểm chứng A→Z: `pm/phase-0/user-behavior-workflow.md`.
+> User flow theo từng vai trò được soạn tại **`discovery/user_flow/`** (4 file: tenant / landlord / admin / shared), dùng làm **source of truth cho navigation/UI** → input cho P1-05 và Phase 2. Xác nhận & hoàn thiện qua **P1-19**.
 
 ## Nội dung Phase 1
 

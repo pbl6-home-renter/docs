@@ -13,7 +13,7 @@
 | A2 | Cả hai phía dùng smartphone + app ngân hàng/Zalo hằng ngày | ✅ Validated | 4/4 interviews |
 | A3 | Chủ trọ sẵn sàng trả phí SaaS nhỏ (~100–150k/tháng) | ⚠️ Unvalidated | Chưa hỏi WTP trực tiếp → đưa vào customer interview (P0-07) |
 | A4 | Người thuê chịu cài thêm app mới (app fatigue) | ⚠️ Unvalidated | Mitigation: giá trị hàng tháng (hóa đơn/báo sự cố) làm retention hook |
-| A5 | OCR đọc số công tơ điện EVN/nước từ ảnh smartphone tầm trung đạt ≥90% | ⚠️ Unvalidated | Cần spike trước khi cam kết chỉ tiêu; degrade an toàn: nhập tay + lưu ảnh chứng cứ |
+| A5 | OCR đọc số công tơ điện EVN/nước từ ảnh smartphone tầm trung đạt ≥90% | ⚠️ Unvalidated | Cần spike trước khi cam kết chỉ tiêu; degrade an toàn (D35): OCR tự điền → người dùng hiệu chỉnh tay nếu sai + lưu ảnh chứng cứ |
 | A6 | VNPay sandbox ổn định đủ cho demo | 🔶 Partially | Sandbox miễn phí, đăng ký được; chưa test E2E → mock payment là lưới an toàn bắt buộc |
 | A7 | Chi phí LLM nằm trong ngân sách sinh viên (<$30/tháng mức demo) | 🔶 Partially | Auto-Description validated ($24/tháng @1k calls đo thật); Matchmaking unvalidated (~$0.02–0.03/cặp có cache, suy từ analogy) |
 | A8 | Hợp đồng điện tử: `template_upload` (up file wet-sign 2 bên = artifact pháp lý) + `e_ack` (PIN soft-acknowledgment, disclaimer "không giá trị pháp lý") chấp nhận được trong phạm vi đồ án | 🔶 Partially | Cơ chế chốt tại D18; vẫn open question cho thầy về mức chấp nhận của `e_ack` và quy trình upload |

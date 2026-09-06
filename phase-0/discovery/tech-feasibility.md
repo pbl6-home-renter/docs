@@ -60,9 +60,9 @@ Không có hạng mục nào ở mức **Blocked**. Đề tài khả thi để t
 
 **Invoice**
 - `id` (uuid, PK), `contract_id` (FK), `period`
-- `rent_amount`, `electricity_amount`, `water_amount`, `other_fees` (jsonb — mảng `{label, amount}` cho phí phát sinh: giặt ủi, gửi xe...)
+- `rent_amount` (prorated), `other_fees` (jsonb — mảng `{label, amount}` cho phí phát sinh: giặt ủi, gửi xe...); điện/nước/phí định kỳ đọc từ snapshot `utility_breakdown`/`fees_breakdown` (D30/D37)
 - `total_amount`, `status` (enum: `pending` \| `paid` \| `overdue` \| `void`)
-- `due_date`, `paid_at`
+- `issued_at` (nullable — set khi phát hành), `due_date = issued_at + N ngày` (N cấu hình, mặc định 5), `paid_at`
 - Unique constraint: `(contract_id, period)`.
 - Feasibility: ✅ OK.
 
@@ -129,7 +129,7 @@ User 1---N MatchRequest (as requester / as target)
 ## 3. Chốt số điện nước & Bậc thang (Utility Closing)
 
 ### 3.1 Luồng nghiệp vụ đề xuất
-1. Cuối kỳ (hàng tháng), landlord hoặc tenant chụp ảnh đồng hồ điện/nước → tạo `MeterReading` (số cũ tự động lấy từ `electricity_new` của kỳ trước, số mới nhập tay).
+1. Cuối kỳ (hàng tháng), landlord chụp ảnh đồng hồ điện/nước → tạo `MeterReading` (số cũ tự động lấy từ kỳ trước / baseline bàn giao OCR, số mới do **OCR điền; sai/mờ → chủ trọ sửa tay đúng số thực tế** rồi xác nhận — D35).
 2. Hệ thống tính `consumption = new - old`, áp bậc thang → ra `electricity_amount`.
 3. Job (cron NestJS `@nestjs/schedule`) tự sinh `Invoice` từ `Contract` đang active + `MeterReading` của kỳ + `monthly_rent` + `other_fees`.
 

@@ -10,7 +10,7 @@
 - **Blocks:** AI module implementation (Phase 4), OpenAPI `/ai/matchmaking`, `discovery/ai-matching-spec.md`, provides DB fields to P1-18 (roommate/match tables)
 - **Decision ref:** D28 (keep Stretch + write this spec), D29 (matching only for opted-in tenants)
 
-> **Source of truth for the flow:** `pm/phase-0/user-behavior-workflow.md` (full rental lifecycle) + `discovery/decisions.md` (D21/D22/D26/D28/D29) + `feature-list.md` Module 2 + Module 4.
+> **Source of truth for the flow:** `../discovery/user_flow/tenant-user-flow.md` (per-role lifecycle) + `../discovery/decisions.md` (D21/D22/D26/D28/D29) + `../../phase-0/feature-list.md` Module 2 + Module 4.
 >
 > **Note:** This flow covers the **tenant-with-account** journey end-to-end (search trọ → thấy ràng buộc chủ trọ → contact → tìm bạn → accept → ký → ẩn profile). Under **D29** the matching/pairing sub-parts only run for tenants who have an account; a passive tenant never appears in the pool and the landlord-solo lifecycle is unaffected (all matching parts are tenant-optional).
 

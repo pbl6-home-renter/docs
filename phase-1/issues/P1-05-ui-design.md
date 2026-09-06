@@ -30,7 +30,7 @@ Thiết kế **định hướng giao diện (UI) sơ bộ** cho cả 2 nền t�
 
 ### B. Wireframe (structure-level, không cần pixel-perfect)
 - Với **từng màn hình quan trọng** (MVP), vẽ wireframe thô: bố cục vùng (header/sidebar/nội dung), vị trí thành phần, luồng form multi-step (e-contract 3.1, cài đặt building, tạo phòng).
-- Ưu tiên các luồng cốt lõi từ `user-behavior-workflow.md`:
+- Ưu tiên các luồng cốt lõi từ `../discovery/user_flow/` (per-role SoT — tenant / landlord / admin / shared):
   - Landlord: add building/room → tạo HĐ (đa bước) → chốt số OCR → xem hóa đơn/QR → dashboard.
   - Tenant: search map → filter → room detail → invoice/pay → report issue/chat → roommate.
 - Không cần đúng tới từng pixel — **structure + flow** là đủ (đáp ứng yêu cầu môn học).

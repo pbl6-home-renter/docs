@@ -49,7 +49,6 @@
 
 | File | Nội dung | Liên quan |
 |------|----------|-----------|
-| `user-behavior-workflow.md` | End-to-end User Behavior Story (A→Z rental lifecycle) verifying D16/D17/D18/D22/D25/D29 interlock + failure-mode audit | D16–D29 cross-check |
 | `../../phase-1/discovery/user_flow/` | **User-flow per-role** (tenant / landlord / admin / shared) — SoT cho navigation/UI, verify qua P1-19 | P1-19, P1-05 |
 
 ## Ghi chú
