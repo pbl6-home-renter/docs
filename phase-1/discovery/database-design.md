@@ -7,6 +7,10 @@
 7. **Mọi luồng nghiệp vụ phải chạy được với `tenant_user_id = NULL`** trên các bản ghi liên quan tenant thụ động (D29) — xem mục 5.
 ---
 
+**Revision basis:** the supplied schema changes are applied here while retaining D30–D37 billing behavior (versioned policies, snapshots, partial payments, OCR confirmation, and issue-time due dates). The supplied removal of the invoice replacement pointer supersedes that schema detail in D37: voided invoices remain available and replacements are looked up by `contract_id`, `period`, and `issued_at`; this lookup does not encode an exact predecessor link. Older companion documents may still use previous field names.
+
+**Naming:** fields and enum values use `snake_case`; entity labels use `PascalCase`. Use `owner_id` consistently for ownership, `electricity_policy_id`/`water_policy_id` for policy references, and explicit actor names where needed (`issued_by_user_id`, `report_by_user_id`, `sender_user_id`). `Media.owner_id` is polymorphic; `Media.user_id` identifies the uploader. Each table row defines one field. `MeterReading.utility_type` matches `UtilityRatePolicy.utility_type`; the supplied generic `name` is not used for utility classification. `ContractMember.is_lead` retains its separate representative-member meaning (D22).
+
 ## 2. Danh sách Entity
 
 ### 2.0 Base Entity (quy ước áp dụng cho mọi bảng bên dưới)
@@ -16,9 +20,9 @@
 | id | uuid | PK, default `gen_random_uuid()` | | |
 | created_at | timestamptz | NOT NULL, default `now()` | | `2026-09-05T10:00:00Z` |
 | updated_at | timestamptz | NOT NULL, default `now()` | tự cập nhật bằng trigger `set_updated_at()` mỗi lần `UPDATE` | `2026-09-05T10:00:00Z` |
-| deleted_at | timestamptz | nullable | quy ước soft-delete: `NULL` = còn tồn tại. Query mặc định luôn thêm `WHERE deleted_at IS NULL`. Với bảng mang tính chứng từ/audit (`invoice`, `payment`, `meter_reading`...) cột này gần như không dùng tới trong nghiệp vụ (không "xoá" hoá đơn) nhưng vẫn giữ để đồng nhất schema. | `NULL` |
+| is_deleted | boolean | NOT NULL, default false | Soft-delete: `false` = existing record; default queries use `WHERE is_deleted = false`. Financial/audit records are retained; voiding an invoice changes its status, not this flag. | `false` |
 
-Mọi entity ở mục 2.1 → 2.21 dưới đây được hiểu là **kế thừa 4 field trên** (không lặp lại trong từng bảng để bảng gọn). Các unique/partial index có điều kiện trạng thái (vd 1 hợp đồng active/phòng) đều kèm thêm `AND deleted_at IS NULL`.
+Mọi entity ở mục 2.1 → 2.21 dưới đây được hiểu là **kế thừa 4 field trên** (không lặp lại trong từng bảng để bảng gọn). Các unique/partial index có điều kiện trạng thái (vd 1 hợp đồng active/phòng) đều kèm thêm `AND is_deleted = false`.
 
 ### 2.1 User
 | Field | Type | Ràng buộc | Ghi chú | Ví dụ |
@@ -28,7 +32,7 @@ Mọi entity ở mục 2.1 → 2.21 dưới đây được hiểu là **kế th�
 | email | varchar | UNIQUE, nullable | | `lan@example.com` |
 | password_hash | varchar | NOT NULL | | `$2a$10$N9qo8uLOickgx2ZMRZoMye…` |
 | full_name | varchar | NOT NULL | | `Lê Văn An` |
-| roles | enum[] (`landlord`,`tenant`,`admin`) | NOT NULL, default `{}` | **D13** — mảng, không phải 1 giá trị | `['landlord']` |
+| role | enum (`landlord`,`tenant`,`admin`) | NOT NULL | **D13** — exactly one role per user | `landlord` |
 
 > Ảnh đại diện: **không có cột `avatar_url`** — lấy qua `Media(owner_type='user', owner_id=User.id, purpose='avatar')`.
 
@@ -37,22 +41,21 @@ Mọi entity ở mục 2.1 → 2.21 dưới đây được hiểu là **kế th�
 |---|---|---|---|---|
 | id | uuid | PK | 1-1 | |
 | user_id | uuid | FK→User, UNIQUE, NOT NULL | 1-1, chỉ tồn tại nếu user có role landlord | |
-| elec_policy_id | uuid | FK→UtilityRatePolicy, **nullable** | **D30** — đơn giá điện mặc định (đáy chuỗi kế thừa); **D32** — NULL = chưa cấu hình, block khi lập hóa đơn (EC3 `RATE_MISSING`), không block ở login | `NULL` |
+| electricity_policy_id | uuid | FK→UtilityRatePolicy, **nullable** | **D30** — đơn giá điện mặc định (đáy chuỗi kế thừa); **D32** — NULL = chưa cấu hình, block khi lập hóa đơn (EC3 `RATE_MISSING`), không block ở login | `NULL` |
 | water_policy_id | uuid | FK→UtilityRatePolicy, **nullable** | **D30**, **D32** | `NULL` |
-| default_settings | jsonb | nullable | cấu hình invoice/contract mặc định | `{"invoice_due_day":5, "remind_after_due_days":3}` |
+| settings | jsonb | nullable | cấu hình invoice/contract mặc định | `{"invoice_due_day":5, "remind_after_due_days":3}` |
 
 ### 2.3 Building
 | Field | Type | Ràng buộc | Ghi chú | Ví dụ |
 |---|---|---|---|---|
 | id | uuid | PK | | |
-| landlord_owner_id | uuid | FK→User, **nullable** | building **không bắt buộc** có chủ (**D25**) | |
+| owner_id | uuid | FK→User, **nullable** | building **không bắt buộc** có chủ (**D25**) | |
 | name | varchar | NOT NULL | | `Nhà trọ Thanh Xuân` |
 | address | varchar | NOT NULL | | `12 Nguyễn Trãi, Thanh Xuân, HN` |
 | latitude | decimal(9,6) | nullable, CHECK `[-90,90]` | định vị trên bản đồ | `20.995100` |
 | longitude | decimal(9,6) | nullable, CHECK `[-180,180]` | định vị trên bản đồ; index `(latitude, longitude)` phục vụ tìm theo khu vực (bounding-box). Nếu cần tìm bán kính chính xác, cân nhắc bật PostGIS ở Phase 1+ | `105.816649` |
-| elec_policy_id | uuid | FK→UtilityRatePolicy, nullable | **D30** — policy cấp tòa thắng; NULL = kế thừa LandlordProfile | `NULL` (kế thừa landlord) |
+| electricity_policy_id | uuid | FK→UtilityRatePolicy, nullable | **D30** — policy cấp tòa thắng; NULL = kế thừa LandlordProfile | `NULL` (kế thừa landlord) |
 | water_policy_id | uuid | FK→UtilityRatePolicy, nullable | **D30** | `NULL` (kế thừa landlord) |
-| property_type | varchar | NOT NULL, default `'long_term'` | **D9** — field mở cho Phase 1+ | `'long_term'` |
 
 > Ảnh tòa nhà (bìa + gallery): `Media(owner_type='building', purpose='cover_photo'|'gallery_photo')`.
 
@@ -62,7 +65,6 @@ Mọi entity ở mục 2.1 → 2.21 dưới đây được hiểu là **kế th�
 | id | uuid | PK | | |
 | building_id | uuid | FK→Building, NOT NULL | | |
 | name | varchar | NOT NULL | vd "Tầng 2" | `Tầng 2` |
-| owner_id_hint | uuid | FK→User, **nullable** | chỉ gợi ý, **không phải nguồn chân lý** (**D25** — Room.owner_id luôn thắng) | |
 
 ### 2.5 Room
 | Field | Type | Ràng buộc | Ghi chú | Ví dụ |
@@ -72,13 +74,13 @@ Mọi entity ở mục 2.1 → 2.21 dưới đây được hiểu là **kế th�
 | floor_id | uuid | FK→Floor, nullable | | |
 | owner_id | uuid | FK→User, **NOT NULL** | **D25 — bắt buộc, 1 chủ/phòng** | |
 | name | varchar | NOT NULL | | `P.201` |
-| area_m2 | decimal | nullable | | `18.5` |
+| area | decimal | nullable | Area in m²; used by `per_area_m2` fees | `18.5` |
 | amenities | jsonb | nullable | | `{"aircon":true,"fridge":false,"wc_inside":true}` |
 | max_occupancy | int | NOT NULL | **D21** hard filter ghép bạn | `3` |
-| gender_policy | enum (`any`,`male_only`,`female_only`) | default `any` | **D21** | `any` |
+| gender_policy | enum (`any`,`male`,`female`) | default `any` | **D21** — `male` = male tenants only; `female` = female tenants only; `any` = no gender restriction | `any` |
 | house_rules | text | nullable | **D21** | `Không hút thuốc trong phòng` |
 | base_rent_price | decimal | NOT NULL | | `3500000` |
-| elec_policy_id | uuid | FK→UtilityRatePolicy, nullable | **D30** — NULL = kế thừa tòa → landlord | `NULL` |
+| electricity_policy_id | uuid | FK→UtilityRatePolicy, nullable | **D30** — NULL = kế thừa tòa → landlord | `NULL` |
 | water_policy_id | uuid | FK→UtilityRatePolicy, nullable | **D30** | `override riêng phòng` |
 | status | enum (`available`,`occupied`,`maintenance`) | cached/derived | nguồn chân lý = Contract active; cache để query nhanh cho dashboard (**D20**) | `occupied` |
 
@@ -90,21 +92,36 @@ Mọi entity ở mục 2.1 → 2.21 dưới đây được hiểu là **kế th�
 | id | uuid | PK | | |
 | room_id | uuid | FK→Room, NOT NULL | | |
 | issued_by_user_id | uuid | FK→User, NOT NULL | = Room.owner_id (**D25**) | |
-| lead_tenant_user_id | uuid | FK→User, **nullable** | nullable để hỗ trợ tenant chưa có account (**D29**); nếu null thì lưu tên/SĐT trực tiếp trên contract | `NULL` |
-| lead_tenant_name / lead_tenant_phone | varchar | nullable | dùng khi tenant không có account | `Trần Văn B` / `0912345678` |
+| tenant_user_id | uuid | FK→User, **nullable** | nullable để hỗ trợ tenant chưa có account (**D29**); nếu null thì lưu tên/SĐT trực tiếp trên contract | `NULL` |
+| tenant_name | varchar | nullable; required when `tenant_user_id IS NULL` | Tenant name for an accountless tenant (D29) | `Trần Văn B` |
+| tenant_phone | varchar | nullable; required when `tenant_user_id IS NULL` | Tenant phone for an accountless tenant (D29) | `0912345678` |
 | status | enum (`draft`,`signed`,`active`,`expired`,`terminated`) | NOT NULL default `draft` | | `active` |
-| signature_mode | enum (`template_upload`) | NOT NULL | **D18** — chỉ 1 giá trị, không còn e_sign/e_ack | `template_upload` |
 | signed_at | timestamp | nullable | | `2026-09-01T10:00:00Z` |
 | parsed_fields | jsonb | nullable | field OCR/parse từ PDF ký — chỉ hỗ trợ, không phải nguồn chuẩn (**D18**) | `{"start_date":"2026-09-01","deposit_amount":7000000}` |
 | deposit_amount | decimal | NOT NULL | | `7000000` |
 | monthly_rent | decimal | NOT NULL | | `3500000` |
-| start_date / end_date | date | NOT NULL | | `2026-09-01` / `2027-08-31` |
+| start_date | date | NOT NULL | | `2026-09-01` |
+| end_date | date | NOT NULL | | `2027-08-31` |
 | terms | text | nullable | | `Đóng tiền trước ngày 5 hàng tháng…` |
 | payment_config | enum (`representative`,`shared_tracking`) | NOT NULL default `representative` | **D22** — chỉ áp dụng khi ở ghép | `representative` |
 | vehicle_count | int | **nullable** | **D32** — số xe gửi tại nhà trọ, kê khai lúc tạo/cập nhật HĐ; `NULL` = chưa khai → block phí `per_vehicle` (EC8); `0` = không gửi xe | `1` |
 | deposit_settled | boolean | default false | cờ "đã thanh lý cọc" (đề xuất trong audit GĐ6) | `false` |
 
 > Mẫu HĐ / file ký: `Media(owner_type='contract', purpose='contract_template'|'contract_signed')` — file ký (`contract_signed`) vẫn là **nguồn chuẩn pháp lý**, `parsed_fields` chỉ hỗ trợ tra cứu.
+
+**Tenant identity constraint (DB CHECK, D29):** a linked account allows either contact field to be null; without an account, both fields must contain non-blank values. This is not an exclusive-or: linked tenants may retain contact snapshots.
+
+```sql
+CONSTRAINT contract_tenant_identity_check CHECK (
+    tenant_user_id IS NOT NULL
+    OR (
+        NULLIF(BTRIM(tenant_name), '') IS NOT NULL
+        AND NULLIF(BTRIM(tenant_phone), '') IS NOT NULL
+    )
+)
+```
+
+**Signing (D18):** no `signature_mode` field: there is only one workflow. Set `signed_at` and allow `signed` status only after a signed file exists in `Media` with `owner_type='contract'` and `purpose='contract_signed'` (service validation).
 
 **Index quan trọng:** partial unique index `(room_id) WHERE status = 'active'` — chỉ 1 hợp đồng active/phòng.
 
@@ -125,14 +142,14 @@ Mọi entity ở mục 2.1 → 2.21 dưới đây được hiểu là **kế th�
 
 ### 2.8 UtilityRatePolicy — cấu hình đơn giá điện/nước (ĐƠN GIÁ VERSIONED)
 
-> **Bảng mới theo D30** (đóng open question #6: flat vs bậc thang EVN). Giữ nguyên thứ tự ưu tiên D16: `Room.elec_policy_id → Building.elec_policy_id → LandlordProfile.elec_policy_id`.
+> **Bảng mới theo D30** (đóng open question #6: flat vs bậc thang EVN). Giữ nguyên thứ tự ưu tiên D16: `Room.electricity_policy_id → Building.electricity_policy_id → LandlordProfile.electricity_policy_id`.
 > **Cách tính → `utility-billing-calculations.md` §4–§6.**
 
 | Field | Type | Ràng buộc | Ghi chú | Ví dụ |
 |---|---|---|---|---|
 | id | uuid | PK | | |
-| landlord_owner_id | uuid | FK→User, NOT NULL | quyền sở hữu (**D25**) | |
-| scope | enum (`landlord`,`building`,`room`) | NOT NULL | cấp áp dụng; `landlord` = mặc định cả nhà (trỏ từ `LandlordProfile.elec/water_policy_id`); scope thực tế thể hiện ở cột ID trên bảng chủ (profile/tòa/phòng) | `room` |
+| owner_id | uuid | FK→User, NOT NULL | quyền sở hữu (**D25**) | |
+| scope | enum (`landlord`,`building`,`room`) | NOT NULL | cấp áp dụng; `landlord` = mặc định cả nhà (trỏ từ `LandlordProfile.electricity_policy_id`/`LandlordProfile.water_policy_id`); scope thực tế thể hiện ở cột ID trên bảng chủ (profile/tòa/phòng) | `room` |
 | room_id | uuid | FK→Room, nullable | bắt buộc nếu `scope='room'` | |
 | building_id | uuid | FK→Building, nullable | bắt buộc nếu `scope='building'` | `NULL` |
 | utility_type | enum (`electricity`,`water`) | NOT NULL | | `water` |
@@ -144,7 +161,7 @@ Mọi entity ở mục 2.1 → 2.21 dưới đây được hiểu là **kế th�
 | effective_to | date | nullable | NULL = còn hiệu lực | `NULL` |
 | is_active | boolean | default true | bản mới tạo **mặc định đang chạy**; `false` = tắt → resolve bỏ qua, kế thừa cấp trên | `true` |
 
-> **Index:** `(utility_type, landlord_owner_id)` + `(room_id)`/`(building_id)` khi có. Ràng buộc `rate_kind` ↔ `unit_price`/`steps` kiểm tra ở service; preset EVN/TT25 = seed config, không phải bảng riêng.
+> **Index:** `(utility_type, owner_id)` + `(room_id)`/`(building_id)` khi có. Ràng buộc `rate_kind` ↔ `unit_price`/`steps` kiểm tra ở service; preset EVN/TT25 = seed config, không phải bảng riêng.
 > **D31 — bậc thang `steps` chỉ đến từ preset seed, không nhập tay trong UI thường** (EVN 6 bậc / Bậc 3 TT 25/2018 / nước địa phương). Landlord nhập tay tối đa `unit_price` cho `flat`/`per_head`. Đổi giá = tạo policy mới `effective_from`, không sửa policy cũ. Chi tiết UX → `landlord_user_flow.md` §3 (onboarding) + §10 (Module 6 — đổi giá/override).
 
 ### 2.9 RecurringFee — phí định kỳ ngoài điện/nước (Wifi, vệ sinh, gửi xe, QLVH…)
@@ -156,7 +173,7 @@ Mọi entity ở mục 2.1 → 2.21 dưới đây được hiểu là **kế th�
 | Field | Type | Ràng buộc | Ghi chú | Ví dụ |
 |---|---|---|---|---|
 | id | uuid | PK | | |
-| landlord_owner_id | uuid | FK→User, NOT NULL | quyền sở hữu (**D25**) | |
+| owner_id | uuid | FK→User, NOT NULL | quyền sở hữu (**D25**) | |
 | scope | enum (`landlord`,`building`,`room`) | NOT NULL | `landlord`: mặc định áp **mọi phòng mọi tòa** của chủ trọ; `building`: mỗi phòng trong tòa đều phát sinh; `room`: chỉ phòng đó | `room` |
 | room_id | uuid | FK→Room, nullable | bắt buộc nếu `scope='room'` | |
 | building_id | uuid | FK→Building, nullable | bắt buộc nếu `scope='building'` | `NULL` |
@@ -176,7 +193,7 @@ Mọi entity ở mục 2.1 → 2.21 dưới đây được hiểu là **kế th�
 | period | varchar(7) (`YYYY-MM`) | NOT NULL | | `2026-09` |
 | previous_reading | decimal | NOT NULL | kỳ đầu = baseline chỉ số lúc bàn giao §5 do **OCR tự đọc + hiệu chỉnh tay nếu sai/mờ (D34/D35)**; kỳ sau = current_reading kỳ trước | `1200` |
 | current_reading | decimal | NOT NULL | | `1380` |
-| consumption | decimal | GENERATED (current − previous) | | `180` |
+| consumption | decimal | GENERATED (current_reading − previous_reading) | | `180` |
 | reading_date | date | nullable | ngày chốt thực tế (dọn vào/ra giữa tháng) | `2026-09-30` |
 | is_baseline | boolean | default false | kỳ đầu hoặc sau khi thay đồng hồ — OCR + hiệu chỉnh tay nếu sai (D34/D35) | `false` |
 
@@ -196,7 +213,6 @@ Mọi entity ở mục 2.1 → 2.21 dưới đây được hiểu là **kế th�
 | other_fees | jsonb | nullable | phí 1 lần / ngoài lệ (không trong cấu hình). **D33 — cho phép `amount` ÂM = giảm trừ/miễn giảm** (snapshot giữ dấu âm) | `[{"name":"Vệ sinh lễ","amount":50000}, {"name":"Giảm trừ hỗ trợ","amount":-700000}]` |
 | total_amount | decimal | NOT NULL | **= làm tròn tổng** (round-half-up → hàng nghìn), kiểm tra khớp dòng; **≥ 0** (`TOTAL_NEGATIVE` — D33⑥) | `4610000` |
 | status | enum (`pending`,`partially_paid`,`paid`,`overdue`,`void`) | NOT NULL default `pending` | **D33③ — `partially_paid`** = đã thu được tiền nhưng chưa đủ (Σ success < total); `paid` khi Σ ≥ total; `overdue` khi quá hạn còn thiếu; **không sửa sau khi gửi** — void + tạo mới (audit trail, **D18/D20**) | `pending` |
-| voided_invoice_id | uuid | FK→Invoice, nullable, self-ref | hóa đơn **MỚI** trỏ tới bản cũ **đã bị void** mà nó thay thế (new → old); bản cũ giữ `status='void'`, **không xóa** (audit D18/D20); webhook trễ tới bản void → cờ cảnh báo D33⑤ | `NULL` |
 | issued_at | timestamp | nullable | thời điểm **Phát hành** (rời `pending`) — audit D18/D20; `NULL` khi còn pending (D33② auto-sinh chưa phát hành) | `2026-09-30T20:15:00Z` |
 | due_date | date | nullable | **= `issued_at + N ngày`** (N cấu hình, mặc định 5 — D37); gốc quét định kỳ → `overdue` (landlord §7) | `2026-10-05` |
 | note | text | nullable | | `Tháng nhập cư, prorate từ 15/09` |
@@ -216,7 +232,6 @@ Mọi entity ở mục 2.1 → 2.21 dưới đây được hiểu là **kế th�
 | paid_by_contract_member_id | uuid | FK→ContractMember, nullable | dùng khi shared_tracking (D22) | `NULL` |
 
 > **D33③ — trả một phần / thu dư-đủ:** đối soát theo **mã định danh hóa đơn** (không theo amount — khách trả thiếu/dư vẫn khớp). Invoice → `partially_paid` khi Σ success ∈ (0, total); `paid` khi Σ ≥ total. Thu dư: KHÔNG hoàn tiền/bù trừ tự động — tab History hiển thị nhắc "thu dư X / còn thiếu Y" (D33). **D33⑤ — Payment success tới Invoice `void`:** không set `paid`, đánh cờ cảnh báo chủ trọ đối soát.
-| created_at | timestamp | | | `2026-09-30T18:30:21Z` |
 
 ### 2.13 IssueReport
 | Field | Type | Ràng buộc | Ghi chú | Ví dụ |
@@ -224,9 +239,10 @@ Mọi entity ở mục 2.1 → 2.21 dưới đây được hiểu là **kế th�
 | id | uuid | PK | | |
 | room_id | uuid | FK→Room, NOT NULL | | |
 | conversation_id | uuid | FK→Conversation, nullable | | |
-| reported_by_user_id | uuid | FK→User, **nullable** | null nếu landlord tự tạo thay tenant passive (**D29**) | `NULL` |
+| report_by_user_id | uuid | FK→User, **nullable** | null nếu landlord tự tạo thay tenant passive (**D29**) | `NULL` |
 | status | enum (`open`,`in_progress`,`resolved`) | NOT NULL default `open` | | `open` |
-| title / description | varchar / text | NOT NULL | | `Đèn cháy` / `Bóng đèn phòng ngủ cháy 2 bóng` |
+| title | varchar | NOT NULL | | `Đèn cháy` |
+| description | text | NOT NULL | | `Bóng đèn phòng ngủ cháy 2 bóng` |
 | resolved_at | timestamp | nullable | | `NULL` |
 | resolution_note | text | nullable | | `NULL` |
 
@@ -258,7 +274,7 @@ Mọi entity ở mục 2.1 → 2.21 dưới đây được hiểu là **kế th�
 | sender_user_id | uuid | FK→User, **nullable** | null = bot | `NULL` |
 | type | enum (`text`,`image`,`file`,`bot`) | NOT NULL | | `bot` |
 | content | text | nullable | | `Đã chốt số điện tháng 09: 180 kWh` |
-| metadata | jsonb | nullable | card payload: `{invoice_id}`, `{issue_id}`, `{meter_reading_id}`,... + mention list | `{"meter_reading_id":"<uuid>"}` |
+| metadata | jsonb | nullable | card payload: `{invoice_id}`, `{issue_report_id}`, `{meter_reading_id}`,... + mention list | `{"meter_reading_id":"<uuid>"}` |
 
 > File/ảnh đính kèm (khi `type = image|file`): `Media(owner_type='message', purpose='chat_attachment')`.
 
@@ -269,7 +285,8 @@ Mọi entity ở mục 2.1 → 2.21 dưới đây được hiểu là **kế th�
 | user_id | uuid | FK→User, UNIQUE, NOT NULL | chỉ tenant có account | |
 | lifestyle | jsonb | nullable | | `{"sleep":"23h-6h","pets":false,"smoking":false}` |
 | personality | jsonb | nullable | | `{"introvert":true,"noisy_level":2}` |
-| budget_min / budget_max | decimal | nullable | | `2000000` / `3500000` |
+| budget_min | decimal | nullable | | `2000000` |
+| budget_max | decimal | nullable | | `3500000` |
 | bio | text | nullable | | `Hiền lành, sạch sẽ, dậy sớm` |
 | id_verified | boolean | default false | badge xác minh tự nguyện (**D26**) | `true` |
 
@@ -312,7 +329,7 @@ Mọi entity ở mục 2.1 → 2.21 dưới đây được hiểu là **kế th�
 
 | Hướng | Ưu điểm | Nhược điểm |
 |---|---|---|
-| **A. 1 bảng polymorphic** `media(owner_type, owner_id, purpose, ...)` — mô hình dùng bởi Rails Active Storage, Django `GenericForeignKey`, kiểu Instagram/Airbnb | 1 chỗ duy nhất quản lý file (upload, xoá, CDN, resize); thêm loại entity mới không cần bảng mới; dễ làm gallery + ảnh bìa (`is_cover`) + audit ai upload | `owner_id` **không có FK thật** (1 cột không FK được nhiều bảng) → toàn vẹn tham chiếu phải kiểm tra ở tầng service |
+| **A. 1 bảng polymorphic** `media(owner_type, owner_id, purpose, ...)` — mô hình dùng bởi Rails Active Storage, Django `GenericForeignKey`, kiểu Instagram/Airbnb | 1 chỗ duy nhất quản lý file (upload, xoá, CDN, resize); thêm loại entity mới không cần bảng mới; gallery + cover photos via `purpose` + uploader audit | `owner_id` **không có FK thật** (1 cột không FK được nhiều bảng) → toàn vẹn tham chiếu phải kiểm tra ở tầng service |
 | **B. Bảng join riêng từng entity** (`RoomPhoto`, `BuildingPhoto`, `ContractDocument`, `IssuePhoto`, `ChatAttachment`,...) | FK thật, DB tự đảm bảo toàn vẹn tham chiếu | 6-8 bảng gần như trùng cấu trúc (id, url, order, uploaded_by, timestamps); thêm entity mới lại phải thêm bảng + migration mới |
 
 **Chọn hướng A** cho MVP: quy mô đồ án không cần multi-tenant phức tạp, và số lượng entity có file (8 loại: user, room, building, contract, contract_member, meter_reading, issue_report, message) đủ lớn để hướng B gây trùng lặp đáng kể. Rủi ro mất toàn vẹn tham chiếu được giảm bằng cách:
@@ -328,13 +345,10 @@ Mọi entity ở mục 2.1 → 2.21 dưới đây được hiểu là **kế th�
 | purpose | enum (`avatar`,`cover_photo`,`gallery_photo`,`cccd_front`,`cccd_back`,`contract_template`,`contract_signed`,`meter_reading_evidence`,`issue_photo`,`chat_attachment`) | NOT NULL | vai trò của file trong owner đó | `cover_photo` |
 | file_type | enum (`image`,`document`,`video`,`other`) | NOT NULL default `image` | | `image` |
 | url | varchar | NOT NULL | | `https://cdn.pbl6.dev/room/<room_id>/cover.webp` |
-| thumbnail_url | varchar | nullable | | `https://cdn.pbl6.dev/room/<room_id>/cover_thumb.webp` |
-| mime_type | varchar | nullable | | `image/webp` |
 | size_bytes | bigint | nullable | | `245000` |
-| width / height | int | nullable | chỉ dùng khi `file_type='image'` | `1200` / `800` |
-| display_order | int | NOT NULL default 0 | thứ tự trong gallery (room/building) | `1` |
-| is_cover | boolean | NOT NULL default false | UNIQUE partial `(owner_type, owner_id) WHERE is_cover=true` — mỗi entity chỉ 1 ảnh bìa | `true` |
-| uploaded_by_user_id | uuid | FK→User, nullable | | |
+| user_id | uuid | FK→User, nullable | Uploader | |
+
+**Index:** `(owner_type, owner_id)`. Partial UNIQUE `(owner_type, owner_id, purpose) WHERE purpose = 'cover_photo' AND is_deleted = false` ensures one cover per entity. Gallery order: `created_at ASC, id ASC`.
 
 **Phân quyền Media** (bổ sung vào ma trận mục 5.2): quyền upload/xoá = quyền sửa entity cha tương ứng (vd landlord chỉ upload được ảnh cho `Room` mình sở hữu — check qua `Room.owner_id`, không phải role suông); quyền đọc = quyền đọc entity cha (ảnh phòng `available` là public, ảnh CCCD chỉ landlord sở hữu HĐ + chính chủ CCCD + admin).
 
@@ -347,7 +361,7 @@ Xem file đính kèm `erd.mermaid` để render trực quan. Tóm tắt quan h�
 ```
 User 1--1 LandlordProfile
 User 1--0..1 RoommateProfile
-User 1--N Building (landlord_owner_id, nullable)
+User 1--N Building (owner_id, nullable)
 Building 1--N Floor
 Building 1--N Room
 Floor 1--N Room
@@ -359,8 +373,9 @@ Invoice 1--N Payment
 Room 1--N MeterReading            (điện + nước: 2 bản ghi/kỳ qua utility_type)
 Building 1--N UtilityRatePolicy   (policy cấp tòa; còn: room, landlord)
 Room 1--N UtilityRatePolicy       (policy cấp phòng)
-LandlordProfile 1--0..1 UtilityRatePolicy  (2 con trỏ: elec_policy_id, water_policy_id)
-User 1--N RecurringFee            (landlord_owner_id; fee cấp landlord = mặc định cả nhà)
+LandlordProfile N--0..1 UtilityRatePolicy  (electricity_policy_id)
+LandlordProfile N--0..1 UtilityRatePolicy  (water_policy_id)
+User 1--N RecurringFee            (owner_id; fee cấp landlord = mặc định cả nhà)
 Building 1--N RecurringFee        (fee áp mọi phòng trong tòa)
 Room 1--N RecurringFee            (fee riêng phòng)
 Room 1--N IssueReport
@@ -368,14 +383,14 @@ Room 1--0..1 Conversation (kind=room)
 Building 1--0..1 Conversation (kind=building)
 Conversation 1--N ConversationMember
 Conversation 1--N Message
-User 1--N MatchRequest (requester / target)
+User 1--N MatchRequest (requester_user_id / target_user_id)
 User 1--N TenantHistory
 User 1--N Notification
 User/Room/Building/Contract/ContractMember/MeterReading/IssueReport/Message
     1--N Media (polymorphic qua owner_type + owner_id, không FK thật)
 ```
 
-> Lưu ý: `UtilityRatePolicy` được link **2 chiều** — bảng cấu hình giữ `elec_policy_id`/`water_policy_id` (con trỏ từ phòng/tòa/profile) đồng thời policy tự khai `scope`/`room_id`/`building_id`. Con trỏ trên Room/Building/LandlordProfile là nguồn chân lý cho chain resolution (D16/D30); trường `scope`/`*_id` trong policy phục vụ quản lý/gũi gọn (vd hiển thị danh sách, export).
+> Lưu ý: `UtilityRatePolicy` được link **2 chiều** — bảng cấu hình giữ `electricity_policy_id`/`water_policy_id` (con trỏ từ phòng/tòa/profile) đồng thời policy tự khai `scope`/`room_id`/`building_id`. Con trỏ trên Room/Building/LandlordProfile là nguồn chân lý cho chain resolution (D16/D30); trường `scope`/`*_id` trong policy phục vụ quản lý/gũi gọn (vd hiển thị danh sách, export).
 
 ---
 
@@ -386,22 +401,22 @@ User/Room/Building/Contract/ContractMember/MeterReading/IssueReport/Message
 | Room.owner_id NOT NULL, Building không bắt buộc owner, bỏ Manager | D25 |
 | **UtilityRatePolicy, RecurringFee, Invoice.utility_breakdown/fees_breakdown, MeterReading.utility_type** | **D30** — đơn giá điện/nước versioned (flat/bậc thang/khoán đầu người) + phí định kỳ; đóng open question #6; mở rộng D16 (giữ thứ tự room→building→landlord) |
 | **UtilityRatePolicy.steps bậc thang chỉ từ preset seed (EVN/TT25/nước địa phương), không nhập tay trong UI; đổi giá = policy mới `effective_from`** | **D31** — preset thân thiện landlord lớn tuổi; thuật toán `calcTiered` là code, giá là config |
-| **LandlordProfile.elec_policy_id/water_policy_id nullable (NULL = chưa cấu hình), Contract.vehicle_count kê khai ở HĐ, phí 1 lần `other_fees`, preset phí seed** | **D32** — onboarding không chặn (banner + block tại hóa đơn), xe theo HĐ, preset phí |
+| **LandlordProfile.electricity_policy_id/water_policy_id nullable (NULL = chưa cấu hình), Contract.vehicle_count kê khai ở HĐ, phí 1 lần `other_fees`, preset phí seed** | **D32** — onboarding không chặn (banner + block tại hóa đơn), xe theo HĐ, preset phí |
 | **Invoice status `partially_paid`, UNIQUE partial `(contract_id, period) WHERE status != 'void'`, Payment đối soát theo invoice_id + thu dư/thiếu nhắc ở History, Invoice auto-sinh theo phòng, `other_fees` âm (total ≥ 0), `rate_kind` điện chỉ flat/tiered** | **D33** — thanh toán một phần + thu dư/thiếu nhắc, hóa đơn theo phòng, điện bỏ khoán đầu người |
-| Building/Room `elec_policy_id`/`water_policy_id` (con trỏ policy) thay field decimal | D16 (nâng cấp), D30 |
-| Contract.signature_mode chỉ có template_upload | D18 |
+| Building/Room `electricity_policy_id`/`water_policy_id` (con trỏ policy) thay field decimal | D16 (nâng cấp), D30 |
+| Contract uses template generation + signed-file upload; `signed_at` + Media `contract_signed`, no signature-mode column | D18 |
 | ContractMember.share_amount, Contract.payment_config | D22 |
-| ContractMember.cccd_image_url, cccd_ocr_data | D17 |
-| User.roles là mảng | D13 |
+| ContractMember.cccd_ocr_data + Media `cccd_front`/`cccd_back` | D17 |
+| User.role is a single enum value | D13 |
 | Conversation/Message | D24′ |
-| MatchRequest unique(requester,target), ai_score/ai_advice | D28 |
+| MatchRequest unique(requester_user_id,target_user_id), ai_score/ai_advice | D28 |
 | Room.max_occupancy/gender_policy/house_rules dùng làm hard filter | D21 |
 | TenantHistory.consent_given bắt buộc | D26 |
-| Contract.lead_tenant_user_id nullable, ContractMember.user_id nullable, IssueReport.reported_by_user_id nullable | D29 (zero tenant login) |
-| Building.property_type mở rộng | D9 |
+| Contract.tenant_user_id nullable, ContractMember.user_id nullable, IssueReport.report_by_user_id nullable | D29 (zero tenant login) |
+| Building omits `property_type` per supplied revision; short-term remains outside MVP | D9 |
 | Building.latitude/longitude | yêu cầu định vị bản đồ |
 | Bảng Media polymorphic (thay mọi cột `*_url`/`photos`) | yêu cầu tránh rải url file |
-| Base Entity (id/created_at/updated_at/deleted_at) trên mọi bảng | yêu cầu chuẩn hoá audit/soft-delete |
+| Base Entity (id/created_at/updated_at/is_deleted) trên mọi bảng | yêu cầu chuẩn hoá audit/soft-delete |
 
 ---
 
@@ -410,10 +425,10 @@ User/Room/Building/Contract/ContractMember/MeterReading/IssueReport/Message
 ### 5.1 Mô hình role
 
 - **Không có bảng `Role` hay `Permission` riêng.** Quyền được suy ra trực tiếp từ 2 lớp kiểm tra ở tầng application (service/guard), không phải từ dữ liệu quan hệ:
-  1. **Role check** — user có role cần thiết không (`landlord` / `tenant` / `admin`), lấy từ `User.roles` (mảng) — đã đúng theo **D13**.
-  2. **Ownership check** — nếu resource có `owner_id`/`issued_by_user_id`/`lead_tenant_user_id`/`user_id` thì phải khớp với `request.user.id`, trừ khi role = `admin`.
-- JWT payload: `{ sub: user_id, roles: ["landlord","tenant"] }` — không nhúng permission chi tiết.
-- Backend dùng decorator kiểu `@Roles('landlord')` trên từng endpoint + 1 hàm `assertOwnership(resource, user)` gọi thêm trong service layer khi cần. Không cần bảng ánh xạ role↔permission vì tập hành động cố định, không thay đổi runtime.
+  1. **Role check** — user có role cần thiết không (`landlord` / `tenant` / `admin`), compare `User.role` to the required single value (**D13**).
+  2. **Ownership check** — nếu resource có `owner_id`/`issued_by_user_id`/`tenant_user_id`/`user_id` thì phải khớp với `request.user.id`, trừ khi role = `admin`.
+- JWT payload: `{ sub: user_id, role: "landlord" }` — không nhúng permission chi tiết.
+- Backend dùng decorator kiểu `@Roles('landlord')` trên từng endpoint (`user.role === 'landlord'`) + 1 hàm `assertOwnership(resource, user)` gọi thêm trong service layer khi cần. Không cần bảng ánh xạ role↔permission vì tập hành động cố định, không thay đổi runtime.
 
 ### 5.2 Ma trận quyền theo Resource × Action × Role
 
@@ -421,12 +436,12 @@ User/Room/Building/Contract/ContractMember/MeterReading/IssueReport/Message
 |---|---|---|---|---|---|
 | Building/Floor/Room | Create/Update/Delete | ✅ (chỉ resource mình sở hữu) | ❌ | ✅ | ownership check qua `Room.owner_id` |
 | Room | Đọc (tìm phòng available) | ✅ (mọi phòng, phục vụ ops) | ✅ (public, chỉ field public) | ✅ | tenant chỉ thấy field public khi tìm kiếm |
-| UtilityRatePolicy | Create/update/deactivate | ✅ (chỉ của mình, `landlord_owner_id`) | ❌ | ✅ | đổi giá ảnh hưởng kỳ sau (D30) |
+| UtilityRatePolicy | Create/update/deactivate | ✅ (chỉ của mình, `owner_id`) | ❌ | ✅ | đổi giá ảnh hưởng kỳ sau (D30) |
 | UtilityRatePolicy | Đọc | ✅ | ✅ (qua hóa đơn/hiển thị) | ✅ | tenant đọc qua snapshot hóa đơn, không sửa |
 | RecurringFee | Create/update/deactivate | ✅ (chỉ của mình) | ❌ | ✅ | |
 | RecurringFee | Đọc | ✅ | ✅ (qua hóa đơn) | ✅ | |
 | Contract | Create/sinh mẫu/upload file ký | ✅ (chỉ phòng mình, `issued_by_user_id`) | ❌ | ✅ | |
-| Contract | Đọc | ✅ (owner) | ✅ (chỉ HĐ mình là `lead_tenant_user_id`/`ContractMember`) | ✅ | |
+| Contract | Đọc | ✅ (owner) | ✅ (chỉ HĐ mình là `tenant_user_id`/`ContractMember`) | ✅ | |
 | MeterReading | Create/confirm | ✅ (owner phòng) | ❌ | ✅ | D29: tenant không có vai trò tạo |
 | MeterReading | Đọc | ✅ | ✅ (chỉ phòng mình đang thuê) | ✅ | |
 | Invoice | Create (auto)/void | ✅ (owner) | ❌ | ✅ | |
@@ -451,4 +466,4 @@ User/Room/Building/Contract/ContractMember/MeterReading/IssueReport/Message
 - Tập hành động và tài nguyên **cố định**, không có nhu cầu cấu hình quyền động theo tổ chức (không multi-tenant SaaS phân quyền tùy biến).
 - Chỉ 3 role, không có phân cấp phức tạp hay custom permission theo khách hàng → bảng `Role`/`Permission`/`RolePermission` sẽ over-engineer cho MVP 13–14 tuần (đúng tinh thần D9 — ưu tiên đơn giản, tránh phức tạp không cần thiết).
 - Ownership check (row-level) quan trọng hơn role check trong hệ thống này (D25) — RBAC thuần theo role sẽ không đủ, vẫn cần thêm lớp ownership dù có RBAC hay không, nên giữ đơn giản: role (coarse-grained) + ownership (fine-grained) là đủ.
-- Nếu sau này cần permission tùy biến (vd. landlord có nhân viên phụ, multi-org), có thể mở rộng thêm bảng `Role`/`Permission` ở Phase 1+ mà không phá vỡ `User.roles` hiện tại (roles array vẫn dùng làm coarse filter đầu tiên).
+- Nếu sau này cần permission tùy biến (vd. landlord có nhân viên phụ, multi-org), có thể mở rộng thêm bảng `Role`/`Permission` ở Phase 1+ and explicitly migrate `User.role` if multiple roles become necessary.
