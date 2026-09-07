@@ -1,85 +1,130 @@
-# Discovery: API dịch vụ công cho khai báo tạm trú/tạm vắng (Research spike)
+# Discovery: API khai báo tạm trú/tạm vắng — từ "chặn" sang "mock gateway thay được API thật" (Research spike)
 
 - **Task:** Tạm trú API Research
-- **Assignee:** BE · **Participants:** PM (scope D17), AI (hỗ trợ OCR nếu cần)
-- **Loại:** Research-only spike — **không triển khai** trong MVP
-- **Trạng thái:** Draft v1 — chờ PM log quyết định **D17**
-- **Liên quan:** D17 (MVP chỉ lưu ảnh CCCD tại e-contract 3.1 + OCR trích info 5.6 MVP; khai báo tạm trú đầy đủ → Phase 1+)
+- **Assignee:** BE · **Participants:** PM (scope D17/D38), AI (hỗ trợ OCR nếu cần)
+- **Loại:** Research spike + **thiết kế demo (phương án trình bày)** — không triển khai MVP
+- **Trạng thái:** Draft v2 — chờ PM log quyết định **D38** (thêm mock gateway vào hướng Phase 1+)
+- **Liên quan:** D17 (MVP chỉ lưu ảnh CCCD tại e-contract 3.1 + OCR trích info 5.6 MVP; khai báo tạm trú đầy đủ → Phase 1+), **D38** (mock gateway, swap API thật)
 
 ---
 
 ## 1. Bối cảnh
 
-Buổi 27/08, giảng viên yêu cầu nghiên cứu khả năng tích hợp API dịch vụ công để hỗ trợ khai báo tạm trú/tạm vắng ngay trong app, thay vì để chủ trọ/người thuê tự làm thủ tục ngoài hệ thống. Đây **chỉ là spike tìm hiểu khả thi** — quyết định D17 đã chốt rằng khai báo tạm trú đầy đủ (in tờ khai, nộp cơ quan) nằm ở Phase 1+, MVP chỉ dừng ở việc lưu ảnh CCCD lúc ký hợp đồng điện tử.
+Buổi 27/08, giảng viên yêu cầu nghiên cứu khả năng tích hợp API dịch vụ công để hỗ trợ khai báo tạm trú/tạm vắng ngay trong app, thay vì để chủ trọ/người thuê tự làm thủ tục ngoài hệ thống. Quyết định **D17** đã chốt rằng khai báo tạm trú đầy đủ (in tờ khai, nộp cơ quan) nằm ở **Phase 1+**; **MVP chỉ dừng ở việc lưu ảnh CCCD lúc ký hợp đồng điện tử + OCR trích thông tin** (feature 5.6).
 
-## 2. Có API công khai cho bên thứ ba (như app của mình) không?
+Research v1 kết luận "🔴 Không có public API, blocked". Sau đó nhóm tìm được **tài liệu kỹ thuật chính thức về API Khai báo tạm trú (KBTT) cho Cơ sở lưu trú (CSLT)** của Cục Quản lý Xuất nhập cảnh – Bộ Công an. Tài liệu này không cho phép gọi thật từ app sinh viên, **nhưng mở ra cơ hội**: dựng một **mock gateway** theo đúng chuẩn kết nối thật, được thiết kế sao cho khi có quyền truy cập thật chỉ cần đổi cấu hình là vận hành được — tạo phương án trình bày thể hiện tư duy thiết kế phần mềm chuyên nghiệp trước hội đồng. Đây là nội dung quyết định **D38**.
 
-**Câu trả lời ngắn: Không có API mở, machine-callable, dành cho ứng dụng tư nhân/bên thứ ba tại thời điểm nghiên cứu.**
+---
 
-### 2.1 Các kênh chính thức hiện có (chỉ có giao diện web/app cho công dân, không phải API)
+## 2. API chính thức cho Cơ sở lưu trú (CSLT) — bản chất & khả năng gọi thật
 
-| Kênh | Bản chất | Ghi chú |
-|---|---|---|
-| **Cổng Dịch vụ công Quốc gia** (`dichvucong.gov.vn`) | Web portal cho công dân tự nộp hồ sơ | Không công bố REST/SOAP API public cho lập trình bên ngoài |
-| **Ứng dụng VNeID** (Bộ Công an) | App di động, đăng ký tạm trú "mức độ 2" qua tài khoản định danh điện tử | Chỉ dùng qua app chính chủ Bộ Công an, không có SDK/API để nhúng vào app thứ ba |
-| **Cổng DVC Bộ Công an** (`dichvucong.bocongan.gov.vn`) | Web portal chuyên ngành cư trú | Tương tự Cổng DVC Quốc gia — giao diện người dùng, không phải API |
+### 2.1 API này dành cho ai, làm gì?
 
-Cả 3 kênh trên đều yêu cầu công dân **tự đăng nhập bằng tài khoản VNeID hoặc tài khoản Cổng DVC Quốc gia của chính họ**, không có cơ chế "app thứ ba gọi API thay mặt người dùng" kiểu OAuth như các nền tảng thanh toán (VNPay/Momo) mà hệ thống đang dùng.
+Tài liệu `api-kbtt.xuatnhapcanh.gov.vn` phục vụ **phần mềm bên thứ ba (PMS) của khách sạn / nhà nghỉ / cơ sở lưu trú chuyên nghiệp**:
 
-Điểm đáng chú ý: hệ thống cho phép **"khai hộ"** — chủ nhà trọ có thể đăng nhập bằng tài khoản VNeID của chính chủ nhà và nhập hộ thông tin người thuê vào form. Đây vẫn là thao tác thủ công trên giao diện web/app của nhà nước, không phải tích hợp API.
+- **Khai báo tạm trú cho Người nước ngoài (NNN)** — do Cục Xuất nhập cảnh quản lý.
+- **Thông báo lưu trú cho người Việt Nam** (khách ở ngắn ngày, qua đêm tại khách sạn/nhà trọ).
 
-### 2.2 Hạ tầng tích hợp cấp quốc gia (NDXP/LGSP) — có nhưng không dành cho SaaS tư nhân
+**Cơ chế xác thực:**
+- Chuẩn **OAuth 2.0 (Bearer Token)** qua `POST /authorization-service/oauth/token`.
+- Có các API: Get Token / Refresh Token / Revoke Token; khai báo người Việt Nam / người nước ngoài; tra cứu danh mục hành chính (tỉnh/phường/xã, quốc tịch).
 
-Việt Nam có hạ tầng **NDXP** (Nền tảng tích hợp, chia sẻ dữ liệu quốc gia) và **LGSP** (cấp tỉnh) để các *cơ quan nhà nước, bộ ngành, địa phương* kết nối dữ liệu với nhau (vd. CSDL quốc gia về dân cư, đăng ký doanh nghiệp, bảo hiểm xã hội). Tính đến các báo cáo gần nhất, NDXP đã kết nối hơn 200 hệ thống của các bộ/ngành/địa phương với hàng triệu giao dịch/ngày.
+### 2.2 Có gọi thật từ app sinh viên được không?
 
-Tuy nhiên, đối tượng kết nối vào NDXP/LGSP là **cơ quan nhà nước và một số ít doanh nghiệp được cấp phép/đối tác chiến lược** (như ngân hàng cho thanh toán, các bên vận hành CSDL chuyên ngành) — **không phải mô hình "đăng ký API key rồi gọi endpoint"** kiểu mở cho mọi lập trình viên. Một startup/team sinh viên **không có kênh chính thức nào** để xin quyền gọi API tạm trú qua NDXP/LGSP ở giai đoạn hiện tại.
+**Không.** Vì:
+- Endpoint yêu cầu **tài khoản CSLT thật** (`username`, `password`, `CsltId`) do cơ quan Công an địa phương cấp cho từng cơ sở.
+- Cần **`Client ID` + Basic Auth** do Cục Quản lý Xuất nhập cảnh cấp phép cho đơn vị phần mềm thứ ba (nhóm sinh viên không có kênh xin phép này).
 
-### 2.3 Cập nhật quy trình gần đây
+### 2.3 Phân biệt nghiệp vụ pháp lý (quan trọng)
 
-Bộ Công an đã ban hành Quyết định 1523/QĐ-BCA-C06 (26/03/2026) công bố thủ tục hành chính mới/sửa đổi cho lĩnh vực quản lý cư trú, tiếp tục đơn giản hóa quy trình đăng ký tạm trú online qua Cổng DVC/VNeID cho công dân — nhưng đây là cải tiến **trải nghiệm người dùng cuối**, không mở thêm cổng API cho bên thứ ba.
+- **Thông báo lưu trú ngắn hạn** (khách sạn/nhà trọ có khách qua đêm): có API như tài liệu trên.
+- **Đăng ký tạm trú dài hạn** (hợp đồng thuê trọ 6 tháng – 1 năm, đúng phân khúc của sản phẩm): là thủ tục cư trú cá nhân của công dân, cần hợp đồng thuê + xác nhận chủ nhà + phê duyệt Công an xã/phường — hiện xử lý qua **Cổng Dịch vụ công / VNeID**, **không có API công khai** cho bên thứ ba tự động duyệt (rào cản giữ nguyên ở §5).
 
-## 3. Hình dạng tích hợp (nếu giả định có API trong tương lai)
+> **Hệ quả cho hệ thống:** sản phẩm hiện tại (D9 — cho thuê dài hạn theo hợp đồng tháng) KHÔNG khớp loại hình "thông báo lưu trú ngắn hạn qua API CSLT". Do đó tích hợp API thật vẫn nằm ngoài phạm vi; mock gateway là **minh họa kiến trúc**, không phải cam kết nghiệp vụ thật.
 
-Dù hiện chưa có API, để chuẩn bị sẵn thiết kế cho Phase 1+ nếu chính sách thay đổi, dữ liệu cần trao đổi sẽ gồm:
+---
 
-**Chiều gửi đi (app → cơ quan quản lý cư trú):**
-- Thông tin định danh người thuê: họ tên, số CCCD/CMND, ngày sinh, quê quán (đã có sẵn từ ảnh CCCD lưu ở feature 3.1 + OCR ở feature 5.6)
-- Địa chỉ chỗ ở tạm trú (Room/Building address)
-- Thời gian bắt đầu/kết thúc lưu trú (map từ `Contract.startDate`/`endDate`)
-- Thông tin người khai báo hộ (chủ nhà) + xác nhận "chỗ ở hợp pháp" (giấy tờ sở hữu hoặc hợp đồng thuê — đã có trong `Contract`)
+## 3. Kiến trúc tích hợp: Gateway Adapter (mock ⇄ real đổi bằng config)
 
-**Chiều nhận về (cơ quan → app):**
-- Trạng thái hồ sơ (tiếp nhận / yêu cầu bổ sung / đã duyệt)
-- Phiếu tiếp nhận hồ sơ (mẫu CT04) hoặc mã hồ sơ để tra cứu
-- Thời gian xử lý: theo quy định hiện hành, hồ sơ tạm trú online được xử lý trong khoảng 3 ngày làm việc
+Thay vì để các module nghiệp vụ gọi thẳng endpoint, ta định nghĩa một **interface gateway** duy nhất + 2 cài đặt (implementation) có thể đổi qua cấu hình:
 
-### 3.1 Rào cản pháp lý/kỹ thuật nếu triển khai
+```
+                 ┌─────────────────────────────┐
+  Backend  ◄────►│    ResidencyGateway (interface) │
+ (NestJS)   gọi   │  getToken() / declare() /        │
+  Module          │  getStatus() / refresh()          │
+  Tạm trú         └──────────────┬──────────────┘
+                                 │ (chọn qua cấu hình `gateway.env`)
+                ┌────────────────┴────────────────┐
+                ▼                                 ▼
+       ┌─────────────────┐              ┌─────────────────┐
+       │  MockGateway     │              │  RealBcaGateway  │
+       │  (NestJS/mock)   │              │  (gọi API thật)  │
+       │  admin duyệt tay │              │  Cục XNC          │
+       └─────────────────┘              └─────────────────┘
+```
 
-- **Xác thực:** quy trình hiện tại bắt buộc công dân xác thực qua tài khoản VNeID *của chính họ* (mức độ 2, sinh trắc học) — một app thứ ba không thể "đăng nhập hộ" mà không vi phạm cơ chế định danh điện tử quốc gia.
-- **Nghị định 13/2023/NĐ-CP về bảo vệ dữ liệu cá nhân:** số CCCD, ngày sinh, địa chỉ là dữ liệu cá nhân (có thể thuộc nhóm nhạy cảm tùy ngữ cảnh) — nếu app đóng vai trò trung gian truyền dữ liệu này tới cơ quan nhà nước, cần đánh giá tác động xử lý dữ liệu cá nhân (DPIA) và có sự đồng ý rõ ràng của người thuê, vượt ngoài phạm vi kỹ thuật của spike này.
-- **Ai được phép nộp hồ sơ:** hệ thống có hỗ trợ "khai hộ" (chủ nhà khai hộ người thuê) nhưng vẫn qua tài khoản định danh của chủ nhà trên chính kênh nhà nước — không phải qua app thứ ba.
-- **Không có SLA/hợp đồng dịch vụ công khai** cho bên thứ ba muốn tích hợp — khác hẳn VNPay/Momo là các cổng thanh toán thương mại có API doc, sandbox, và điều khoản đối tác rõ ràng.
+**Nguyên tắc:** phần nghiệp vụ (contract data, payload, luồng trạng thái) viết 1 lần theo interface; chỉ **cài đặt gateway** đổi theo môi trường. Đổi API thật = đổi `gateway.env` + nguồn credential + tắt duyệt tay — **không đổi logic nghiệp vụ, không đổi payload contract**.
 
-## 4. Kết luận khả thi (Feasibility verdict)
+---
 
-**🔴 Blocked** cho việc tích hợp API trực tiếp trong bất kỳ phase gần nào.
+## 4. Mock Gateway (phương án demo)
 
-Lý do: không tồn tại API công khai, không có kênh chính thức để đăng ký làm đối tác tích hợp, và cơ chế xác thực (VNeID mức 2) về bản chất được thiết kế để công dân tự thao tác, không phải cho ứng dụng trung gian gọi thay.
+### 4.1 Mục đích
+- Minh họa đúng **chuẩn kết nối** và **data contract** của hệ thống quản lý lưu trú quốc gia.
+- Cho hội đồng thấy: hệ thống đã thiết kế sẵn tầng tích hợp tuân thủ OAuth 2.0 + data contract; khi có quyền thật chỉ cần thay cấu hình là vận hành.
 
-**Khuyến nghị:**
-1. **Giữ nguyên hướng D17** cho MVP: chỉ lưu ảnh CCCD tại e-contract, OCR trích thông tin để tái sử dụng nội bộ (điền sẵn form, tra cứu nhanh) — không tự động nộp hồ sơ tạm trú.
-2. **Phase 1+ (nếu muốn cải thiện UX)**, thay vì gọi API (không khả thi), có thể làm ở mức "hỗ trợ điền hộ":
-   - Sinh sẵn PDF tờ khai thông tin cư trú (mẫu CT01/CT04) với dữ liệu đã có trong hệ thống (tên, CCCD, địa chỉ, ngày thuê) để chủ nhà/người thuê tải về và tự nộp qua Cổng DVC/VNeID.
-   - Gắn deep-link/hướng dẫn từng bước tới Cổng DVC Quốc gia hoặc VNeID (tương tự cách hệ thống dùng deep-link/hướng dẫn ngoài cho các điểm chạm bên ngoài app) thay vì cố xây tích hợp API không tồn tại.
-3. **Theo dõi định kỳ (mỗi 6 tháng)** thông báo từ Bộ Công an/Cổng DVC Quốc gia — nếu trong tương lai họ mở chương trình đối tác API (như đã làm với ngành ngân hàng, bảo hiểm xã hội), có thể revisit quyết định này.
+### 4.2 Cấu trúc (kiến trúc)
+- **Backend (NestJS, `pbl6-backend`)** chứa `ResidencyGateway` interface + `MockGateway` implementation, chạy cùng backend (hoặc gọi tới một mock service tách riêng — để BE chốt ở Phase 2).
+- Mock endpoint bám sát format tài liệu chính thức (dạng `POST /authorization-service/oauth/token`, `POST /api/v1/khai-bao-luu-tru…`) để dễ trình bày đối chiếu với chuẩn thật.
 
-## 5. Việc còn mở
+### 4.3 Per-landlord credential
+- Mỗi **CSLT = 1 bộ credential riêng** (`CsltId`, username, password) — đúng mô hình thật.
+- Ở mock: mỗi landlord tự khai báo credential trong tài khoản của mình (thiết kế — chi tiết mã hóa lưu trữ để BE quyết định ở Phase 2; dùng `GATEWAY_MOCK` khi chưa có thật).
+- Model gợi ý: `LandlordGatewayCredential` (`landlord_id`, `cslt_id`, `username`, `password_encrypted`, `gateway_env`, `is_active`).
 
-- Chưa xác minh liệu có API dành riêng cho *doanh nghiệp lưu trú* (khách sạn/nhà nghỉ có nghĩa vụ báo cáo lưu trú theo Luật Cư trú, khác với hộ gia đình cho thuê trọ dân sự) — nhóm khách sạn có nghĩa vụ báo cáo khác và có thể có kênh riêng qua công an địa phương; nếu app mở rộng sang phân khúc homestay/lưu trú ngắn hạn (đã note ở Phase 1+ trong feature 1.2), nên nghiên cứu lại riêng nhánh này.
-- Chưa liên hệ trực tiếp công an phường/xã địa phương để hỏi khả năng tích hợp thí điểm cấp cơ sở — nằm ngoài phạm vi spike kỹ thuật này, để PM cân nhắc nếu cần.
+### 4.4 Admin toggle mock/real
+- Trong Admin Portal (Cấu hình hệ thống) có **switch mock / real**:
+  - **Mock mode:** bật **duyệt tay** — admin xem danh sách hồ sơ và **trigger duyệt / từ chối** thủ công (mô phỏng phản hồi của cơ quan).
+  - **Real mode:** **tắt duyệt tay** (cơ quan đảm nhận), chỉ cập nhật trạng thái từ response thật.
+- Lý do: duyệt tay là hành vi *mô phỏng* của mock, không tồn tại khi qua API thật → tự động ẩn khi real.
+
+---
+
+## 5. Rào cản pháp lý/kỹ thuật (giữ nguyên từ v1, cập nhật)
+
+- **Xác thực:** quy trình hiện tại bắt buộc xác thực qua tài khoản VNeID của chính công dân (mức độ 2, sinh trắc học) — app thứ ba không thể "đăng nhập hộ" mà không vi phạm cơ chế định danh điện tử quốc gia.
+- **Loại hình không khớp:** sản phẩm cho thuê **dài hạn** (D9) — API CSLT ở §2 dành cho **thông báo lưu trú ngắn hạn** của khách sạn. Đăng ký tạm trú dài hạn vẫn qua Cổng DVC/VNeID (không API).
+- **Nghị định 13/2023/NĐ-CP:** số CCCD, ngày sinh, địa chỉ là dữ liệu cá nhân — cần đồng ý người thuê + đánh giá tác động (DPIA) nếu đóng vai trò trung gian truyền tới cơ quan nhà nước.
+- **Ai được phép nộp hồ sơ:** "khai hộ" phải qua tài khoản định danh của chủ nhà trên kênh nhà nước, không phải app thứ ba.
+- **Không có SLA/hợp đồng dịch vụ công khai** cho bên thứ ba (khác VNPay/Momo có API doc + sandbox + điều khoản đối tác).
+
+---
+
+## 6. Kết luận khả thi (Feasibility verdict)
+
+**🔴 Vẫn Blocked** cho **việc gọi API thật trực tiếp** trong bất kỳ phase gần nào (không có quyền, loại hình không khớp, xác thực VNeID).
+
+**Nhưng** — có thể thực hiện một **phương án demo minh họa kiến trúc** (✅ khả thi):
+
+1. **Giữ nguyên D17 cho MVP:** chỉ lưu ảnh CCCD tại e-contract, OCR trích thông tin để điền sẵn form/tra cứu nội bộ — không tự động nộp hồ sơ.
+2. **Phase 1+ (đề xuất D38):** dựng **mock gateway** theo chuẩn API thật + interface adapter để đổi API thật bằng cấu hình + per-landlord credential + admin toggle mock/real (duyệt tay chỉ ở mock). Đây là **thiết kế/demo artifact**, không ràng buộc pháp lý.
+3. **Song song UX** (không phụ thuộc mock): sinh sẵn **PDF tờ khai CT01/CT04** với dữ liệu đã có + gắn **deep-link/hướng dẫn** tới Cổng DVC Quốc gia / VNeID để chủ nhà/người thuê tự nộp.
+
+---
+
+## 7. Việc còn mở
+
+- **Chi tiết payload/OpenAPI** của gateway (endpoint + body JSON) — để riêng cho Phase 2 khi BE implement; doc này chỉ nêu kiến trúc & phương án.
+- **Cách mã hóa/encrypt credential** per-landlord — BE quyết định ở Phase 2 (thiết kế, chưa chốt kỹ thuật).
+- **Khả năng tích hợp phân khúc homestay/lưu trú ngắn hạn** (đã note ở Phase 1+ feature 1.2) — nếu mở rộng sang đó phải nghiên cứu lại riêng nhánh (loại hình khớp với API CSLT).
+
+---
 
 ## Definition of Done — đối chiếu
 
-- [x] Câu trả lời cụ thể về sự tồn tại của API: **Không** — chỉ có giao diện web/app cho công dân tự thao tác qua Cổng DVC Quốc gia và VNeID; hạ tầng NDXP/LGSP tồn tại nhưng chỉ dành cho cơ quan nhà nước/đối tác được cấp phép.
-- [x] Sketch tích hợp (nếu có trong tương lai) + rào cản pháp lý đã ghi nhận (§3).
-- [x] Verdict: **🔴 Blocked** cho tích hợp API; khuyến nghị hướng thay thế "hỗ trợ điền hộ + deep-link" cho Phase 1+ (§4) — chờ PM log **D17**.
+- [x] Phân biệt rõ nghiệp vụ pháp lý: thông báo lưu trú ngắn hạn (có API CSLT) vs đăng ký tạm trú dài hạn (DVC/VNeID, không API).
+- [x] Khả năng gọi thật từ app sinh viên: **Không** — chưa có quyền, loại hình không khớp.
+- [x] Kiến trúc **gateway adapter** (mock ⇄ real đổi bằng config) + mock gateway + per-landlord credential + admin toggle — **D38**.
+- [x] Rào cản pháp lý/kỹ thuật ghi nhận (§5).
+- [x] Verdict: **Blocked** cho API thật; đề xuất mock gateway demo + hỗ trợ điền hộ/deep-link cho Phase 1+ (§6) — chờ PM log **D38**.
