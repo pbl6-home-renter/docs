@@ -16,6 +16,7 @@
 | D35 | 2026-09-06 | **Cho phép hiệu chỉnh tay số đọc khi OCR sai/mờ** — VerifyReading: chụp lại HOẶC sửa tay đúng số thực tế (chốt tháng §6, baseline bàn giao §5, thay đồng hồ EC1); sửa tay chỉ là hiệu chỉnh, bắt buộc có ảnh công tơ làm nguồn | ✅ Accepted |
 | D36 | 2026-09-06 | **Bỏ `charged_in_invoice` khỏi `RecurringFee`** — mọi phí định kỳ đều thu qua hóa đơn app; bỏ khái niệm "trả thẳng BQL / chỉ tham khảo" ngoài MVP; đơn giản hóa flow phí (D30/D32 cập nhật theo). Đồng thời chốt: `is_active=false` ở cấp nào → **kế thừa cấp trên** (đồng bộ policy + fee) | ✅ Accepted |
 | D37 | 2026-09-06 | **Tinh chỉnh schema Invoice: bỏ cột điện/nước kép + void soft + due_date = issued_at + N** — chỉ giữ `rent_amount`+`total_amount` cột (điện/nước/phí đọc snapshot jsonb); `issued_at`/`due_date` nullable (set khi Phát hành); `due_date = issued_at + N ngày` (N mặc định 5) làm gốc quét `overdue`; void = giữ bản cũ `status='void'` + liên kết new→old (giữ tên `voided_invoice_id`, làm rõ comment) | ✅ Accepted |
+| D38 | 2026-09-06 | **Tạm trú: mock gateway thay được API thật + per-landlord credential + admin toggle** — thiết kế/demo artifact (không binding nghiệp vụ); `ResidencyGateway` interface (mock ⇄ real đổi bằng config); landlord tự khai báo credential (`CsltId`/username/password, chi tiết encrypt để BE Phase 2); admin toggle mock/real, **duyệt tay chỉ ở mock mode**; giữ D17 (MVP CCCD+OCR, nộp hồ sơ → Phase 1+) | ✅ Accepted |
 
 ---
 
@@ -127,4 +128,19 @@
   - **`issued_at` (timestamp, nullable)** = thời điểm Phát hành (rời `pending`); **`due_date` (date, nullable)** = `issued_at + N ngày` (N cấu hình, **mặc định 5**); cả 2 set cùng lúc khi landlord bấm Phát hành. `due_date` là mốc quét định kỳ → `overdue` (landlord §7).
 - **Alternatives rejected:** giữ cột điện/nước (đọc 2 nơi, drift, dashboard dùng jsonb được); void hard-delete (mất audit, gãy đối soát webhook trễ, tenant đã nhận card cũ mất dấu vết); `due_date` = ngày cố định mùng X hay chủ trọ tự chọn (thao tác thêm / khó dự đoán so với phát hành + N).
 - **Impact:** `database-design_v3.md` §2.11 (bỏ 2 cột, sửa `voided_invoice_id` comment, tách `issued_at`/`due_date` nullable + note due rule); `utility-billing-calculations.md` §9 (invariant + note cột); `business-rules.md` §4; phase-0 `tech-feasibility.md` §3.1 (bỏ 2 cột, note due).
+- **Status:** ✅ Accepted 2026-09-06 (user/PM duyệt).
+
+---
+
+## D38 — Tạm trú: mock gateway thay được API thật + per-landlord credential + admin toggle
+
+- **Context:** Research v1 `tam-tru-api-research.md` kết luận "🔴 Blocked — không có public API". Sau đó nhóm tìm được **tài liệu kỹ thuật chính thức về API Khai báo tạm trú (KBTT) cho Cơ sở lưu trú (CSLT)** của Cục Quản lý Xuất nhập cảnh – Bộ Công an (`api-kbtt.xuatnhapcanh.gov.vn`): OAuth 2.0 (Bearer Token), `POST /authorization-service/oauth/token`, per-CSLT credential (`CsltId`, username, password). Không gọi thật được từ app sinh viên (thiếu quyền + phân khúc sản phẩm là thuê **dài hạn** D9 không khớp loại hình "thông báo lưu trú ngắn hạn"). Tuy nhiên tài liệu này là chuẩn để dựng **mock gateway** minh họa kiến trúc tích hợp cho hội đồng.
+- **Decision (thiết kế/demo artifact — không ràng buộc nghiệp vụ pháp lý, giữ nguyên D17 cho MVP):**
+  - **Gateway Adapter:** định nghĩa interface `ResidencyGateway` (`getToken`/`declare`/`refresh`/`getStatus`) trong backend; 2 implementation `MockGateway` và `RealBcaGateway` đổi qua cấu hình (`gateway.env`). Logic nghiệp vụ + payload contract viết **1 lần theo interface** — đổi API thật = đổi cấu hình + nguồn credential + tắt duyệt tay, **không đổi logic/payload**.
+  - **Per-landlord credential:** mỗi CSLT = 1 bộ credential riêng; **landlord tự khai báo** trong tài khoản của mình. Model gợi ý `LandlordGatewayCredential` (`landlord_id`, `cslt_id`, `username`, `password_encrypted`, `gateway_env`, `is_active`). **Chi tiết mã hóa lưu trữ để BE quyết định ở Phase 2** (doc này chỉ ở mức thiết kế).
+  - **Admin toggle mock/real:** Admin Portal (Cấu hình hệ thống) có switch mock/real. **Mock mode:** bật **duyệt tay** (admin xem hồ sơ, trigger duyệt/từ chối thủ công mô phỏng phản hồi cơ quan). **Real mode:** **tắt duyệt tay** (cơ quan đảm nhận), trạng thái lấy từ response thật. Duyệt tay là hành vi mô phỏng của mock, không tồn tại khi real → tự ẩn.
+  - **MVP bất biến (D17):** chỉ lưu ảnh CCCD tại e-contract + OCR trích info 5.6; không tự động nộp hồ sơ. Nộp hồ sơ đầy đủ vẫn Phase 1+.
+  - **UX song song (không phụ thuộc mock):** sinh PDF tờ khai CT01/CT04 + deep-link/hướng dẫn tới Cổng DVC Quốc gia / VNeID.
+- **Alternatives rejected:** bỏ tích hợp, chỉ giữ hướng "điền hộ + deep-link" (v1 — ít giá trị trình bày, không thể hiện tư duy thiết kế tầng tích hợp); gọi thẳng API thật trong MVP (không có quyền, loại hình không khớp D9, vi phạm D7 integration-first).
+- **Impact:** `phase-0/discovery/tam-tru-api-research.md` (rewrite v2 — kiến trúc gateway adapter + mock + credential + toggle); `phase-1/report-phase1.md` §4.3 (cập nhật phương án trình bày); Design/DB schema gợi ý (`LandlordGatewayCredential`, `GatewayConfig`) để BE xử lý Phase 2. Không đổi `business-rules.md` MVP.
 - **Status:** ✅ Accepted 2026-09-06 (user/PM duyệt).
