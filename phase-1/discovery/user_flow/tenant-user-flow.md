@@ -1,43 +1,5 @@
 # Tenant User Flow — PBL6
-
-> **Mục đích:** tài liệu user flow đầy đủ, chi tiết cho phía **Tenant**, dùng để designer triển khai UI/UX.
->
-> **Quy ước đọc sơ đồ:** xem Legend ở mục 0 trước khi đọc bất kỳ flow nào bên dưới.
-
 ---
-
-## 0. Legend — quy tắc ký hiệu dùng xuyên suốt tài liệu
-
-```mermaid
-flowchart TD
-    A(["Điểm bắt đầu / kết thúc"])
-    B["Màn hình (Screen)"]
-    C{"Điểm quyết định / rẽ nhánh"}
-    D[["Hệ thống tự xử lý (background)"]]
-    E("Popup / Modal")
-    F[/"Hành động ngoài app (offline / kênh ngoài)"/]
-
-    A --> B --> C
-    C --> D
-    C --> E
-    C --> F
-```
-
-| Ký hiệu | Ý nghĩa |
-| -- | -- |
-| Stadium `(...)` | Điểm bắt đầu/kết thúc 1 flow |
-| Rectangle `[...]` | 1 màn hình cụ thể trong app |
-| Diamond `{...}` | Điểm rẽ nhánh — luôn có ≥2 nhánh output |
-| Subroutine `[[...]]` | Hệ thống tự xử lý ngầm, không phải màn hình (vd: auto chia đều, matching filter) |
-| Rounded `(...)` | Popup/Modal nổi lên trên màn hình hiện tại, không chuyển trang |
-| Parallelogram `[/.../]` | Hành động xảy ra **ngoài app** (SĐT, giấy, tiền mặt, gặp trực tiếp) |
-| Màu xanh dương | Guest xem được, không cần login |
-| Màu cam | Cần đăng nhập mới thao tác được |
-| Màu xanh lá | Trạng thái hoàn tất / thành công |
-| Màu xám | Trung tính / hệ thống nền |
-
----
-
 ## 1. Tổng quan Tenant trong hệ thống
 
 ### 1.1 Tenant là ai trong vòng đời sản phẩm
@@ -62,16 +24,16 @@ Một tài khoản có thể **đi qua nhiều trạng thái cùng lúc hoặc n
 
 1. **Guest-first cho phần khám phá:** xem phòng, xem chi tiết, xem feed ghép bạn — không cần login. Chỉ hành động (lưu, gửi match, chat, thanh toán, đăng bài, quản lý) mới gate bằng popup đăng nhập tại chỗ — không có giao diện riêng cho guest/đã login.
 2. **Tenant không tự tạo hoặc tự sửa hợp đồng/thành viên** — mọi thao tác pháp lý/hợp đồng đều do landlord thực hiện. App tenant ở các màn liên quan chỉ **hiển thị (read-only)**.
-3. **Ghép bạn tách biệt hoàn toàn khỏi việc chọn phòng** — không áp ràng buộc landlord (max người/giới tính/ngân sách) trong giai đoạn tìm bạn; ràng buộc đó chỉ có tác dụng ở bước landlord tạo hợp đồng sau này.
+3. **Ghép bạn tách biệt hoàn toàn khỏi việc chọn phòng** — không áp ràng buộc landlord (giới tính, số người, ngân sách) trong giai đoạn tìm bạn; ràng buộc đó chỉ có tác dụng ở bước landlord tạo hợp đồng sau này.
 4. **Property Chat chỉ tồn tại sau khi có hợp đồng active** — trước đó, mọi liên hệ với landlord là qua thông tin liên hệ tĩnh (SĐT).
 5. **Mọi hóa đơn/thanh toán đều có song song 2 kênh:** online (QR/VNPay/MoMo) và tiền mặt (landlord xác nhận thủ công) — không có màn hình nào chỉ có 1 lựa chọn duy nhất.
 6. **Thuê ngắn hạn tính theo ngày:** Hệ thống chỉ tính thời gian thuê theo ngày (mốc 00:00 nửa đêm làm chuẩn chuyển ngày, trước 0h tính là 1 ngày, qua sau 0h tính sang ngày kế tiếp), tuyệt đối không tính theo giờ.
 7. **Bỏ qua khai báo lưu trú/tạm trú:** Ứng dụng không xử lý thủ tục khai báo tạm trú của người dùng.
 8. **Quy tắc khi tài khoản Khách thuê bị khóa:** Khách thuê vẫn được phép đăng nhập để xem và thanh toán hợp đồng/hóa đơn hiện tại nhằm đảm bảo nghĩa vụ tài chính, nhưng bị khóa hoàn toàn chức năng gia hạn hợp đồng, không thể tìm thuê phòng mới hay tạo hợp đồng mới.
 9. **Quy định Camera và tải ảnh công tơ điện nước:** Hệ thống tích hợp Camera chụp trực tiếp tại chỗ cho phép cả Chủ trọ và Khách thuê đều có thể dùng để chụp ảnh đồng hồ điện nước. Tuy nhiên, **Khách thuê KHÔNG ĐƯỢC PHÉP tải ảnh có sẵn từ bộ nhớ thiết bị (thư viện ảnh) lên**, quyền tải ảnh từ máy lên chỉ dành riêng cho Chủ trọ.
-10. **Gộp chi phí vào danh mục Dịch vụ & Quy về từng tháng:** Hóa đơn trên hệ thống gồm `Tiền phòng` và `Dịch vụ` (gộp điện, nước, wifi, máy giặt, rác...). Toàn bộ hóa đơn được chuẩn hóa quy về theo từng tháng.
-11. **Mọi thành viên trong phòng đều có quyền thanh toán:** Bất kỳ ai trong phòng (người đại diện ký hợp đồng hoặc thành viên ở ghép) đều có thể quét mã VietQR động hoặc nộp tiền mặt để hoàn tất thanh toán hóa đơn của phòng.
-12. **Trạng thái phòng sau Checkout:** Sau khi thanh lý hợp đồng và bàn giao phòng, phòng trọ chuyển sang trạng thái chờ dọn dẹp (`pending`), chỉ khi chủ trọ hoàn tất vệ sinh và bấm xác nhận thì phòng mới hiển thị lại `available`.
+10. **Gộp chi phí vào danh mục Dịch vụ & Quy về từng tháng:** Hóa đơn trên hệ thống gồm Tiền phòng và Dịch vụ (gộp điện, nước, wifi, máy giặt, rác...). Toàn bộ hóa đơn được chuẩn hóa quy về theo từng tháng.
+11. **Mọi thành viên trong phòng đều có quyền thanh toán:** Bất kỳ ai trong phòng đều có thể quét mã VietQR động hoặc nộp tiền mặt để hoàn tất thanh toán hóa đơn của phòng.
+12. **Trạng thái phòng sau Checkout:** Sau khi thanh lý hợp đồng và bàn giao phòng, phòng trọ chuyển sang trạng thái chờ dọn dẹp, chỉ khi chủ trọ hoàn tất vệ sinh và bấm xác nhận thì phòng mới hiển thị lại sẵn sàng cho thuê.
 
 ### 1.3 Kiến trúc điều hướng tổng thể
 
@@ -82,13 +44,11 @@ flowchart LR
     Nav --> T2["Ghép bạn"]
     Nav --> T3["Phòng của tôi"]
     Nav --> T4["Tài khoản"]
-
-    T3 -.->|"Chỉ hiện khi có\nhợp đồng active"| T3
 ```
 
 | Tab | Nội dung chính | Cần login? |
 | -- | -- | -- |
-| **Tìm phòng** | Bản đồ, filter, chi tiết phòng | Xem: không · Lưu/liên hệ: có |
+| **Tìm phòng** | Bộ lọc, danh sách phòng, chi tiết phòng | Xem: không · Lưu/liên hệ: có |
 | **Ghép bạn** | Feed hồ sơ roommate, quản lý match | Xem feed: không · Gửi match: có |
 | **Phòng của tôi** | Hub hợp đồng / thành viên / hóa đơn / chat / sự cố — ẩn nếu chưa có hợp đồng nào | Có |
 | **Tài khoản** | Hồ sơ, lịch sử uy tín + consent, cài đặt | Có |
@@ -97,19 +57,19 @@ flowchart LR
 
 ## 2. BATCH 1 — Khám phá (Guest-first)
 
-### Flow 1.1 — Tìm phòng & xem chi tiết (Guest)
+### Sub-Flow 1: Tìm phòng & xem chi tiết (Guest)
 
 ```mermaid
 flowchart TD
-    Start(["Mở app / tab Tìm phòng"]) --> Map["Màn Bản đồ + Filter\n(giá, diện tích, tiện nghi, khoảng cách)"]
-    Map --> List["Danh sách kết quả dạng thẻ"]
+    Start(["Mở app / tab Tìm phòng"]) --> Filter["Bộ lọc tìm phòng\n(giá, diện tích, tiện nghi, khoảng cách)"]
+    Filter --> List["Danh sách kết quả dạng thẻ"]
     List --> Detail["Chi tiết phòng\n(ảnh, giá, tiện nghi, SĐT landlord)"]
     Detail --> Action{"Chạm hành động?"}
     Action -->|"Chỉ xem"| End1(["Kết thúc — không cần login"])
-    Action -->|"Lưu phòng / Liên hệ"| Gate[["Kiểm tra đăng nhập — xem Flow 1.3"]]
+    Action -->|"Lưu phòng / Liên hệ"| Gate[["Kiểm tra đăng nhập — xem Sub-Flow 3"]]
 
     style Start fill:#e6f1fb,stroke:#378add
-    style Map fill:#e6f1fb,stroke:#378add
+    style Filter fill:#e6f1fb,stroke:#378add
     style List fill:#e6f1fb,stroke:#378add
     style Detail fill:#e6f1fb,stroke:#378add
     style End1 fill:#eaf3de,stroke:#639922
@@ -118,11 +78,10 @@ flowchart TD
 
 | Màn hình | Nội dung | Ghi chú thiết kế |
 | -- | -- | -- |
-| Bản đồ + Filter | Pin trên bản đồ theo vị trí thật; filter giá/diện tích/tiện nghi/khoảng cách | Toggle giữa view bản đồ ↔ view danh sách |
-| Danh sách kết quả | Card: ảnh đại diện, giá, khu vực, số phòng trống | Có thể thêm sort (gần nhất/giá thấp-cao) |
-| Chi tiết phòng | Gallery ảnh, mô tả, tiện nghi, giá, ràng buộc phòng (nếu có, hiện dạng badge — ví dụ "Chỉ nhận nữ", "Tối đa 3 người"), SĐT/liên hệ landlord tĩnh | Ràng buộc landlord hiện ở đây chỉ mang tính **thông tin**, chưa liên quan matching |
+| Bộ lọc + Danh sách | Filter giá/diện tích/tiện nghi/khoảng cách; kết quả dạng card: ảnh, giá, khu vực, số phòng trống | Có thể thêm sort (gần nhất/giá thấp-cao) |
+| Chi tiết phòng | Gallery ảnh, mô tả, tiện nghi, giá, ràng buộc phòng (nếu có, hiện dạng badge — ví dụ "Chỉ nhận nữ"), SĐT/liên hệ landlord tĩnh | Ràng buộc hiện ở đây chỉ mang tính **thông tin**, chưa liên quan matching |
 
-### Flow 1.2 — Lưu phòng (hành động cần login)
+### Sub-Flow 2: Lưu phòng (hành động cần login)
 
 ```mermaid
 flowchart TD
@@ -130,7 +89,7 @@ flowchart TD
     Tap --> Check{"Đã đăng nhập?"}
     Check -->|"Có"| Saved["Phòng được lưu\nvào danh sách yêu thích"]
     Check -->|"Chưa"| Popup("Popup: Đăng nhập để lưu phòng")
-    Popup --> Login[["Flow 1.3 — Đăng nhập"]]
+    Popup --> Login[["Sub-Flow 3 — Đăng nhập"]]
     Login --> Saved
 
     style Detail fill:#e6f1fb,stroke:#378add
@@ -139,25 +98,26 @@ flowchart TD
     style Saved fill:#eaf3de,stroke:#639922
 ```
 
-### Flow 1.3 — Đăng nhập & tự động liên kết hợp đồng
+### Sub-Flow 3: Đăng ký & Scan danh sách thành viên hợp đồng (Tenant)
 
 ```mermaid
 flowchart TD
-    Start(["Popup đăng nhập được trigger"]) --> Phone["Nhập số điện thoại"]
-    Phone --> OTP["Xác thực OTP"]
-    OTP --> Scan[["Hệ thống quét danh sách thành viên hợp đồng\ntheo số điện thoại"]]
-    Scan --> Match{"Có khớp?"}
-    Match -->|"Có"| Home1["Về lại thao tác đang dở\n+ tab Phòng của tôi xuất hiện"]
-    Match -->|"Không"| Home2["Về lại thao tác đang dở\nchưa có tab Phòng của tôi"]
+    Start(["Popup đăng nhập được trigger"]) --> Register["Đăng ký tài khoản mới:\nNhập Email, Mật khẩu, Họ tên, SĐT"]
+    Register --> SubmitReg["Gửi yêu cầu đăng ký"]
+    SubmitReg --> VerifyReg{"Đăng ký thành công?"}
+    VerifyReg -->|"Thất bại"| ErrorReg["Báo lỗi: Email đã tồn tại hoặc thông tin không hợp lệ"] --> Register
+    VerifyReg -->|"Thành công"| Home["Về lại thao tác đang dở"]
+
+    Home --> Scan[["Hệ thống quét nền: đối chiếu SĐT tài khoản\nvới danh sách thành viên hợp đồng"]]
 
     style Start fill:#faeeda,stroke:#ba7517
-    style Phone fill:#faeeda,stroke:#ba7517
-    style OTP fill:#faeeda,stroke:#ba7517
-    style Home1 fill:#eaf3de,stroke:#639922
-    style Home2 fill:#f1efe8,stroke:#5f5e5a
+    style Register fill:#faeeda,stroke:#ba7517
+    style Home fill:#f1efe8,stroke:#5f5e5a
+    style ShowContract fill:#eaf3de,stroke:#639922
+    style Empty fill:#f1efe8,stroke:#5f5e5a
 ```
 
-**Lưu ý thiết kế quan trọng:** bước "Quét danh sách thành viên" **không chỉ chạy 1 lần lúc đăng ký** — chạy lại mỗi khi landlord thêm/sửa số điện thoại của thành viên. App cần có cơ chế re-check nền (mở app / pull-to-refresh) để tự chuyển trạng thái "Không → Có" mà không bắt đăng nhập lại.
+**Lưu ý thiết kế quan trọng:** bước scan **không chỉ chạy 1 lần lúc đăng ký** — chạy lại mỗi khi landlord thêm/sửa thông tin thành viên. Tab "Phòng của tôi" **luôn hiển thị** dù có hay không hợp đồng; khi chưa có thì hiện trống, khi có thì hiện danh sách hợp đồng đã liên kết.
 
 ---
 
@@ -165,7 +125,7 @@ flowchart TD
 
 > Nguyên tắc cốt lõi: đây là **feed độc lập, xảy ra TRƯỚC khi chọn phòng**. Không áp ràng buộc landlord ở giai đoạn này.
 
-### Flow 2.1 — Xem feed & tạo hồ sơ
+### Sub-Flow 4: Xem feed & tạo hồ sơ
 
 ```mermaid
 flowchart TD
@@ -175,10 +135,10 @@ flowchart TD
     Act -->|"Chỉ xem"| End1(["Kết thúc — không cần login"])
     Act -->|"Đăng bài / Gửi match"| Check{"Đã đăng nhập?"}
     Check -->|"Chưa"| Gate("Popup đăng nhập")
-    Gate --> Login[["Flow 1.3"]]
+    Gate --> Login[["Sub-Flow 3"]]
     Check -->|"Có, chưa có hồ sơ"| Create["Tạo hồ sơ cá nhân\n(ảnh, mô tả, ngân sách, khu vực)"]
     Create --> Post["Đăng bài vào feed"]
-    Check -->|"Có, đã có hồ sơ"| Send[["Flow 2.2 — Gửi match request"]]
+    Check -->|"Có, đã có hồ sơ"| Send[["Sub-Flow 5 — Gửi match request"]]
 
     style Start fill:#e6f1fb,stroke:#378add
     style Feed fill:#e6f1fb,stroke:#378add
@@ -194,7 +154,7 @@ flowchart TD
 | Feed | Card cuộn dọc: ảnh, tên hiển thị, mô tả ngắn, ngân sách, khu vực mong muốn, badge tuổi/giới tính | Không có like/share/comment, không thuật toán ranking — chỉ list theo mới nhất/gần khu vực |
 | Tạo hồ sơ | Ảnh đại diện, mô tả lối sống, ngân sách, khu vực mong muốn, thời điểm cần dọn vào | 1 tài khoản = 1 hồ sơ; có thể ẩn/hiện bài đăng bất kỳ lúc nào |
 
-### Flow 2.2 — Gửi/nhận match request (2 chiều)
+### Sub-Flow 5: Gửi/nhận match request (2 chiều)
 
 ```mermaid
 flowchart TD
@@ -223,7 +183,7 @@ flowchart TD
 | Danh sách match | 2 tab: "Đã gửi" (chờ/từ chối) và "Đã nhận" (chờ mình phản hồi) |
 | Match thành công | Card chúc mừng + nút "Xem thông tin liên hệ" |
 
-### Flow 2.3 — Sau match: lộ liên hệ → thành thành viên chính thức
+### Sub-Flow 6: Sau match: lộ liên hệ → thành thành viên chính thức
 
 ```mermaid
 flowchart TD
@@ -240,27 +200,25 @@ flowchart TD
     style Appear fill:#eaf3de,stroke:#639922
 ```
 
-**Không có màn hình app nào cho bước "Outside" và "Report"** — đây là hành động ngoài hệ thống theo thiết kế. App chỉ cần đảm bảo bước cuối "Appear" hoạt động đúng (dựa vào Flow 1.3 — auto liên kết theo SĐT).
+**Không có màn hình app nào cho bước "Outside" và "Report"** — đây là hành động ngoài hệ thống theo thiết kế. App chỉ cần đảm bảo bước cuối "Appear" hoạt động đúng (dựa vào Sub-Flow 3 — auto liên kết theo SĐT).
 
 ---
 
 ## 4. BATCH 3 — "Phòng của tôi" (Hub sau khi có hợp đồng active)
 
-### Flow 3.1 — Vào hub & chuyển đổi giữa nhiều hợp đồng (nếu có)
+### Sub-Flow 7: Xem danh sách hợp đồng
 
 ```mermaid
 flowchart TD
-    Start(["Chạm tab Phòng của tôi"]) --> Count{"Có bao nhiêu\nhợp đồng active?"}
-    Count -->|"1"| Hub["Vào thẳng Hub phòng đó"]
-    Count -->|">1"| Switcher["Danh sách chọn phòng\n(switcher)"]
-    Switcher --> Hub
+    Start(["Chạm tab Phòng của tôi"]) --> List["Danh sách hợp đồng đang hiệu lực\n(Phòng, Địa chỉ, Thời hạn, Trạng thái)"]
+    List --> Select["Chọn 1 hợp đồng để vào Hub phòng"]
 
     style Start fill:#faeeda,stroke:#ba7517
-    style Hub fill:#faeeda,stroke:#ba7517
-    style Switcher fill:#faeeda,stroke:#ba7517
+    style List fill:#faeeda,stroke:#ba7517
+    style Select fill:#faeeda,stroke:#ba7517
 ```
 
-### Flow 3.2 — Cấu trúc Hub (tổng quan các mục con)
+### Sub-Flow 8: Cấu trúc Hub (tổng quan các mục con)
 
 ```mermaid
 flowchart TD
@@ -273,7 +231,7 @@ flowchart TD
     style Hub fill:#faeeda,stroke:#ba7517
 ```
 
-### Flow 3.3 — Xem hợp đồng (read-only)
+### Sub-Flow 9: Xem hợp đồng (read-only)
 
 ```mermaid
 flowchart TD
@@ -290,33 +248,28 @@ flowchart TD
 
 **Không có nút ký nào ở đây** — hệ thống không có cơ chế ký điện tử, toàn bộ màn hình này chỉ để tenant tra cứu thông tin.
 
-### Flow 3.4 — Danh sách thành viên & phần góp
+### Sub-Flow 10: Danh sách thành viên
 
 ```mermaid
 flowchart TD
-    Start(["Chạm mục Thành viên"]) --> Config{"Payment config?"}
-    Config -->|"(a) Rep-payer"| ListA["Danh sách tên các thành viên\nkhông hiện số tiền (chia offline)"]
-    Config -->|"(b) Shared-invoice"| ListB["Danh sách tên + phần góp\nmỗi người (auto chia đều)"]
+    Start(["Chạm mục Thành viên"]) --> List["Danh sách tên các thành viên trong phòng"]
 
     style Start fill:#faeeda,stroke:#ba7517
-    style ListA fill:#faeeda,stroke:#ba7517
-    style ListB fill:#faeeda,stroke:#ba7517
+    style List fill:#faeeda,stroke:#ba7517
 ```
 
-**Read-only tuyệt đối** — không có nút thêm/xóa thành viên ở đây, kể cả với lead tenant.
+**Read-only tuyệt đối** — không có nút thêm/xóa thành viên ở đây.
 
-**Liên kết tính phí:** `head_count` (số thành viên trong HĐ) là **nguồn đếm** cho đơn giá **nước** `per_head` (khoán theo người) và phí `per_head` — **điện KHÔNG dùng head_count, tính theo kWh** (D33). Tenant thấy số người đang tính ở chi tiết hóa đơn (xem `utility-billing-calculations.md` §3/§5/§6/§7).
+### Sub-Flow 11: Hóa đơn (Thanh toán linh hoạt cho mọi thành viên)
 
-### Flow 3.5 — Hóa đơn (Thanh toán linh hoạt cho mọi thành viên)
-
-Mọi hóa đơn trên hệ thống được **chuẩn hóa quy về từng tháng**. Mọi thành viên trong phòng (lead hoặc người ở cùng) đều có quyền xem chi tiết và trực tiếp thực hiện thanh toán.
+Mọi hóa đơn trên hệ thống được **chuẩn hóa quy về từng tháng**. Mọi thành viên trong phòng đều có quyền xem chi tiết và trực tiếp thực hiện thanh toán.
 
 ```mermaid
 flowchart TD
     Start(["Chạm mục Hóa đơn"]) --> LoadInvoice["Tải danh sách hóa đơn theo tháng của phòng"]
     LoadInvoice --> ViewInvoice["Mọi thành viên trong phòng đều xem được toàn bộ hóa đơn\n(Kỳ thanh toán, hạn nộp, Tiền phòng + Dịch vụ)"]
     ViewInvoice --> ActionPay["Nút 'Thanh toán' hiển thị cho mọi thành viên trong phòng"]
-    ActionPay --> Pay1[["Flow 3.6 — Thanh toán"]]
+    ActionPay --> Pay1[["Sub-Flow 12 — Thanh toán"]]
 
     style Start fill:#faeeda,stroke:#ba7517
     style LoadInvoice fill:#faeeda,stroke:#ba7517
@@ -325,17 +278,17 @@ flowchart TD
     style Pay1 fill:#eaf3de,stroke:#639922
 ```
 
-**Lưu ý quan trọng:** Không giới hạn riêng người đại diện ký hợp đồng (lead), **bất kỳ thành viên nào trong phòng** cũng có thể thanh toán hóa đơn bằng cách quét mã VietQR động hoặc nộp tiền mặt cho chủ trọ.
+**Lưu ý quan trọng:** **Bất kỳ thành viên nào trong phòng** cũng có thể thanh toán hóa đơn bằng cách quét mã VietQR động hoặc nộp tiền mặt cho chủ trọ.
 
-### Flow 3.6 — Thanh toán hóa đơn (online / tiền mặt)
+### Sub-Flow 12: Thanh toán hóa đơn (online / tiền mặt)
 
 ```mermaid
 flowchart TD
     Start(["Xem chi tiết 1 hóa đơn tháng"]) --> Detail["Số tiền tổng, kỳ tháng, hạn thanh toán,\nChi tiết: Tiền phòng + Danh mục Dịch vụ (Điện, Nước, Wifi, Rác, Máy giặt)"]
     Detail --> Status{"Trạng thái hóa đơn?"}
-    Status -->|"partially_paid"| PartialNote["Hiển thị 'Đã thu X / còn nợ Y'\nnút thanh toán phần còn lại"]
-    Status -->|"paid / overpay"| HistoryTab["Khi mở tab History: ghi nhận 'Đã thanh toán đủ'"]
-    Status -->|"pending / overdue"| Choose{"Chọn kênh thanh toán"}
+    Status -->|"Đã thu một phần"| PartialNote["Hiển thị 'Đã thu X / còn nợ Y'\nnút thanh toán phần còn lại"]
+    Status -->|"Đã thanh toán / Thanh toán đủ"| HistoryTab["Khi mở tab History: ghi nhận 'Đã thanh toán đủ'"]
+    Status -->|"Chưa thanh toán / Quá hạn"| Choose{"Chọn kênh thanh toán"}
     Choose -->|"Online VietQR"| QR["Quét mã VietQR động định danh phòng"]
     QR --> Webhook[["Webhook ngân hàng đối soát tự động"]]
     Webhook --> Paid1["Trạng thái: Đã thanh toán (Gạch nợ cho phòng)"]
@@ -353,9 +306,9 @@ flowchart TD
 
 **Lưu ý minh bạch phí:** Màn chi tiết hóa đơn quy về theo từng tháng, hiển thị rõ ràng Tiền phòng và nhóm **Dịch vụ** (trong đó bóc tách chi tiết lượng điện, nước theo chỉ số công tơ do chủ trọ chốt hoặc khách thuê hỗ trợ chụp bằng Camera trong app, cùng các chi phí dịch vụ cố định như Wifi, rác, máy giặt...). Khách thuê chỉ được chụp trực tiếp qua Camera hệ thống, không được tải ảnh có sẵn từ máy lên.
 
-**Nhắc quá hạn:** nếu hóa đơn quá hạn, bot tự động post card nhắc vào Property Chat riêng phòng (xem Flow 3.7) — không có màn hình riêng cho việc này, chỉ là 1 loại card trong chat.
+**Nhắc quá hạn:** nếu hóa đơn quá hạn, bot tự động post card nhắc vào Property Chat riêng phòng (xem Sub-Flow 13) — không có màn hình riêng cho việc này, chỉ là 1 loại card trong chat.
 
-### Flow 3.7 — Property Chat riêng phòng
+### Sub-Flow 13: Property Chat riêng phòng
 
 ```mermaid
 flowchart TD
@@ -363,7 +316,6 @@ flowchart TD
     Room --> Type{"Loại nội dung?"}
     Type -->|"Tin nhắn thường"| Text["Text / ảnh / file"]
     Type -->|"Card bot tự động"| Bot["Card: kết quả chốt số,\nhóa đơn mới, nhắc quá hạn"]
-    Type -->|"Lệnh @issue"| IssueCmd[["Flow 3.8 — Tạo sự cố"]]
     Type -->|"@mention"| Mention["Autocomplete gắn tên\nthành viên/landlord"]
 
     Room --> Switch["Chuyển sang Chat chung tòa\n(chỉ text/ảnh/file + mention)"]
@@ -376,18 +328,18 @@ flowchart TD
     style Switch fill:#f1efe8,stroke:#5f5e5a
 ```
 
-### Flow 3.8 — Báo & theo dõi sự cố
+### Sub-Flow 14: Báo & theo dõi sự cố
 
 ```mermaid
 flowchart TD
-    Start(["Trong Chat riêng phòng, gõ @issue"]) --> Form["Mô tả sự cố + đính kèm ảnh"]
+    Start(["Từ Hub Phòng của tôi, chọn 'Báo sự cố'"]) --> Form["Chọn phòng → Mô tả sự cố + đính kèm ảnh"]
     Form --> Create[["Tạo báo cáo sự cố: mở"]]
     Create --> Notify["Bot post card vào chat +\nFCM push tới landlord"]
     Notify --> Track["Theo dõi trạng thái"]
     Track --> Status{"Trạng thái hiện tại?"}
     Status -->|"Mở"| Wait["Chờ landlord xử lý"]
     Status -->|"Đang xử lý"| Progress["Đang sửa — có thể\ntrao đổi thêm qua chat"]
-    Status -->|"Đã xử lý"| Done["Đã xử lý xong"]
+    Status -->|"Đã hoàn thành"| Done["Đã xử lý xong"]
 
     style Start fill:#faeeda,stroke:#ba7517
     style Form fill:#faeeda,stroke:#ba7517
@@ -403,26 +355,7 @@ flowchart TD
 
 ## 5. BATCH 4 — Phần còn lại
 
-### Flow 4.1 — Lịch sử uy tín & consent toggle
-
-```mermaid
-flowchart TD
-    Start(["Tab Tài khoản"]) --> History["Lịch sử các kỳ thuê trước:\nphòng, thời gian, thanh toán đúng hạn"]
-    History --> Toggle{"Bật hiển thị công khai?"}
-    Toggle -->|"Bật"| Public["Hiện trên hồ sơ Ghép bạn\ncho người khác xem"]
-    Toggle -->|"Tắt"| Private["Chỉ mình tenant xem được"]
-    Public --> Revoke["Có thể tắt lại/thu hồi\nbất kỳ lúc nào"]
-
-    style Start fill:#faeeda,stroke:#ba7517
-    style History fill:#faeeda,stroke:#ba7517
-    style Public fill:#eaf3de,stroke:#639922
-    style Private fill:#f1efe8,stroke:#5f5e5a
-    style Revoke fill:#faeeda,stroke:#ba7517
-```
-
-**Nguyên tắc bắt buộc:** mặc định **Tắt** (opt-in, không phải opt-out) — im lặng không phải là đồng ý.
-
-### Flow 4.2 — Hồ sơ cá nhân & cài đặt
+### Sub-Flow 15: Hồ sơ cá nhân & cài đặt
 
 ```mermaid
 flowchart TD
@@ -435,7 +368,7 @@ flowchart TD
     style Notif fill:#faeeda,stroke:#ba7517
 ```
 
-### Flow 4.3 — Thông báo FCM → deep link
+### Sub-Flow 16: Thông báo FCM → deep link
 
 ```mermaid
 flowchart TD
@@ -461,25 +394,24 @@ flowchart TD
 | 1 | Bản đồ + Filter | 1 | Không |
 | 2 | Danh sách kết quả phòng | 1 | Không |
 | 3 | Chi tiết phòng | 1 | Không |
-| 4 | Popup đăng nhập (SĐT + OTP) | 1 | — |
+| 4 | Popup đăng nhập (Email + Mật khẩu) | 1 | — |
 | 5 | Danh sách phòng đã lưu | 1 | Có |
 | 6 | Feed ghép bạn | 2 | Không |
 | 7 | Chi tiết 1 hồ sơ roommate | 2 | Không |
 | 8 | Tạo/sửa hồ sơ cá nhân | 2 | Có |
 | 9 | Danh sách Yêu cầu đã gửi/đã nhận | 2 | Có |
 | 10 | Màn Match thành công | 2 | Có |
-| 11 | Switcher chọn hợp đồng (nếu >1) | 3 | Có |
+| 11 | Danh sách hợp đồng | 3 | Có |
 | 12 | Hub Phòng của tôi | 3 | Có |
 | 13 | Xem hợp đồng | 3 | Có |
-| 14 | Danh sách thành viên + phần góp | 3 | Có |
+| 14 | Danh sách thành viên | 3 | Có |
 | 15 | Danh sách hóa đơn | 3 | Có |
 | 16 | Chi tiết hóa đơn + breakdown (điện/nước/phí định kỳ) + thanh toán | 3 | Có |
 | 17 | Property Chat riêng phòng | 3 | Có |
 | 18 | Property Chat chung tòa | 3 | Có |
-| 19 | Form tạo sự cố (@issue) | 3 | Có |
+| 19 | Form tạo sự cố | 3 | Có |
 | 20 | Chi tiết/theo dõi sự cố | 3 | Có |
-| 21 | Lịch sử uy tín + consent toggle | 4 | Có |
-| 22 | Hồ sơ cá nhân / cài đặt | 4 | Có |
-| 23 | Cài đặt thông báo | 4 | Có |
+| 21 | Hồ sơ cá nhân / cài đặt | 4 | Có |
+| 22 | Cài đặt thông báo | 4 | Có |
 
 ---
