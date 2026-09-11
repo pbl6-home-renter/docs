@@ -1,347 +1,282 @@
-# User Flow — Landlord
+# Landlord User Flow — PBL6
 
-## 1. Landlord Overview
-Chủ trọ (Landlord) là vai trò vận hành trung tâm trên nền tảng Web console (có hỗ trợ Mobile-lite nhận thông báo). Dựa trên nguyên tắc **D29 (Landlord-can-operate-solo)**, Chủ trọ có thể vận hành trọn vẹn toàn bộ vòng đời cho thuê (từ thiết lập tòa/phòng, lập hợp đồng ký tay, chốt số công tơ OCR, xuất hóa đơn QR động đối soát tự động, đến xử lý sự cố và thanh lý) ngay cả khi **người thuê không bao giờ đăng nhập ứng dụng**.
+Tài liệu User Flow hoàn chỉnh cho vai trò **Chủ trọ (Landlord)** trong hệ thống Rentify (PBL6). Luồng thiết kế phản ánh góc nhìn quản trị thực tế của Chủ trọ: phân hệ **Quản lý Phòng** là trung tâm chứa **Menu Tiện ích**, **Sự cố được tách thành Tab riêng**, quy trình thanh toán linh hoạt cho **mọi thành viên trong phòng**.
 
 ---
 
-## 2. Landlord Main User Flow
+## 1. Nguyên Tắc Nghiệp Vụ Cốt Lõi
+
+1. **Góc Nhìn Quản Trị Của Chủ Trọ (Landlord Viewpoint):**
+   * **Tiện ích nằm ở Quản lý Phòng:** Toàn bộ các công cụ vận hành (Quản lý thành viên, Chốt số điện nước, Xuất hóa đơn, Thanh lý phòng) được đặt trực tiếp trong **Menu Tiện ích** của từng Phòng trọ.
+   * **Tab Sự Cố Riêng:** Phân hệ Sự cố được tách thành một **Tab độc lập** trên thanh điều hướng chính giúp Chủ trọ theo dõi, lọc trạng thái và điều phối sửa chữa tập trung cho toàn bộ các tòa nhà.
+2. **Ai Trong Phòng Cũng Có Thể Thanh Toán:**
+   * Hóa đơn và mã VietQR động được tạo cho phòng. **Bất kỳ thành viên nào** trong phòng đều có thể quét QR thanh toán hoặc nộp tiền mặt. Khi có khoản nộp được xác nhận, hệ thống tự động gạch nợ cho phòng.
+3. **Linh Hoạt Thành Viên:**
+   * Hệ thống không ép buộc giới hạn số người cứng. Chủ trọ có thể thêm bao nhiêu thành viên ở ghép tùy ý. Thành viên rời đi cần có sự phê duyệt của Chủ trọ (chủ trọ thực hiện thao tác xóa).
+4. **Trao Đổi Tự Nhiên Trong Chat:**
+   * Trong khung chat, cư dân và chủ trọ trao đổi tự nhiên bằng text, ảnh và file. Mọi báo cáo sự cố được đồng bộ và quản lý tập trung tại Tab Sự Cố riêng.
+5. **Cấu Hình Quét Nợ & Chu Kỳ Quy Về Từng Tháng:**
+   * Chủ trọ tự quyết định ngày chốt điện nước, hạn đóng tiền và bật/tắt lịch bot tự động quét nợ định kỳ để nhắc nhở phòng trọ. Cấu hình có thể设置 ở cấp profile, building hoặc room.
+   * **Chu kỳ thanh toán chuẩn hóa theo từng tháng:** Mọi hóa đơn và khoản thu trên hệ thống đều được quy về từng tháng.
+6. **Gộp Chi Phí Vào Danh Mục Dịch Vụ & Quy Định Chụp/Tải Ảnh Công Tơ:**
+   * Gộp chung toàn bộ chi phí điện, nước, wifi, máy giặt chung, tiền rác... vào một danh mục duy nhất là **Dịch vụ**.
+   * **Cả Chủ trọ và Khách thuê đều dùng được Camera trong hệ thống:** Hai bên đều có thể mở Camera trong app chụp trực tiếp tại chỗ ảnh đồng hồ điện nước.
+   * **Chủ trọ có quyền chụp hoặc tải ảnh từ máy lên:** Chủ trọ có cả 2 quyền: chụp trực tiếp bằng Camera và tải ảnh có sẵn từ bộ nhớ thiết bị. Khách thuê chỉ được chụp trực tiếp qua Camera.
+7. **Hợp Đồng Ký Tay Wet-Sign & Lưu Trữ (Archive):**
+   * Hỗ trợ in mẫu hợp đồng giấy ký sống (wet-sign), sau đó tải file lên lưu trữ.
+   * **Trạng thái chờ dọn dẹp sau Checkout:** Sau khi khách trả phòng, phòng trọ chuyển sang trạng thái chờ dọn dẹp. Chỉ khi chủ trọ hoàn tất và xác nhận sẵn sàng thì phòng mới chuyển sang sẵn sàng cho thuê.
+   * Hội thoại cũ được lưu trữ (Archive) và khởi tạo kênh mới cho khách tiếp theo.
+8. **Tải Lên Bằng Chứng Sở Hữu (Sổ Đỏ / Giấy Tờ Đất) Khi Tạo Dãy Trọ:**
+   * Khi Chủ trọ tạo mới Tòa nhà / Dãy trọ, bắt buộc phải tải lên ảnh chụp giấy tờ pháp lý (Sổ đỏ, Giấy chứng nhận quyền sử dụng đất hoặc Hợp đồng ủy quyền hợp pháp).
+   * Bất động sản mới tạo ở trạng thái chờ Admin duyệt và cần được Admin kiểm tra tay phê duyệt trước khi mở quyền đăng phòng cho thuê công khai.
+9. **Đồng Nhất Vai Trò Quản Lý:**
+   * Thống nhất toàn bộ thành một vai trò duy nhất là **Chủ trọ (Landlord)** sở hữu/quản lý Dãy trọ và các Phòng trọ bên trong, không phân tách phức tạp giữa chủ phòng hay chủ tòa nhà.
+
+---
+
+## 2. Tổng Quan Điều Hướng (Landlord Navigation Hub)
+
 ```mermaid
 flowchart TD
-    StartLL([Bắt đầu: Truy cập Landlord Web Console]) --> LL_Login[Đăng nhập tài khoản Chủ trọ]
-    LL_Login --> LL_AuthCheck{Xác thực & roles chứa 'landlord'?}
+    StartLL([Chủ trọ Đăng Nhập: Email & Mật khẩu]) --> HomeLL[Landlord Dashboard]
+    HomeLL --> MainNav{Chọn phân hệ quản lý}
     
-    LL_AuthCheck -->|Không hợp lệ| LL_AuthError[Báo lỗi đăng nhập]
-    LL_AuthError --> LL_Login
-    
-    LL_AuthCheck -->|Hợp lệ| LL_Dashboard[Landlord Dashboard: Room-map & Doanh thu/Công nợ D20]
-    
-    LL_Dashboard --> LL_Nav{Chọn phân hệ vận hành}
-    
-    LL_Nav -->|1. Quản lý BĐS| Mod_Property[Phân hệ Quản lý Tòa nhà & Phòng trọ]
-    LL_Nav -->|2. Hợp đồng thuê| Mod_Contract[Phân hệ Hợp đồng & Check-in]
-    LL_Nav -->|3. Chốt số điện nước| Mod_Utility[Phân hệ Chốt số Công tơ OCR]
-    LL_Nav -->|4. Hóa đơn & Thu tiền| Mod_Billing[Phân hệ Hóa đơn & Đối soát QR]
-    LL_Nav -->|5. Báo sự cố & Chat| Mod_Issue[Phân hệ Sự cố & Property Chat D24']
-    LL_Nav -->|6. Cài đặt đơn giá & phí| Mod_Settings[Cấu hình UtilityRatePolicy + RecurringFee D30 - preset D31, đổi giá/override - xem §10]
-    LL_Nav -->|7. Đăng xuất| LL_Logout[Đăng xuất hệ thống]
-    
-    Mod_Property --> RetDash1[Về Dashboard] --> LL_Dashboard
-    Mod_Contract --> RetDash2[Về Dashboard] --> LL_Dashboard
-    Mod_Utility --> RetDash3[Về Dashboard] --> LL_Dashboard
-    Mod_Billing --> RetDash4[Về Dashboard] --> LL_Dashboard
-    Mod_Issue --> RetDash5[Về Dashboard] --> LL_Dashboard
-    Mod_Settings --> RetDash6[Về Dashboard] --> LL_Dashboard
-    
-    LL_Logout --> EndLL([Kết thúc phiên làm việc Chủ trọ])
+    MainNav -->|1. Dashboard| TabDash[Xem Doanh thu, Công nợ & Room Map]
+    MainNav -->|2. Quản lý Phòng & BĐS| TabProp[Quản lý Tòa nhà, Phòng trọ & Menu Tiện Ích Phòng]
+    MainNav -->|3. Sự cố riêng| TabIssues[Tab Sự Cố: Quản lý & Điều phối sửa chữa tập trung]
+    MainNav -->|4. Chat Hub| TabChat[Property Chat Hub: Kênh trao đổi cư dân]
+    MainNav -->|5. Cài đặt| TabSettings[Cấu hình Đơn giá & Quét Nợ]
+    MainNav -->|6. Đăng xuất| LogoutLL[Đăng xuất an toàn]
 ```
 
 ---
 
-## 3. Landlord Authentication & Global Config Flow
+## 3. Các Luồng Nghiệp Vụ Chi Tiết (Sub-Flows)
+
+### Sub-Flow 1: Quản Lý Bất Động Sản & Phòng Trọ (Kèm Menu Tiện Ích)
+
+Chủ trọ tạo mới Tòa nhà / Dãy trọ, tải lên bằng chứng quyền sở hữu (Sổ đỏ / Giấy tờ đất) gửi Admin kiểm tra tay, và quản lý danh sách phòng. Trong mỗi phòng tích hợp sẵn **Menu Tiện ích**.
+
 ```mermaid
 flowchart TD
-    StartLLAuth([Bắt đầu]) --> EnterLogin[Nhập Email/SĐT và Mật khẩu]
-    EnterLogin --> SubmitLogin[Gửi yêu cầu đăng nhập]
+    StartProp([Vào Quản lý BĐS & Phòng]) --> ChoosePropAction{Chọn thao tác}
     
-    SubmitLogin --> CheckCreds{Thông tin chính xác?}
-    CheckCreds -->|Sai| ShowErr[Hiển thị lỗi đăng nhập] --> EnterLogin
+    %% Nhánh 1: Thêm Tòa nhà / Dãy trọ (Yêu cầu Sổ đỏ / Giấy tờ đất)
+    ChoosePropAction -->|Thêm Dãy trọ / Tòa nhà| FormBld[Nhập Tên dãy trọ, Địa chỉ, Số tầng]
+    FormBld --> UploadLandProof[Tải lên ảnh Sổ đỏ / Giấy chứng nhận QSDĐ / Giấy ủy quyền]
+    UploadLandProof --> SetDefaultRates[Cấu hình đơn giá điện nước mặc định của Tòa nhà]
+    SetDefaultRates --> SaveBld[Lưu BĐS: Trạng thái Chờ Admin duyệt]
     
-    CheckCreds -->|Đúng| CheckLLRole{Mảng roles có chứa 'landlord'?}
-    CheckLLRole -->|Không| ErrRole[Báo lỗi: Bạn không có quyền Chủ trọ] --> EnterLogin
+    SaveBld --> WaitAdminAudit[Chờ Admin kiểm tra tay giấy tờ đất]
+    WaitAdminAudit -->|Admin Phê duyệt| BldActive[BĐS kích hoạt: Mở khóa cho thuê]
+    WaitAdminAudit -->|Admin Từ chối| BldReject[Báo lỗi kèm lý do từ chối: Yêu cầu bổ sung giấy tờ]
     
-    CheckLLRole -->|Có quyền| CreateSession[Khởi tạo JWT session]
-    CreateSession --> CheckGlobalRate{Đã có Policy đơn giá điện/nước mặc định chưa? D30/D31}
+    %% Nhánh 2: Thêm Phòng trọ
+    ChoosePropAction -->|Thêm Phòng mới| CheckBldActive{Dãy trọ đã được Admin duyệt?}
+    CheckBldActive -->|Chưa duyệt / Bị từ chối| BlockRoomCreate[Báo lỗi: Cần chờ Admin duyệt dãy trọ trước khi thêm phòng]
+    CheckBldActive -->|Đã được Admin duyệt| FormRoom[Chọn Tòa nhà & Tầng]
+    FormRoom --> InputRoomSpecs[Nhập Số phòng, Diện tích, Giá thuê]
+    InputRoomSpecs --> SetOptionalRules[Cài đặt quy tắc tùy chọn: Giới tính, Tiện nghi]
+    SetOptionalRules --> SaveRoom[Tạo phòng: Trạng thái sẵn sàng cho thuê]
     
-    CheckGlobalRate -->|Chưa cấu hình| ShowBanner[Hiện banner nhắc nhẹ: Cấu hình đơn giá để lập hóa đơn - nút Cài đặt ngay / Để sau]
-    ShowBanner -->|Cài đặt ngay| GotoRateSettings[Chuyển tới §10 - Tab Đơn giá mặc định - PickPreset → NewPolicy → DoneGlobal]
-    GotoRateSettings --> DoneCfgGlobal[Lưu LandlordProfile.elec_policy_id / water_policy_id]
-    DoneCfgGlobal --> HideBanner[Ẩn banner - Đã đủ cấu hình]
-    HideBanner --> GoLLDash[Vào Landlord Dashboard]
-    
-    ShowBanner -->|Để sau| GoLLDash
-    CheckGlobalRate -->|Đã thiết lập| GoLLDash
-    GoLLDash --> EndLLAuth([Hoàn thành đăng nhập - banner còn hiển thị nếu chưa cấu hình])
+    %% Mở Tiện ích phòng
+    ChoosePropAction -->|Chọn một Phòng cụ thể| RoomCard[Mở Chi tiết Phòng]
+    RoomCard --> RoomMenu{Phòng có hợp đồng đang hoạt động?}
+    RoomMenu -->|Có| ShowMenu[Menu Tiện Ích Phòng: Thành viên, Chốt số, Hóa đơn, Chat, Thanh lý]
+    RoomMenu -->|Chưa có hợp đồng| ShowBasic[Chỉ hiển thị: Thêm hợp đồng]
 ```
 
 ---
 
-## 4. Landlord Property Management Flow (Building, Room & Constraints)
+### Sub-Flow 2: Tạo Hợp Đồng Thuê & Check-in
+
+Đón khách mới: nhập thông tin người thuê, chọn mẫu hợp đồng (tùy chọn), in hợp đồng giấy ký sống, tải file lên lưu trữ, kích hoạt phòng.
+
 ```mermaid
 flowchart TD
-    StartProp([Vào Quản lý Bất động sản]) --> ViewPropList[Xem danh sách Tòa nhà & Sơ đồ phòng]
+    StartContract([Chọn phòng trống sẵn sàng cho thuê]) --> FormContract[Mở Form Tạo Hợp Đồng]
+    FormContract --> InputTenant[Nhập thông tin người thuê: Họ tên, SĐT, CCCD, Địa chỉ]
+    InputTenant --> InputTerms[Nhập Tiền cọc, Tiền thuê, Ngày bắt đầu & Thời hạn HĐ]
     
-    ViewPropList --> ActionProp{Chọn tác vụ}
+    InputTerms --> ChooseTemplate{Chọn mẫu hợp đồng?}
+    ChooseTemplate -->|Bỏ qua| PrintTemplate[Xuất file mẫu HĐ chuẩn PDF điền sẵn]
+    ChooseTemplate -->|Chọn mẫu| SelectTemplate[Chọn mẫu HĐ có sẵn trong hệ thống] --> PrintTemplate
     
-    ActionProp -->|Thêm Tòa nhà mới| FormBuilding[Nhập Tên, Địa chỉ, Số tầng - đơn giá để NULL kế thừa LandlordProfile]
-    FormBuilding --> SaveBld[Lưu Tòa nhà]
-    SaveBld --> ViewPropList
+    PrintTemplate --> DownloadSign[Người dùng tải file xuống, in, ký tay trên giấy thật]
+    DownloadSign --> UploadSigned[Tải file lên lưu trữ: chấp nhận ảnh, doc hoặc pdf]
     
-    ActionProp -->|Cấu hình phí định kỳ| ConfigFees[Đi vào §10 - Tab Phí định kỳ]
-    ConfigFees --> GotoFeesSettings[Trong luồng §10: PickScopeFee → FillFee → SaveFee → DoneFees]
-    GotoFeesSettings --> BackToProp[Quay lại danh sách Tòa & Sơ đồ phòng]
-    BackToProp --> ViewPropList
-
-    ActionProp -->|Thêm Phòng trọ mới D25| SelectBldForRoom[Chọn Tòa nhà và Tầng]
-    SelectBldForRoom --> InputRoomInfo[Nhập Số phòng, Diện tích, Giá thuê, Tiện nghi]
-    InputRoomInfo --> SetOwner[Gán Room.owner_id = ID của mình NOT NULL]
-    
-    SetOwner --> SetupConstraints[Cấu hình ràng buộc phòng D21: maxOccupancy, genderPolicy, houseRules, budgetRange - đơn giá để NULL kế thừa Tòa/Landlord]
-    
-    SetupConstraints --> SaveRoom[Tạo Phòng - Trạng thái: available]
-    SaveRoom --> UpdateRoomMap[Cập nhật Phòng mới lên Room Map]
-    UpdateRoomMap --> ViewPropList
-    
-    ActionProp -->|Xem/Sửa thông tin phòng| SelectRoom[Chọn phòng trên Room Map]
-    SelectRoom --> ViewRoomDetail[Xem chi tiết phòng, HĐ hiện tại, lịch sử]
-    ViewRoomDetail --> EndProp([Hoàn tất quản lý phòng])
+    UploadSigned --> ActivateContract[HĐ chuyển trạng thái Đang hoạt động - Phòng sang Đang cho thuê]
+    ActivateContract --> CreateRoomChat[Tự động tạo Kênh Chat riêng cho phòng & nạp thành viên]
+    CreateRoomChat --> EndCheckin([Hoàn tất bàn giao phòng])
 ```
 
 ---
 
-## 5. Landlord Rental Contract & Check-in Flow (D18 Wet-Sign & D17 CCCD)
+### Sub-Flow 3: Quản Lý Thành Viên Phòng & Biến Động Giữa Kỳ (Từ Tiện Ích Phòng)
+
+Chủ trọ mở **Menu Tiện ích trong Quản lý Phòng** để thêm/bớt người ở ghép.
+
 ```mermaid
 flowchart TD
-    StartContract([Bắt đầu tạo Hợp đồng thuê]) --> SelectVacantRoom[Chọn phòng trạng thái 'available']
-    SelectVacantRoom --> ClickNewContract[Bấm 'Tạo hợp đồng mới']
+    StartMember([Quản lý Phòng -> Chọn Menu Tiện ích: Thành viên]) --> ViewMembers[Xem danh sách thành viên hiện tại của phòng]
+    ViewMembers --> MemberAction{Chọn thao tác}
     
-    ClickNewContract --> InputTenantInfo[Nhập thông tin Người thuê đại diện: Tên, SĐT]
-    InputTenantInfo --> UploadCCCD[Chụp / Tải ảnh CCCD mặt trước D17]
+    %% Thêm người ở ghép
+    MemberAction -->|Thêm người ở ghép mới| InputNewMember[Nhập Họ tên, SĐT & CCCD người mới]
+    InputNewMember --> AddToSystem[Thêm vào hệ thống & tự động add vào Chat phòng]
+    AddToSystem --> BotMsgNew[Bot thông báo thành viên mới vào kênh Chat] --> ViewMembers
     
-    UploadCCCD --> AI_OCR_CCCD[AI OCR CCCD tự trích xuất thông tin F5.6]
-    AI_OCR_CCCD --> ReviewCCCD{Thông tin OCR chính xác?}
-    ReviewCCCD -->|Cần chỉnh sửa| EditTenantData[Chỉnh sửa thông tin tay]
-    ReviewCCCD -->|Chính xác| FillContractTerms[Nhập tiền cọc, ngày bắt đầu, thời hạn]
-    EditTenantData --> FillContractTerms
-    
-    FillContractTerms --> DeclareVehicles[Nhập số xe gửi tại nhà trọ vehicle_count - dùng cho phí per_vehicle D32]
-    
-    DeclareVehicles --> SharedConfigDecision{Phòng ở ghép nhiều người? D22}
-    SharedConfigDecision -->|Một người thuê| SinglePayment[Cấu hình HĐ đơn lẻ]
-    SharedConfigDecision -->|Nhiều người ở ghép| SelectD22Config{Chọn cấu hình thanh toán D22}
-    
-    SelectD22Config -->|Model a: Đại diện thanh toán| RepPayerConfig[1 HĐ đại diện - Lead trả, tự chia offline]
-    SelectD22Config -->|Model b: Hóa đơn chia sẻ| SharedInvoiceConfig[1 HĐ đại diện - Hệ thống track phần tiền từng người]
-    
-    SinglePayment --> GenContractDraft[Khởi tạo Contract: trạng thái 'draft']
-    RepPayerConfig --> GenContractDraft
-    SharedInvoiceConfig --> GenContractDraft
-    
-    GenContractDraft --> ExportTemplate[Sinh file mẫu HĐ chuẩn Word/PDF điền sẵn D18]
-    ExportTemplate --> PrintContract[In hợp đồng ra giấy]
-    
-    PrintContract --> PhysicalSign[Hai bên ký tay trên giấy thật wet-sign]
-    
-    PhysicalSign --> UploadSignedDoc[Chủ trọ chụp / scan tải file HĐ đã ký lên]
-    
-    UploadSignedDoc --> ValidateUpload{Đã có file ký tải lên?}
-    ValidateUpload -->|Chưa tải file| KeepDraft[HĐ giữ nguyên trạng thái 'draft' - Phòng chưa bàn giao]
-    KeepDraft --> EndContractIncomplete([Chờ tải file ký])
-    
-    ValidateUpload -->|Tải file thành công| ActivateContract[Lưu uploaded_file + signed_at - Contract chuyển 'active']
-    ActivateContract --> CaptureMeterBaseline[Bàn giao phòng: chụp ảnh đồng hồ ĐIỆN và NƯỚC lúc dọn vào - OCR tự đọc; sai/mờ thì sửa tay số thực tế trước khi lưu D35 - MeterReading is_baseline=true previous=0 current=chỉ số OCR/đã sửa reading_date=ngày bàn giao - D34]
-    CaptureMeterBaseline --> UpdateRoomOcc[Phòng chuyển trạng thái: occupied]
-    UpdateRoomOcc --> DashboardSync[Cập nhật Room Map & ghi nhận tiền cọc]
-    DashboardSync --> EndContractSuccess([Hoàn tất bàn giao phòng & HĐ có hiệu lực])
+    %% Xóa thành viên rời đi
+    MemberAction -->|Xóa thành viên rời đi| SelectRemove[Chọn thành viên cần xóa]
+    SelectRemove --> ConfirmRemove{Chủ trọ xác nhận xóa?}
+    ConfirmRemove -->|Hủy| ViewMembers
+    ConfirmRemove -->|Xác nhận| RemoveMember[Xóa thành viên khỏi phòng & rút khỏi Chat]
+    RemoveMember --> BotMsgLeave[Bot thông báo thành viên đã rời phòng] --> ViewMembers
 ```
 
 ---
 
-## 6. Landlord Utility Meter Closing Flow (OCR & Bot Remind)
+### Sub-Flow 4: Chốt Số Điện/Nước & Lập Hóa Đơn (Từ Tiện Ích Phòng)
+
+Hệ thống tích hợp Camera chụp trực tiếp cho cả Chủ trọ và Khách thuê. Chủ trọ có quyền chụp hoặc tải ảnh từ máy lên. Sau khi chốt số, chủ trọ lập hóa đơn và phát hành cho phòng.
+
 ```mermaid
 flowchart TD
-    StartMeter([Đến kỳ chốt số điện nước hàng tháng]) --> SelectBldAndPeriod[Chọn Tòa nhà và Kỳ chốt số period - mặc định kỳ hiện tại]
-    SelectBldAndPeriod --> OpenRoomList[Hiển thị danh sách phòng cần chốt số - tiến độ X/Y]
+    %% Chốt số điện nước
+    StartMeter([Tiện ích Chốt số điện nước]) --> SelectCaptureMethod{Nguồn cung cấp ảnh công tơ}
     
-    OpenRoomList --> SelectTargetRoom[Chọn phòng cần ghi số]
-    SelectTargetRoom --> FetchPrevReading[Lấy chỉ số cũ theo từng loại: kỳ đầu = baseline OCR lúc bàn giao §5 is_baseline=true - hiệu chỉnh tay nếu OCR sai D35; kỳ sau = chỉ số kỳ trước; thay đồng hồ giữa kỳ = baseline mới qua OCR EC1]
-    FetchPrevReading --> ConfirmOneType[Chốt lần lượt: ĐIỆN và NƯỚC - mỗi loại 1 bản ghi]
+    SelectCaptureMethod -->|Chụp trực tiếp bằng Camera trong app| LiveCamera[Camera chụp tại chỗ]
+    SelectCaptureMethod -->|Tải ảnh có sẵn từ máy| UploadFromStorage[Upload từ bộ nhớ/thư viện ảnh]
+    
+    LiveCamera --> RunOCR[AI OCR tự động nhận diện chỉ số từ ảnh công tơ]
+    UploadFromStorage --> RunOCR
+    
+    RunOCR --> ReviewIndex{Chủ trọ kiểm tra kết quả?}
+    ReviewIndex -->|Chưa chuẩn| EditManual[Sửa lại số bằng tay]
+    ReviewIndex -->|Chính xác| ConfirmIndex[Bấm Xác nhận 1 chạm]
+    EditManual --> ConfirmIndex
+    
+    ConfirmIndex --> SaveMeterDB[Lưu bản ghi chốt số kỳ hiện tại]
+    
+    %% Lập hóa đơn
+    SaveMeterDB --> CalcAmount[Tính toán chuẩn hóa theo tháng: Tiền phòng + Danh mục Dịch vụ]
+    CalcAmount --> ReviewBill{Chủ trọ xem trước hóa đơn?}
+    
+    ReviewBill -->|Cần chỉnh sửa| EditBill[Điều chỉnh số liệu] --> CalcAmount
+    ReviewBill -->|Hợp lệ| PublishBill[Bấm Phát hành Hóa đơn Tháng]
+    
+    PublishBill --> GenQR[Sinh mã VietQR động: Gắn mã định danh phòng & đúng số tiền lẻ]
+    GenQR --> BotSendBill[Bot gửi Thẻ Hóa Đơn kèm mã VietQR vào Chat phòng]
+    
+    BotSendBill --> PayMethod{Ai thanh toán & Hình thức nào?}
+    
+    %% Bất kỳ ai quét VietQR
+    PayMethod -->|Bất kỳ thành viên nào trong phòng quét VietQR| BankTransfer[Chuyển khoản qua App Ngân hàng]
+    BankTransfer --> WebhookReconcile[Hệ thống nhận Webhook ngân hàng: Khớp mã định danh]
+    WebhookReconcile --> AutoGachNo[Hệ thống tự động Gạch Nợ phòng: Hóa đơn chuyển Đã thanh toán]
+    
+    %% Bất kỳ ai nộp tiền mặt
+    PayMethod -->|Bất kỳ thành viên nào nộp Tiền mặt| CashPay[Chủ trọ nhận tiền mặt trực tiếp]
+    CashPay --> ConfirmCashBtn[Chủ trọ bấm 'Xác nhận thu tiền mặt' trên hóa đơn]
+    ConfirmCashBtn --> AutoGachNo
+    
+    AutoGachNo --> UpdateFinDash[Cập nhật Doanh thu & Giảm công nợ trên Dashboard]
+```
 
-    ConfirmOneType --> SnapMeterPhoto[Chụp ảnh đồng hồ ĐIỆN hoặc NƯỚC tương ứng]
-    SnapMeterPhoto --> AI_OCR_Meter[AI OCR tự động đọc chỉ số mới từ ảnh F3.3]
-    AI_OCR_Meter --> DisplayReading[Hiển thị chỉ số cũ, số mới, lượng tiêu thụ]
+* **Quy định bảo mật chỉ số:** 
+  * Cả Chủ trọ và Khách thuê đều có thể dùng Camera trong app để chụp trực tiếp đồng hồ điện nước.
+  * Khách thuê **không có quyền tải ảnh từ bộ nhớ máy lên**, chỉ Chủ trọ mới có tính năng này.
+
+* **Nguyên tắc tài chính:**
+  * Gộp chung toàn bộ điện, nước, internet/wifi, máy giặt, vệ sinh/rác vào một nhóm duy nhất là **Dịch vụ**.
+  * Hóa đơn luôn chốt theo chu kỳ hàng tháng trên hệ thống.
+
+---
+
+### Sub-Flow 5: Cấu Hình Chu Kỳ Hóa Đơn & Quét Nợ Tự Động
+
+Chủ trọ cài đặt hạn thanh toán và lịch nhắc nhở tự động. Cấu hình có thể设置 ở 3 cấp: profile (chung), building (theo tòa nhà) hoặc room (theo phòng cụ thể).
+
+```mermaid
+flowchart TD
+    StartDebtConfig([Vào Cài đặt]) --> ChooseLevel{Chọn cấp cấu hình?}
     
-    DisplayReading --> VerifyReading{Chủ trọ kiểm tra chỉ số đọc?}
-    VerifyReading -->|Ảnh mờ / Sai số| FixMethod{Chọn cách xử lý}
-    FixMethod -->|Chụp lại ảnh rõ hơn| RetakePhoto[Chụp lại ảnh đồng hồ]
-    FixMethod -->|Sửa tay đúng số thực tế| ManualEditReading[Chỉnh sửa chỉ số đọc thủ công - lưu kèm ảnh evidence gốc - D35]
-    RetakePhoto --> SnapMeterPhoto
-    ManualEditReading --> OneTapConfirm
-    VerifyReading -->|Chính xác| OneTapConfirm[Bấm 'Xác nhận' 1 chạm]
+    ChooseLevel -->|Profile| ProfileConfig[Cấu hình chung cho toàn bộ]
+    ChooseLevel -->|Building| BuildingConfig[Chọn tòa nhà cần cấu hình]
+    ChooseLevel -->|Room| RoomConfig[Chọn phòng cụ thể cần cấu hình]
     
-    OneTapConfirm --> SaveMeterReading[Tạo MeterReading room + utility_type + period - ảnh evidence riêng từng loại]
-    SaveMeterReading --> BothTypesDone{Đã chốt xong cả ĐIỆN và NƯỚC cho phòng này?}
-    BothTypesDone -->|Chưa| ConfirmOneType
-    BothTypesDone -->|Xong| TriggerAutoInvoice[Auto-trigger D33②: thử tạo Invoice pending cho phòng này - chỉ tạo khi policy/phí resolve OK EC2-EC13 không lỗi]
+    ProfileConfig --> SetDueDate[Cài đặt hạn chót thanh toán]
+    BuildingConfig --> SetDueDate
+    RoomConfig --> SetDueDate
     
-    TriggerAutoInvoice --> BillableOk{Hệ thống tạo được hóa đơn?}
-    BillableOk -->|Tạo được| AddToReadyList[Invoice pending được tạo - phòng vào bảng 'Phòng chốt số xong' của §7 để rà soát & phát hành]
-    BillableOk -->|Không tạo được| BlockReason[Ghi lỗi block ECx cụ thể: EC3 thiếu đơn giá / EC6 thiếu diện tích / EC7 chưa khai thành viên / EC8 chưa kê khai xe / EC13 policy sai / EC17 tổng âm]
-    BlockReason --> FlagFixList[Phòng vào danh sách 'Đã chốt số - chờ sửa lỗi' của §7 - bot nhắc chủ trọ 1 lần kèm lý do + nút hành động vào đúng màn sửa; sửa xong trigger chạy lại tự tạo hóa đơn]
+    SetDueDate --> SetReminder[Cài đặt ngày nhắc nhở: Nhắc đúng hạn vào ngày đó]
+    SetReminder --> SaveSettings[Lưu cấu hình]
     
-    AddToReadyList --> BotCard[Bot gửi Card tổng kết cả 2 loại vào Chat phòng D24']
-    FlagFixList --> BotCard
-    BotCard --> NextRoomCheck{Còn phòng nào chưa chốt trong kỳ?}
-    NextRoomCheck -->|Còn| OpenRoomList
-    NextRoomCheck -->|Xong kỳ này| GotoBilling[Chuyển sang phân hệ Hóa đơn §7 - rà soát & phát hành]
-    GotoBilling --> EndMeter([Hoàn tất chốt số điện nước])
+    SaveSettings --> RunAutoCron[Hệ thống nền chạy quét nợ hàng ngày theo cấu hình]
+    
+    RunAutoCron --> CheckOverdueBills{Có hóa đơn đến hạn / quá hạn?}
+    CheckOverdueBills -->|Không| SleepCron[Kết thúc lượt quét]
+    CheckOverdueBills -->|Có| TriggerBotReminder[Bot tự động nhắc nợ vào Chat phòng + Gửi Push Noti]
 ```
 
 ---
 
-## 7. Landlord Invoice Generation & Auto-Reconciliation Flow (VietQR Động) — D33② auto theo PHÒNG
+### Sub-Flow 6: Quản Lý Sự Cố (Tab Sự Cố Riêng)
+
+Sự cố được quản lý tập trung tại **Tab Sự Cố độc lập** trên thanh điều hướng chính. Cả Khách thuê và Chủ trọ đều có thể tạo sự cố từ Hub Phòng.
+
 ```mermaid
 flowchart TD
-    StartBill([Vào phân hệ Hóa đơn - chọn Tòa nhà và Kỳ lập hóa đơn - mặc định kỳ hiện tại]) --> LoadRoomStates{Các phòng đang active trong kỳ thuộc trạng thái nào?}
-    LoadRoomStates -->|Đủ chỉ số + policy/phí resolve OK| ReadyList[Danh sách 'Phòng chốt số xong' - mỗi dòng 1 phòng Invoice pending auto-tạo D33② - hiển thị tổng tiền, tính theo utility-billing-calculations.md §5–§7]
-    LoadRoomStates -->|Chưa đủ chỉ số điện/nước| GotoMeter[Chuyển sang §6 chụp số công tơ trước]
-    LoadRoomStates -->|Đủ chỉ số nhưng block ECx| FixBlockList[Danh sách 'Đã chốt số - chờ sửa lỗi' kèm mã lỗi - nút hành động: EC3 → §10 thiết lập đơn giá; EC6 → §4 nhập diện tích; EC7 → §5 khai thành viên; EC8 → §5 kê khai xe; EC13 → §10 sửa policy; EC17 → chỉnh giảm trừ]
-    GotoMeter --> EndBillWait([Dừng - khi chốt số xong trigger auto tạo hóa đơn, quay lại danh sách này])
-    FixBlockList -->|Sửa xong lỗi| ReTrigger[Trigger auto chạy lại - tạo Invoice pending nếu hết lỗi D33②]
-    ReTrigger --> ReadyList
-    ReadyList --> ReviewBill[Chủ trọ mở từng phòng để rà soát & điều chỉnh]
-    ReviewBill --> AdjustLines["Điều chỉnh trước duyệt: other_fees dương (phí 1 lần D32) HOẶC ÂM (giảm trừ/miễn giảm D33) - block nếu tổng âm EC17"]
-    AdjustLines --> ReviewInvoice{Chủ trọ duyệt hóa đơn?}
-    ReviewInvoice -->|Hóa đơn sai sót| VoidInvoice[Đánh dấu 'void' - Tạo hóa đơn mới thay thế] --> EndBillFail([Dừng - chờ chủ trọ duyệt tiếp phòng khác])
-    ReviewInvoice -->|Hợp lệ| IssueInvoice[Phát hành hóa đơn]
-
-    IssueInvoice --> GenDynamicQR[Sinh mã VietQR động định danh: tiền phòng lẻ + mã HĐ]
-    GenDynamicQR --> PushToRoomChat[Bot gửi Card hóa đơn + QR vào Chat riêng phòng D24']
-
-    PushToRoomChat --> TenantPaymentBranch{Hình thức khách thanh toán D29}
-
-    TenantPaymentBranch -->|Quét VietQR qua App Ngân hàng bất kỳ| BankTransfer[Khách chuyển khoản ngân hàng]
-    BankTransfer --> WebhookReceived[Hệ thống nhận Webhook thanh toán từ ngân hàng]
-    WebhookReceived --> ReconMatch[Tự động đối soát khớp mã định danh hóa đơn - KHÔNG khớp theo số tiền]
-    ReconMatch --> CheckVoided{Invoice còn hiệu lực? status != 'void'}
-    CheckVoided -->|Đã bị void| VoidWebhook[Ghi nhận Payment + Đánh cờ cảnh báo chủ trọ đối soát - KHÔNG set paid - D33⑤]
-    CheckVoided -->|Hợp lệ| SumPaid[Σ Payment success]
-
-    SumPaid -->|Σ == total| MarkPaidAuto[Invoice: 'paid' - Ghi nhận Payment: success]
-    SumPaid -->|0 < Σ < total| MarkPartial[Invoice: 'partially_paid' - hiển thị 'đã thu X / còn nợ Y' - D33③]
-    SumPaid -->|Σ > total| MarkOverpay[Invoice: 'paid' - ghi đủ số thực nhận, nhắc 'thu dư Z' khi mở tab History - D33]
-
-    TenantPaymentBranch -->|Khách trả tiền mặt| PayCash[Khách đưa tiền mặt cho Chủ trọ]
-    PayCash --> ManualCashEntry[Chủ trọ ghi nhận thủ công: method = cash]
-    ManualCashEntry --> SumPaid
-
-    TenantPaymentBranch -->|Quá hạn chưa trả đủ| CheckOverdue[Hệ thống quét định kỳ Invoice quá due_date còn nợ]
-    CheckOverdue --> MarkOverdue[Chuyển Invoice sang 'overdue' - vẫn giữ số đã thu nếu đã trả một phần]
-    MarkOverdue --> BotRemind[Bot gửi tin nhắn nhắc nợ vào Chat phòng + FCM push]
-
-    MarkPaidAuto --> UpdateRevenueDash[Cập nhật Doanh thu & Công nợ trên Dashboard D20]
-    MarkPartial --> UpdateRevenueDash
-    MarkOverpay --> UpdateRevenueDash
-    MarkOverdue --> UpdateRevenueDash
-    VoidWebhook --> UpdateRevenueDash
-    BotRemind --> UpdateRevenueDash
-    UpdateRevenueDash --> EndBillSuccess([Hoàn tất chu trình - lặp lại cho phòng tiếp theo trong danh sách])
+    StartIssue([Phát sinh sự cố hỏng hóc]) --> ReportChannel{Ai tạo sự cố?}
+    
+    %% Khách thuê tạo từ Hub Phòng
+    ReportChannel -->|Khách thuê| TenantReport[Khách thuê vào Hub Phòng -> Báo sự cố: Mô tả + đính kèm ảnh]
+    TenantReport --> SyncToIssueTab[Xuất hiện tức thì trong Tab Sự Cố riêng]
+    
+    %% Chủ trọ tạo từ Hub Phòng
+    ReportChannel -->|Chủ trọ| LandlordReport[Chủ trọ vào Chi tiết Phòng -> Tạo sự cố: Mô tả + đính kèm ảnh]
+    LandlordReport --> SyncToIssueTab
+    
+    %% Xử lý tại Tab Sự Cố
+    SyncToIssueTab --> ProcessIssue{Chủ trọ cập nhật tiến độ xử lý}
+    ProcessIssue -->|Đang sửa chữa| SetProgress[Chuyển trạng thái: Đang xử lý]
+    ProcessIssue -->|Đã sửa xong| SetResolved[Chuyển trạng thái: Đã hoàn thành]
+    ProcessIssue -->|Hủy sự cố| SetCancelled[Hủy / Xóa bản ghi sự cố]
+    
+    SetProgress --> UpdateChatNoti[Bot cập nhật thông báo tiến độ vào Chat phòng tương ứng]
+    SetResolved --> UpdateChatNoti
+    SetCancelled --> UpdateChatNoti
 ```
 
 ---
 
-## 8. Landlord Issue Handling & Property Chat Flow (D24')
-```mermaid
-flowchart TD
-    StartIssue([Tiếp nhận / Quản lý Sự cố]) --> IssueSource{Nguồn báo cáo sự cố D29}
-    
-    IssueSource -->|Người thuê gửi qua App| TenantMsg[Tenant gõ @issue trong Property Chat]
-    TenantMsg --> BotCreateCard[Bot tạo IssueReport 'open' + gửi card vào chat]
-    
-    IssueSource -->|Tenant báo ngoài app: SĐT/Gặp mặt D29| LandlordManual[Chủ trọ tự tạo IssueReport trên Web]
-    LandlordManual --> CreateIssueRec[Lưu IssueReport: trạng thái 'open']
-    
-    BotCreateCard --> LandlordNotified[Chủ trọ nhận FCM push & xem trong Property Chat]
-    CreateIssueRec --> LandlordNotified
-    
-    LandlordNotified --> AssessIssue{Chủ trọ tiếp nhận xử lý?}
-    AssessIssue -->|Chưa xử lý ngay| KeepOpen[Giữ trạng thái 'open' trong danh sách theo dõi]
-    AssessIssue -->|Bắt đầu sửa chữa| ChangeInProgress[Cập nhật IssueReport: 'in_progress']
-    
-    ChangeInProgress --> RoomMaintCheck{Có cần tạm dừng sử dụng phòng?}
-    RoomMaintCheck -->|Có| SetRoomMaint[Đánh dấu phòng trạng thái 'maintenance']
-    RoomMaintCheck -->|Không| MaintainNormal[Phòng giữ nguyên 'occupied']
-    
-    SetRoomMaint --> DoRepair[Thực hiện sửa chữa & trao đổi tiến độ qua Chat/Kênh ngoài]
-    MaintainNormal --> DoRepair
-    
-    DoRepair --> RepairFinished{Đã sửa chữa xong?}
-    RepairFinished -->|Chưa xong| DoRepair
-    RepairFinished -->|Hoàn thành| MarkResolved[Cập nhật IssueReport: 'resolved']
-    
-    MarkResolved --> RestoreRoom[Khôi phục trạng thái phòng về 'occupied']
-    RestoreRoom --> NotifyChatDone[Hệ thống thông báo kết quả giải quyết sự cố]
-    NotifyChatDone --> EndIssue([Hoàn tất quy trình xử lý sự cố])
-```
+### Sub-Flow 7: Check-out, Thanh Lý Cọc & Lưu Trữ Hội Thoại (Từ Tiện Ích Phòng)
 
----
-
-## 9. Landlord Check-out & Contract Termination Flow
-```mermaid
-flowchart TD
-    StartTerm([Bắt đầu trả phòng & thanh lý]) --> CheckTermType{Loại kết thúc hợp đồng}
-    
-    CheckTermType -->|Hết hạn tự nhiên| AutoExpire[Đến ngày end_date: Contract chuyển 'expired']
-    CheckTermType -->|Chấm dứt trước hạn| ManualTerm[Chủ trọ bấm 'Chấm dứt hợp đồng sớm']
-    ManualTerm --> SetTermStatus[Cập nhật Contract: 'terminated']
-    
-    AutoExpire --> FinalMeterClosing[Chốt số lần cuối — phải đủ cả ĐIỆN và NƯỚC]
-    SetTermStatus --> FinalMeterClosing
-    
-    FinalMeterClosing --> FinalInvoiceGen[Tạo hóa đơn tháng cuối: tiền phòng prorate theo ngày ở thực tế, điện/nước theo lượng thực đọc — xem utility-billing-calculations.md §8]
-    FinalInvoiceGen --> FinalInvoicePay[Khách thanh toán hóa đơn cuối qua QR hoặc tiền mặt]
-    
-    FinalInvoicePay --> SettleDeposit{Xử lý thanh lý tiền cọc}
-    SettleDeposit --> CalcDeduction[Tính toán các khoản cấn trừ nếu có hư hỏng/nợ cước]
-    CalcDeduction --> ExternalDepositSettle[Hoàn trả tiền cọc còn lại thực tế ngoài hệ thống: Tiền mặt/Bank]
-    
-    ExternalDepositSettle --> MarkContractClosed[Chủ trọ đánh dấu 'Đã thanh lý cọc và bàn giao phòng']
-    MarkContractClosed --> FreeRoomStatus[Hệ thống giải phóng phòng: chuyển về 'available']
-    
-    FreeRoomStatus --> RoomMapUpdate[Phòng hiển thị trống trên Room Map & sẵn sàng cho thuê mới]
-    RoomMapUpdate --> EndTermSuccess([Kết thúc trọn vẹn vòng đời hợp đồng])
-```
-
----
-
-## 10. Landlord Utility & Fee Settings Flow (Module 6 — Cài đặt đơn giá & phí)
+Quy trình trả phòng khởi động từ **Menu Tiện ích trong Quản lý Phòng**: chốt số cuối, quyết toán cọc, lưu trữ hội thoại cũ (Archive) và chuyển trạng thái phòng sẵn sàng đón khách mới.
 
 ```mermaid
 flowchart TD
-    StartSettings([Vào Cài đặt đơn giá & phí]) --> Settab{Chọn tab}
-
-    Settab -->|Tab: Đơn giá mặc định| TabGlobal[Danh sách policy LandlordProfile: điện + nước hiện hiệu lực]
-    Settab -->|Tab: Đơn giá theo Tòa/Phòng| TabScope[Chọn Tòa → thiết lập nâng cao override phòng]
-    Settab -->|Tab: Phí định kỳ| TabFees[Danh sách RecurringFee theo tòa/phòng]
-
-    TabGlobal --> ViewGlobal{Đổi giá mặc định?}
-    ViewGlobal -->|Có| PickPreset[Chọn preset D31 cho loại cần đổi - ĐIỆN: Giá theo EVN / 1 số cố định - D33 bỏ khoán đầu người; NƯỚC: Khoán đầu người / Đồng giá theo m³ / Bậc theo vùng]
-    PickPreset --> NewPolicy[App tạo UtilityRatePolicy MỚI có effective_from = kỳ sau - không sửa policy cũ]
-    NewPolicy --> RepointGlobal[Trỏ LandlordProfile.elec_policy_id / water_policy_id sang policy mới]
-    RepointGlobal --> DoneGlobal[Lưu - kỳ sau tính theo giá mới]
-    ViewGlobal -->|Không| DoneGlobal
-
-    TabScope --> PickBld[Chọn Tòa nhà]
-    PickBld --> ScopeAction{Chọn tác vụ}
-    ScopeAction -->|Override cho Tòa| PickPresetBld[Chọn preset cho điện/nước - App tạo policy scope building]
-    PickPresetBld --> SetBldPolicy[Trỏ Building.elec_policy_id / water_policy_id]
-    ScopeAction -->|Override cho từng Phòng| PickRoom[Chọn phòng]
-    PickRoom --> PickPresetRoom[Chọn preset - App tạo policy scope room]
-    PickPresetRoom --> SetRoomPolicy[Trỏ Room.elec_policy_id / water_policy_id]
-    SetBldPolicy --> DoneScope[Áp dụng - NULL trước đó vẫn kế thừa cấp trên]
-    SetRoomPolicy --> DoneScope
-
-    TabFees --> FeeAction{Thao tác phí}
-    FeeAction -->|Thêm phí mới| PickScopeFee[Chọn phạm vi: Áp cả nhà - mặc định mọi tòa/phòng, hoặc Tòa - mọi phòng trong tòa, hoặc Phòng riêng]
-    PickScopeFee --> PickFeeKind[Chọn loại phí: preset mẫu Wifi/QLVH/Gửi xe/Vệ sinh rác/Phí tự nhập]
-    PickFeeKind --> FillFee[Auto điền fee_kind + unit_price mẫu, chủ trọ xác nhận hoặc chỉnh số]
-    FillFee --> FeeEffective[Xác lập effective_from/to]
-    FeeEffective --> SaveFee[Lưu RecurringFee]
-    FeeAction -->|Sửa/Ngưng phí hiện hữu| EditFee[Tạo bản mới hoặc đặt effective_to / is_active=false - không sửa bản đã phát sinh hóa đơn]
-    EditFee --> SaveFee
-    SaveFee --> DoneFees[Cập nhật tức thì cho kỳ chưa lập hóa đơn]
-
-    DoneGlobal --> EndSettings([Hoàn tất cấu hình - áp dụng từ kỳ sau])
-    DoneScope --> EndSettings
-    DoneFees --> EndSettings
+    StartCheckout([Quản lý Phòng -> Chọn Menu Tiện ích: Thanh lý phòng]) --> FinalMeter[Chốt số điện nước lần cuối cùng bằng Camera OCR]
+    
+    FinalMeter --> FinalInvoice[Lập hóa đơn quyết toán: Tính tiền phòng theo số ngày ở thực tế]
+    FinalInvoice --> PayFinalInvoice[Khách thanh toán hóa đơn cuối]
+    
+    PayFinalInvoice --> InspectDeposit{Khấu trừ tiền cọc?}
+    InspectDeposit -->|Có khấu trừ| CalcDeduct[Tiền cọc hoàn lại = Cọc ban đầu - Khấu trừ]
+    InspectDeposit -->|Không khấu trừ| FullDeposit[Hoàn trả 100% tiền cọc]
+    
+    CalcDeduct --> SettleDeposit[Hoàn tiền cọc cho khách]
+    FullDeposit --> SettleDeposit
+    
+    SettleDeposit --> ConfirmRelease[Chủ trọ bấm 'Xác nhận hoàn tất thanh lý & nhận bàn giao']
+    
+    %% Lưu trữ & trạng thái phòng
+    ConfirmRelease --> ArchiveOldChat[Lưu trữ cuộc trò chuyện của HĐ cũ sang trạng thái Read-only]
+    ArchiveOldChat --> SetRoomPending[Phòng chuyển sang trạng thái: Chờ dọn dẹp & chuẩn bị]
+    SetRoomPending --> CleanAndPrep[Chủ trọ dọn dẹp, kiểm tra cơ sở vật chất và chuẩn bị phòng cho thuê mới]
+    CleanAndPrep --> ConfirmReady[Chủ trọ kiểm tra xong và bấm: 'Xác nhận phòng sẵn sàng đón khách']
+    ConfirmReady --> ResetRoomAvail[Phòng chính thức chuyển về trạng thái: Sẵn sàng cho thuê trên Room Map]
+    
+    ResetRoomAvail --> NewTenantCheckin[Khi có khách mới dọn vào ký HĐ mới]
+    NewTenantCheckin --> InitNewChat[Hệ thống tạo kênh chat hoàn toàn mới tinh - Khách mới không thấy dữ liệu khách cũ]
 ```

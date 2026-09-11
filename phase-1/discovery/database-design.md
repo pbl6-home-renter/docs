@@ -1,29 +1,13 @@
 # Thiết kế Cơ sở dữ liệu & Phân quyền theo Role
-**Dự án:** Nền tảng quản lý thuê trọ dài hạn (Landlord Web + Tenant Mobile + AI)
-**Nguồn:** decisions.md (D1–D33), feature-list.md
-**Phạm vi:** MVP theo D9 (dài hạn only), D25 (ownership), D29 (landlord-solo resilience)
-**Tính toán điện/nước/phí:** xem file **`utility-billing-calculations.md`** — tham chiếu đầy đủ 100% case + hướng dẫn code (liên kết chi tiết tại §2.8, §2.9, §2.10, §2.11).
-
----
 
 ## 1. Nguyên tắc thiết kế
 
-1. **Role không dùng RBAC (không có bảng Role/Permission riêng).** `User.roles` là một tập hợp (array/set) enum tĩnh: `landlord | tenant | admin`. Một user có thể vừa là landlord vừa là tenant (D13). Kiểm tra quyền = so khớp role trong JWT + kiểm tra sở hữu (ownership check) ở tầng service, không cần bảng trung gian.
 2. **Ownership là nguồn chân lý phụ, không phải role.** Có role `landlord` chưa đủ — phải là đúng `Room.owner_id` / `Contract.issued_by_user_id` mới được thao tác (D25).
 3. **Trạng thái phòng là derived/cached**, nguồn chân lý là `Contract.status` đang active cho phòng đó, không phải bảng riêng (ghi chú trong decisions.md).
-4. **Không có bảng Manager/Delegation** — bỏ hoàn toàn khỏi MVP (D25).
-5. **Không có bảng liên quan chữ ký điện tử** (e_sign, e_ack, OTP, PIN) — chỉ còn `signature_mode = template_upload` (D18).
-6. **Schema giữ mở cho short-term (Phase 1+)** qua field `Building.property_type`, không redesign (D9).
 7. **Mọi luồng nghiệp vụ phải chạy được với `tenant_user_id = NULL`** trên các bản ghi liên quan tenant thụ động (D29) — xem mục 5.
-8. **Base Entity thống nhất** — mọi bảng đều có `id`, `created_at`, `updated_at`, `deleted_at` (soft-delete), cập nhật `updated_at` tự động bằng trigger — xem mục 2.0.
-9. **Không rải cột `*_url` trên nhiều bảng.** Toàn bộ ảnh/file (avatar, ảnh phòng, ảnh tòa, CCCD, hợp đồng ký, ảnh công tơ, ảnh sự cố, file chat) đi qua **1 bảng `Media` polymorphic duy nhất** — xem mục 2.21.
-10. **Đơn giá & phí định kỳ là cấu hình versioned theo ngày hiệu lực (`UtilityRatePolicy`, `RecurringFee`)** — không phải số cứng trên bảng phòng; hóa đơn **snapshot** cấu hình đã dùng (`utility_breakdown`, `fees_breakdown`) và bất biến sau khi phát hành (xem `utility-billing-calculations.md`). Đóng open question #6 (flat hay bậc thang EVN) theo **D30**.
-
 ---
 
 ## 2. Danh sách Entity
-
-> **Quy ước cột "Ví dụ":** các cột PK (`id`) và FK (`*_id`) **không kèm example value** (uuid do DB sinh; tham chiếu thấy rõ ở tên cột + ràng buộc FK). Ví dụ chỉ minh hoạ dữ liệu nghiệp vụ thật (tên, số, enum, jsonb…). Trong ví dụ jsonb, `<uuid>` = placeholder cho id thật.
 
 ### 2.0 Base Entity (quy ước áp dụng cho mọi bảng bên dưới)
 
