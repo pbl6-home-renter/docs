@@ -65,6 +65,13 @@ Một tài khoản có thể **đi qua nhiều trạng thái cùng lúc hoặc n
 3. **Ghép bạn tách biệt hoàn toàn khỏi việc chọn phòng** — không áp ràng buộc landlord (max người/giới tính/ngân sách) trong giai đoạn tìm bạn; ràng buộc đó chỉ có tác dụng ở bước landlord tạo hợp đồng sau này.
 4. **Property Chat chỉ tồn tại sau khi có hợp đồng active** — trước đó, mọi liên hệ với landlord là qua thông tin liên hệ tĩnh (SĐT).
 5. **Mọi hóa đơn/thanh toán đều có song song 2 kênh:** online (QR/VNPay/MoMo) và tiền mặt (landlord xác nhận thủ công) — không có màn hình nào chỉ có 1 lựa chọn duy nhất.
+6. **Thuê ngắn hạn tính theo ngày:** Hệ thống chỉ tính thời gian thuê theo ngày (mốc 00:00 nửa đêm làm chuẩn chuyển ngày, trước 0h tính là 1 ngày, qua sau 0h tính sang ngày kế tiếp), tuyệt đối không tính theo giờ.
+7. **Bỏ qua khai báo lưu trú/tạm trú:** Ứng dụng không xử lý thủ tục khai báo tạm trú của người dùng.
+8. **Quy tắc khi tài khoản Khách thuê bị khóa:** Khách thuê vẫn được phép đăng nhập để xem và thanh toán hợp đồng/hóa đơn hiện tại nhằm đảm bảo nghĩa vụ tài chính, nhưng bị khóa hoàn toàn chức năng gia hạn hợp đồng, không thể tìm thuê phòng mới hay tạo hợp đồng mới.
+9. **Quy định Camera và tải ảnh công tơ điện nước:** Hệ thống tích hợp Camera chụp trực tiếp tại chỗ cho phép cả Chủ trọ và Khách thuê đều có thể dùng để chụp ảnh đồng hồ điện nước. Tuy nhiên, **Khách thuê KHÔNG ĐƯỢC PHÉP tải ảnh có sẵn từ bộ nhớ thiết bị (thư viện ảnh) lên**, quyền tải ảnh từ máy lên chỉ dành riêng cho Chủ trọ.
+10. **Gộp chi phí vào danh mục Dịch vụ & Quy về từng tháng:** Hóa đơn trên hệ thống gồm `Tiền phòng` và `Dịch vụ` (gộp điện, nước, wifi, máy giặt, rác...). Toàn bộ hóa đơn được chuẩn hóa quy về theo từng tháng.
+11. **Mọi thành viên trong phòng đều có quyền thanh toán:** Bất kỳ ai trong phòng (người đại diện ký hợp đồng hoặc thành viên ở ghép) đều có thể quét mã VietQR động hoặc nộp tiền mặt để hoàn tất thanh toán hóa đơn của phòng.
+12. **Trạng thái phòng sau Checkout:** Sau khi thanh lý hợp đồng và bàn giao phòng, phòng trọ chuyển sang trạng thái chờ dọn dẹp (`pending`), chỉ khi chủ trọ hoàn tất vệ sinh và bấm xác nhận thì phòng mới hiển thị lại `available`.
 
 ### 1.3 Kiến trúc điều hướng tổng thể
 
@@ -300,43 +307,41 @@ flowchart TD
 
 **Liên kết tính phí:** `head_count` (số thành viên trong HĐ) là **nguồn đếm** cho đơn giá **nước** `per_head` (khoán theo người) và phí `per_head` — **điện KHÔNG dùng head_count, tính theo kWh** (D33). Tenant thấy số người đang tính ở chi tiết hóa đơn (xem `utility-billing-calculations.md` §3/§5/§6/§7).
 
-### Flow 3.5 — Hóa đơn (rẽ nhánh theo payment config)
+### Flow 3.5 — Hóa đơn (Thanh toán linh hoạt cho mọi thành viên)
+
+Mọi hóa đơn trên hệ thống được **chuẩn hóa quy về từng tháng**. Mọi thành viên trong phòng (lead hoặc người ở cùng) đều có quyền xem chi tiết và trực tiếp thực hiện thanh toán.
 
 ```mermaid
 flowchart TD
-    Start(["Chạm mục Hóa đơn"]) --> Role{"Vai trò của tenant\ntrong hợp đồng?"}
-    Role -->|"Config (a): không phải lead"| ViewOnly["Thấy toàn bộ hóa đơn\n(read-only, không có nút thanh toán)"]
-    Role -->|"Config (a): là lead"| FullInvoice["Thấy toàn bộ hóa đơn,\ncó nút thanh toán"]
-    Role -->|"Config (b): bất kỳ ai"| ShareInvoice["Thấy đúng phần của mình,\ncó nút thanh toán phần đó"]
-
-    FullInvoice --> Pay1[["Flow 3.6 — Thanh toán"]]
-    ShareInvoice --> Pay1
-    ViewOnly --> NoPay["Chỉ để theo dõi minh bạch\n— không dẫn tới bước thanh toán"]
+    Start(["Chạm mục Hóa đơn"]) --> LoadInvoice["Tải danh sách hóa đơn theo tháng của phòng"]
+    LoadInvoice --> ViewInvoice["Mọi thành viên trong phòng đều xem được toàn bộ hóa đơn\n(Kỳ thanh toán, hạn nộp, Tiền phòng + Dịch vụ)"]
+    ViewInvoice --> ActionPay["Nút 'Thanh toán' hiển thị cho mọi thành viên trong phòng"]
+    ActionPay --> Pay1[["Flow 3.6 — Thanh toán"]]
 
     style Start fill:#faeeda,stroke:#ba7517
-    style ViewOnly fill:#f1efe8,stroke:#5f5e5a
-    style NoPay fill:#f1efe8,stroke:#5f5e5a
-    style FullInvoice fill:#faeeda,stroke:#ba7517
-    style ShareInvoice fill:#faeeda,stroke:#ba7517
+    style LoadInvoice fill:#faeeda,stroke:#ba7517
+    style ViewInvoice fill:#faeeda,stroke:#ba7517
+    style ActionPay fill:#faeeda,stroke:#ba7517
+    style Pay1 fill:#eaf3de,stroke:#639922
 ```
 
-**Lưu ý quan trọng cho thiết kế:** ở config (a), **mọi thành viên đều nhìn thấy hóa đơn** (số tiền, kỳ, hạn thanh toán, chi tiết điện/nước) — chỉ khác ở chỗ **thành viên không phải lead không có nút thanh toán/chuyển khoản** trên màn hình đó (vì tiền vẫn chia offline giữa các thành viên, chỉ lead là người thực sự giao dịch với landlord). Đây là khác biệt về **quyền thao tác**, không phải khác biệt về **quyền xem**.
+**Lưu ý quan trọng:** Không giới hạn riêng người đại diện ký hợp đồng (lead), **bất kỳ thành viên nào trong phòng** cũng có thể thanh toán hóa đơn bằng cách quét mã VietQR động hoặc nộp tiền mặt cho chủ trọ.
 
 ### Flow 3.6 — Thanh toán hóa đơn (online / tiền mặt)
 
 ```mermaid
 flowchart TD
-    Start(["Xem chi tiết 1 hóa đơn"]) --> Detail["Số tiền tổng, kỳ, hạn thanh toán,\nchi tiết từng dòng: tiền phòng + điện + nước (chỉ số cũ → mới → lượng → bậc/đơn giá → thành tiền) + phí định kỳ + phí khác"]
+    Start(["Xem chi tiết 1 hóa đơn tháng"]) --> Detail["Số tiền tổng, kỳ tháng, hạn thanh toán,\nChi tiết: Tiền phòng + Danh mục Dịch vụ (Điện, Nước, Wifi, Rác, Máy giặt)"]
     Detail --> Status{"Trạng thái hóa đơn?"}
-    Status -->|"partially_paid"| PartialNote["Hiển thị 'Đã thu X / còn nợ Y'\nnút thanh toán phần còn lại - D33③"]
-    Status -->|"paid / overpay"| HistoryTab["Khi mở tab History: nhắc 'thu dư Z' / 'đã trả đủ'\n- chỉ nhắc, không tự động hoàn tiền D33"]
+    Status -->|"partially_paid"| PartialNote["Hiển thị 'Đã thu X / còn nợ Y'\nnút thanh toán phần còn lại"]
+    Status -->|"paid / overpay"| HistoryTab["Khi mở tab History: ghi nhận 'Đã thanh toán đủ'"]
     Status -->|"pending / overdue"| Choose{"Chọn kênh thanh toán"}
-    Choose -->|"Online"| QR["Quét QR động /\nVNPay / MoMo"]
-    QR --> Webhook[["Webhook đối soát tự động"]]
-    Webhook --> Paid1["Trạng thái: Đã thanh toán / Đã thu một phần (theo Σ)"]
-    Choose -->|"Tiền mặt"| Cash[/"Trả tiền mặt trực tiếp\ncho landlord"/]
-    Cash --> Confirm[["Landlord xác nhận thủ công"]]
-    Confirm --> Paid2["Trạng thái: Đã thanh toán / Đã thu một phần (theo Σ)"]
+    Choose -->|"Online VietQR"| QR["Quét mã VietQR động định danh phòng"]
+    QR --> Webhook[["Webhook ngân hàng đối soát tự động"]]
+    Webhook --> Paid1["Trạng thái: Đã thanh toán (Gạch nợ cho phòng)"]
+    Choose -->|"Tiền mặt"| Cash[/"Nộp tiền mặt trực tiếp cho chủ trọ"/]
+    Cash --> Confirm[["Chủ trọ xác nhận thu tiền mặt trên hệ thống"]]
+    Confirm --> Paid2["Trạng thái: Đã thanh toán (Gạch nợ cho phòng)"]
 
     style Start fill:#faeeda,stroke:#ba7517
     style Detail fill:#faeeda,stroke:#ba7517
@@ -346,7 +351,7 @@ flowchart TD
     style Cash fill:#f1efe8,stroke:#5f5e5a,stroke-dasharray: 5 5
 ```
 
-**Lưu ý minh bạch phí:** màn chi tiết hóa đơn hiển thị đầy đủ **breakdown** — tiền phòng (có prorate nếu tháng đầu/cuối), điện & nước theo từng bậc/đơn giá với lượng tiêu thụ thực, và các **phí định kỳ** (Wifi, vệ sinh, gửi xe, QLVH...) kèm cách tính (`fee_kind`). Chi tiết cách tính & ví dụ số → `utility-billing-calculations.md`.
+**Lưu ý minh bạch phí:** Màn chi tiết hóa đơn quy về theo từng tháng, hiển thị rõ ràng Tiền phòng và nhóm **Dịch vụ** (trong đó bóc tách chi tiết lượng điện, nước theo chỉ số công tơ do chủ trọ chốt hoặc khách thuê hỗ trợ chụp bằng Camera trong app, cùng các chi phí dịch vụ cố định như Wifi, rác, máy giặt...). Khách thuê chỉ được chụp trực tiếp qua Camera hệ thống, không được tải ảnh có sẵn từ máy lên.
 
 **Nhắc quá hạn:** nếu hóa đơn quá hạn, bot tự động post card nhắc vào Property Chat riêng phòng (xem Flow 3.7) — không có màn hình riêng cho việc này, chỉ là 1 loại card trong chat.
 

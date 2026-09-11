@@ -10,12 +10,19 @@ Tài liệu này mô tả luồng điều hướng dùng chung, cơ chế phân 
    * `User.role` là **Enum đơn lẻ**: `ADMIN` | `LANDLORD` | `TENANT`. Một tài khoản tại một thời điểm chỉ mang đúng một vai trò duy nhất.
    * **Quy tắc bất biến:** Một tài khoản sau khi được đăng ký/khởi tạo **TUYỆT ĐỐI KHÔNG THỂ ĐỔI ROLE** dưới bất kỳ hình thức nào.
    * Không có tính năng đổi vai trò trong ứng dụng hay hệ thống quản trị. Người dùng muốn chuyển đổi mục đích sử dụng (ví dụ: Khách thuê muốn chuyển sang làm Chủ trọ) bắt buộc phải đăng ký tài khoản mới bằng thông tin định danh riêng.
-2. **Cấu trúc Quản trị:**
+2. **Đồng Nhất Vai Trò Quản Trị & Quản Lý:**
    * Hệ thống chỉ có **DUY NHẤT 1 tài khoản Admin** quản trị toàn bộ nền tảng (không phân cấp Super Admin / Sub-Admin).
-3. **Trải nghiệm Không cần đăng nhập (Public / Guest-First Access):**
+   * Thống nhất thành **Chủ trọ (Landlord)** quản lý bất động sản và phòng trọ (không phân tách chủ phòng hay chủ tòa nhà).
+3. **Cơ Chế Khi Tài Khoản Bị Khóa (Account Lock Rules):**
+   * **Khách thuê (Tenant) bị khóa:** Vẫn được phép đăng nhập để xem và thanh toán hóa đơn hợp đồng hiện tại nhằm đảm bảo trách nhiệm tài chính, nhưng bị khóa tính năng gia hạn hợp đồng và không thể tìm thuê phòng mới.
+   * **Chủ trọ (Landlord) bị khóa:** Bị chặn truy cập cổng quản lý, toàn bộ thông tin dãy trọ/phòng bị ẩn khỏi tìm kiếm công khai, các hợp đồng hiện hành chuyển sang trạng thái tạm thời kết thúc (suspended). Khi mở khóa, chủ trọ tự bổ sung lại thông tin phát sinh.
+4. **Quy Tắc Thuê Ngắn Hạn & Bỏ Khai Báo Tạm Trú:**
+   * Thuê ngắn hạn tính theo ngày với mốc chuyển ngày 00:00 (trước 0h tính là 1 ngày, qua 0h tính sang ngày kế tiếp), không hỗ trợ tính theo giờ.
+   * Ứng dụng không xử lý nghiệp vụ khai báo lưu trú/tạm trú của người dùng.
+5. **Trải nghiệm Không cần đăng nhập (Public / Guest-First Access):**
    * Người dùng chưa đăng nhập (khách vãng lai, sinh viên tìm trọ) được tự do truy cập các tính năng khám phá: **Bản đồ phòng trọ**, **Bộ lọc tìm kiếm**, **Xem chi tiết phòng**, **Xem feed tìm bạn ở ghép**.
    * Chỉ khi thực hiện các thao tác định danh (Lưu tin yêu thích, Gửi yêu cầu ghép bạn, Chat, Xem hóa đơn, Ký hợp đồng), hệ thống mới yêu cầu đăng nhập.
-4. **Đăng xuất Đồng bộ (Logout Flow):**
+6. **Đăng xuất Đồng bộ (Logout Flow):**
    * Mọi vai trò đều có nút Đăng xuất rõ ràng để hủy JWT token, xóa local storage, ngắt kết nối WebSocket và đưa ứng dụng về trạng thái Khách vãng lai.
 
 ---
@@ -40,12 +47,17 @@ flowchart TD
     
     SubmitAuth --> ValidateAuth{Thông tin đăng nhập chính xác?}
     ValidateAuth -->|Sai thông tin| ShowAuthErr[Báo lỗi đăng nhập] --> InputCreds
-    ValidateAuth -->|Tài khoản bị khóa isActive=false| ShowLockErr[Báo lỗi: Tài khoản đang bị tạm khóa] --> EndBlocked([Dừng])
     
-    ValidateAuth -->|Hợp lệ| IssueJWT[Hệ thống cấp JWT token chứa User.role enum]
+    ValidateAuth -->|Thông tin đúng| CheckActive{Kiểm tra trạng thái tài khoản isActive?}
+    
+    CheckActive -->|Chủ trọ bị khóa| BlockLL[Báo lỗi: Tài khoản Chủ trọ đang bị khóa - Toàn bộ BĐS tạm ẩn] --> EndBlocked([Dừng])
+    CheckActive -->|Khách thuê bị khóa| IssueRestrictedJWT[Cấp JWT quyền hạn chế: Chỉ xem & thanh toán HĐ hiện tại]
+    CheckActive -->|Hoạt động bình thường| IssueNormalJWT[Cấp JWT đầy đủ quyền hạn theo vai trò]
     
     %% Điều hướng theo Role bất biến
-    IssueJWT --> RouteByRole{User.role enum}
+    IssueNormalJWT --> RouteByRole{User.role enum}
+    IssueRestrictedJWT --> GoTenantRestricted[Vào màn hình Thanh toán HĐ hiện tại - Chặn thuê mới]
+    
     RouteByRole -->|role == ADMIN| GoAdmin[Vào Admin Dashboard Web]
     RouteByRole -->|role == LANDLORD| GoLandlord[Vào Landlord Console Web / Mobile App]
     RouteByRole -->|role == TENANT| GoTenant[Vào Tenant Portal Mobile / Responsive Web]
@@ -54,6 +66,7 @@ flowchart TD
     GoAdmin --> DoLogout[Người dùng chọn Đăng xuất]
     GoLandlord --> DoLogout
     GoTenant --> DoLogout
+    GoTenantRestricted --> DoLogout
     
     DoLogout --> ClearSession[Hủy Token / Xóa Storage / Ngắt Socket]
     ClearSession --> RedirectGuest[Đưa về Màn hình Đăng nhập hoặc Trang khám phá]

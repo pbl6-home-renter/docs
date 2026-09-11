@@ -16,10 +16,22 @@ Tài liệu User Flow hoàn chỉnh cho vai trò **Chủ trọ (Landlord)** tron
    * Hệ thống không ép buộc giới hạn số người cứng. Nếu Chủ trọ không chủ động cài đặt giới hạn số lượng người ở (`maxOccupancy` để trống/không giới hạn), phòng đó có thể thêm bao nhiêu người ở ghép tùy ý.
 4. **Trao Đổi Tự Nhiên (Tag Tên, Tag Phòng — Bỏ Cú Pháp `@issue`):**
    * Bỏ cú pháp lệnh `@issue`. Trong khung chat, cư dân và chủ trọ trao đổi tự nhiên bằng cách **tag tên thành viên (`@tên`) hoặc tag phòng (`@phòng` / `#phòng`)** kèm ảnh hiện trường. Mọi báo cáo sự cố được đồng bộ và quản lý tập trung tại Tab Sự Cố riêng.
-5. **Cấu Hình Quét Nợ Tiền Thuộc Về Chủ Trọ:**
+5. **Cấu Hình Quét Nợ Tiền Thuộc Về Chủ Trọ & Chu Kỳ Quy Về Từng Tháng:**
    * Chủ trọ tự quyết định ngày chốt điện nước, hạn đóng tiền (Due date) và bật/tắt lịch bot tự động quét nợ định kỳ để nhắc nhở phòng trọ.
-6. **Hợp Đồng Ký Tay Wet-Sign (D18) & Lưu Trữ Hội Thoại (Archive):**
-   * Hỗ trợ in mẫu hợp đồng giấy ký sống (wet-sign), chụp ảnh tải lên kích hoạt phòng. Khi trả phòng, hội thoại cũ được lưu trữ (Archive) và khởi tạo kênh mới cho khách tiếp theo.
+   * **Chu kỳ thanh toán chuẩn hóa theo từng tháng:** Mọi hóa đơn và khoản thu trên hệ thống đều được quy về từng tháng. Việc chủ trọ và khách thuê thỏa thuận thu tiền theo chu kỳ nhiều tháng ngoài đời thực là thỏa thuận riêng của hai bên.
+6. **Gộp Chi Phí Vào Danh Mục Dịch Vụ & Quy Định Chụp/Tải Ảnh Công Tơ:**
+   * Gộp chung toàn bộ chi phí điện, nước, wifi, máy giặt chung, tiền rác... vào một danh mục duy nhất là **Dịch vụ**.
+   * **Cả Chủ trọ và Khách thuê đều dùng được Camera trong hệ thống:** Hai bên đều có thể mở Camera trong app chụp trực tiếp tại chỗ ảnh đồng hồ điện nước (hỗ trợ khách thuê chụp gửi chủ trọ).
+   * **Chỉ Chủ trọ mới được phép tải ảnh từ máy lên:** Quyền tải ảnh có sẵn từ bộ nhớ thiết bị/thư viện ảnh là đặc quyền duy nhất của Chủ trọ. Khách thuê không được tải ảnh từ máy lên nhằm ngăn chặn gian lận ảnh cũ.
+7. **Hợp Đồng Ký Tay Wet-Sign (D18), Trạng Thái Pending Dọn Dẹp Sau Checkout & Lưu Trữ (Archive):**
+   * Hỗ trợ in mẫu hợp đồng giấy ký sống (wet-sign), chụp ảnh tải lên kích hoạt phòng.
+   * **Trạng thái Pending sau Checkout:** Sau khi khách trả phòng, phòng trọ sẽ chuyển sang trạng thái chờ dọn dẹp (`pending`) để chủ trọ làm vệ sinh và chuẩn bị phòng. Chỉ khi chủ trọ hoàn tất và xác nhận sẵn sàng thì phòng mới chuyển sang `available`.
+   * Hội thoại cũ được lưu trữ (Archive) và khởi tạo kênh mới cho khách tiếp theo.
+8. **Tải Lên Bằng Chứng Sở Hữu (Sổ Đỏ / Giấy Tờ Đất) Khi Tạo Dãy Trọ:**
+   * Khi Chủ trọ tạo mới Tòa nhà / Dãy trọ, bắt buộc phải tải lên ảnh chụp giấy tờ pháp lý (Sổ đỏ, Giấy chứng nhận quyền sử dụng đất hoặc Hợp đồng ủy quyền hợp pháp).
+   * Bất động sản mới tạo ở trạng thái 'Chờ Admin duyệt' (`PENDING_APPROVAL`) và cần được Admin kiểm tra tay phê duyệt (`ACTIVE`) trước khi mở quyền đăng phòng cho thuê công khai.
+9. **Đồng Nhất Vai Trò Quản Lý:**
+   * Thống nhất toàn bộ thành một vai trò duy nhất là **Chủ trọ (Landlord)** sở hữu/quản lý Dãy trọ và các Phòng trọ bên trong, không phân tách phức tạp giữa chủ phòng hay chủ tòa nhà.
 
 ---
 
@@ -44,20 +56,27 @@ flowchart TD
 
 ### Sub-Flow 1: Quản Lý Bất Động Sản & Phòng Trọ (Kèm Menu Tiện Ích)
 
-Chủ trọ tạo mới Tòa nhà bằng bản đồ định vị kéo thả pin (Map Picker) và quản lý danh sách phòng. Trong mỗi phòng tích hợp sẵn **Menu Tiện ích**.
+Chủ trọ tạo mới Tòa nhà / Dãy trọ bằng bản đồ định vị kéo thả pin (Map Picker), tải lên bằng chứng quyền sở hữu (Sổ đỏ / Giấy tờ đất) gửi Admin kiểm tra tay, và quản lý danh sách phòng. Trong mỗi phòng tích hợp sẵn **Menu Tiện ích**.
 
 ```mermaid
 flowchart TD
     StartProp([Vào Quản lý BĐS & Phòng]) --> ChoosePropAction{Chọn thao tác}
     
-    %% Nhánh 1: Thêm Tòa nhà
-    ChoosePropAction -->|Thêm Tòa nhà| FormBld[Nhập Tên tòa, Địa chỉ, Số tầng]
+    %% Nhánh 1: Thêm Tòa nhà / Dãy trọ (Yêu cầu Sổ đỏ / Giấy tờ đất)
+    ChoosePropAction -->|Thêm Dãy trọ / Tòa nhà| FormBld[Nhập Tên dãy trọ, Địa chỉ, Số tầng]
     FormBld --> PickMap[Kéo thả ghim vị trí trên Bản đồ Map Picker]
-    PickMap --> SetDefaultRates[Cấu hình đơn giá điện nước mặc định của Tòa nhà D16]
-    SetDefaultRates --> SaveBld[Lưu Tòa nhà vào hệ thống]
+    PickMap --> UploadLandProof[Tải lên ảnh Sổ đỏ / Giấy chứng nhận QSDĐ / Giấy ủy quyền]
+    UploadLandProof --> SetDefaultRates[Cấu hình đơn giá điện nước mặc định của Tòa nhà D16]
+    SetDefaultRates --> SaveBld[Lưu BĐS: Trạng thái 'PENDING_APPROVAL']
+    
+    SaveBld --> WaitAdminAudit[Chờ Admin kiểm tra tay giấy tờ đất]
+    WaitAdminAudit -->|Admin Phê duyệt| BldActive[BĐS kích hoạt 'ACTIVE': Mở khóa cho thuê]
+    WaitAdminAudit -->|Admin Từ chối| BldReject[Báo lỗi kèm lý do từ chối: Yêu cầu bổ sung giấy tờ]
     
     %% Nhánh 2: Thêm Phòng trọ
-    ChoosePropAction -->|Thêm Phòng mới D25| FormRoom[Chọn Tòa nhà & Tầng]
+    ChoosePropAction -->|Thêm Phòng mới D25| CheckBldActive{Dãy trọ đã được Admin duyệt?}
+    CheckBldActive -->|Chưa duyệt / Bị từ chối| BlockRoomCreate[Báo lỗi: Cần chờ Admin duyệt dãy trọ trước khi thêm phòng]
+    CheckBldActive -->|Đã kích hoạt ACTIVE| FormRoom[Chọn Tòa nhà & Tầng]
     FormRoom --> InputRoomSpecs[Nhập Số phòng, Diện tích, Giá thuê]
     InputRoomSpecs --> SetOptionalRules[Cài đặt quy tắc tùy chọn: Giới tính, Tiện nghi - maxOccupancy không bắt buộc]
     SetOptionalRules --> SaveRoom[Tạo phòng: Trạng thái 'available']
@@ -121,39 +140,47 @@ flowchart TD
 
 ---
 
-### Sub-Flow 4: Chốt Số Điện/Nước (Từ Tiện Ích Phòng)
+### Sub-Flow 4: Chốt Số Điện/Nước (Từ Tiện Ích Phòng & Kênh Tiếp Nhận Camera)
 
-Chủ trọ mở tiện ích chốt số từ màn hình Quản lý Phòng, chụp ảnh công tơ điện nước và AI OCR bóc tách số liệu.
+Hệ thống tích hợp Camera chụp trực tiếp cho cả Chủ trọ và Khách thuê. Riêng tính năng tải ảnh từ máy lên là đặc quyền duy nhất của Chủ trọ.
 
 ```mermaid
 flowchart TD
-    StartMeter([Quản lý Phòng -> Chọn Menu Tiện ích: Chốt số điện nước]) --> LoadLastIndex[Hệ thống nạp chỉ số cũ kỳ trước]
-    LoadLastIndex --> SnapPhoto[Dùng Camera chụp ảnh đồng hồ Điện & Nước]
-    SnapPhoto --> RunOCR[AI OCR tự động đọc chỉ số mới từ ảnh chụp F3.3]
-    RunOCR --> ReviewIndex{Chủ trọ kiểm tra kết quả?}
+    StartMeter([Tiện ích Chốt số điện nước]) --> SelectCaptureMethod{Nguồn cung cấp ảnh công tơ}
     
+    SelectCaptureMethod -->|Chụp trực tiếp bằng Camera trong app| LiveCamera[Camera chụp tại chỗ: Cả Chủ trọ và Khách thuê đều dùng được]
+    SelectCaptureMethod -->|Tải ảnh có sẵn từ máy| UploadFromStorage[Upload từ bộ nhớ/thư viện ảnh: ĐẶC QUYỀN DUY NHẤT CỦA CHỦ TRỌ]
+    
+    LiveCamera --> RunOCR[AI OCR tự động nhận diện chỉ số từ ảnh công tơ F3.3]
+    UploadFromStorage --> RunOCR
+    
+    RunOCR --> ReviewIndex{Chủ trọ kiểm tra kết quả?}
     ReviewIndex -->|Chưa chuẩn| EditManual[Sửa lại số bằng tay]
     ReviewIndex -->|Chính xác| ConfirmIndex[Bấm Xác nhận 1 chạm]
     EditManual --> ConfirmIndex
     
     ConfirmIndex --> SaveMeterDB[Lưu bản ghi chốt số kỳ hiện tại]
-    SaveMeterDB --> BotPushMeter[Bot gửi Thẻ Chốt Số vào Chat phòng để cư dân cùng nắm]
-    BotPushMeter --> EndMeter([Sẵn sàng xuất hóa đơn])
+    SaveMeterDB --> BotPushMeter[Bot gửi Thẻ Chốt Số vào Chat phòng để cư dân cùng đối soát]
+    BotPushMeter --> EndMeter([Sẵn sàng xuất hóa đơn dịch vụ])
 ```
+
+* **Quy định bảo mật chỉ số:** 
+  - Cả Chủ trọ và Khách thuê đều có thể dùng Camera trong app để chụp trực tiếp đồng hồ điện nước (hỗ trợ trường hợp chủ trọ nhờ người thuê chụp hộ tại phòng).
+  - Khách thuê **không có quyền tải ảnh từ bộ nhớ máy lên**, chỉ Chủ trọ mới có tính năng này để tránh rủi ro gian lận ảnh cũ.
 
 ---
 
-### Sub-Flow 5: Lập Hóa Đơn & Thanh Toán Linh Hoạt (Mọi Thành Viên Đều Trả Được)
+### Sub-Flow 5: Lập Hóa Đơn & Thanh Toán Linh Hoạt (Quy Về Từng Tháng, Gộp Dịch Vụ)
 
-Hóa đơn kèm mã VietQR động được phát hành cho phòng. Bất kỳ ai trong phòng (Lead hoặc thành viên ở ghép) đều có thể quét mã thanh toán hoặc nộp tiền mặt.
+Mọi hóa đơn trên hệ thống được **chuẩn hóa quy về từng tháng** (gồm Tiền phòng + Danh mục Dịch vụ gộp điện, nước, wifi, rác, máy giặt...). Bất kỳ ai trong phòng đều có thể quét mã VietQR động thanh toán hoặc nộp tiền mặt.
 
 ```mermaid
 flowchart TD
-    StartInvoice([Quản lý Phòng -> Chọn Menu Tiện ích: Lập hóa đơn]) --> CalcAmount[Tính toán: Tiền phòng + Điện + Nước + Dịch vụ]
+    StartInvoice([Quản lý Phòng -> Chọn Menu Tiện ích: Lập hóa đơn]) --> CalcAmount[Tính toán chuẩn hóa theo tháng: Tiền phòng + Danh mục Dịch vụ gộp Điện, Nước, Wifi, Rác, Giặt]
     CalcAmount --> ReviewBill{Chủ trọ xem trước hóa đơn?}
     
     ReviewBill -->|Cần chỉnh sửa| EditBill[Điều chỉnh số liệu] --> CalcAmount
-    ReviewBill -->|Hợp lệ| PublishBill[Bấm Phát hành Hóa đơn]
+    ReviewBill -->|Hợp lệ| PublishBill[Bấm Phát hành Hóa đơn Tháng]
     
     PublishBill --> GenQR[Sinh mã VietQR động: Gắn mã định danh phòng & đúng số tiền lẻ]
     GenQR --> BotSendBill[Bot gửi Thẻ Hóa Đơn kèm mã VietQR vào Chat phòng]
@@ -173,6 +200,10 @@ flowchart TD
     AutoGachNo --> BotReceipt[Bot bắn Thẻ Biên Nhận Đã Thanh Toán vào Chat phòng]
     BotReceipt --> UpdateFinDash[Cập nhật Doanh thu & Giảm công nợ trên Dashboard]
 ```
+
+* **Nguyên tắc tài chính:**
+  - Gộp chung toàn bộ điện, nước, internet/wifi, máy giặt, vệ sinh/rác vào một nhóm duy nhất là **Dịch vụ**.
+  - Hóa đơn luôn chốt theo chu kỳ hàng tháng trên hệ thống. Việc chủ trọ thu tiền gộp nhiều tháng ngoài đời thực là thỏa thuận riêng ngoài hệ thống.
 
 ---
 
@@ -265,9 +296,12 @@ flowchart TD
     
     SettleDepositCash --> ConfirmRelease[Chủ trọ bấm 'Xác nhận hoàn tất thanh lý & nhận bàn giao']
     
-    %% Archive Chat & Mở phòng mới
+    %% Archive Chat & Trạng thái Pending dọn dẹp phòng
     ConfirmRelease --> ArchiveOldChat[Lưu trữ cuộc trò chuyện của HĐ cũ sang trạng thái Read-only]
-    ArchiveOldChat --> ResetRoomAvail[Phòng chuyển về trạng thái 'available' trên Room Map]
+    ArchiveOldChat --> SetRoomPending[Phòng chuyển sang trạng thái: 'pending' - Chờ dọn dẹp & chuẩn bị]
+    SetRoomPending --> CleanAndPrep[Chủ trọ dọn dẹp, kiểm tra cơ sở vật chất và chuẩn bị phòng cho thuê mới]
+    CleanAndPrep --> ConfirmReady[Chủ trọ kiểm tra xong và bấm: 'Xác nhận phòng sẵn sàng đón khách']
+    ConfirmReady --> ResetRoomAvail[Phòng chính thức chuyển về trạng thái: 'available' trên Room Map]
     
     ResetRoomAvail --> NewTenantCheckin[Khi có khách mới dọn vào ký HĐ mới]
     NewTenantCheckin --> InitNewChat[Hệ thống tạo kênh chat hoàn toàn mới tinh - Khách mới không thấy dữ liệu khách cũ]
