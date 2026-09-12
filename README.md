@@ -6,7 +6,7 @@ PM owns this folder. Docs are grouped by phase (mirrors `PROJECT_PLAN.md`). Crea
 |-------|--------|-------|------|
 | 0 | `phase-0/` | Market & customer discovery (1-week sprint) | `market-analysis.md`, `product-sketch.md`, `issues/` (7 P0 issues), `discovery/` ([index](phase-0/discovery/README.md)) |
 | 1 | `phase-1/` | Setup + requirements freeze (28/08–09/09) | `business-rules.md`, `issues/` (11 P1 issues), `discovery/` incl. `user_flow/` (per-role SoT cho navigation/UI) |
-| 2 | `phase-2/` | Design (UI structure, API, DB, diagrams) | `*` |
+| 2 | `phase-2/` | Design (W5–6: screen list, wireframe, ERD, API, diagrams) | `issues/` (7 P2 issues), `discovery/` incl. `wire_frame/`, `diagrams/` |
 | 3 | `phase-3/` | Scaffolding + first vertical slice | `*` |
 | 4 | `phase-4/` | Core features | `*` |
 | 5 | `phase-5/` | Hardening, demo & submission | `*` |
