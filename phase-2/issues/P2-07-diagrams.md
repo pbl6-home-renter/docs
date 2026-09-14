@@ -1,8 +1,8 @@
-# P2-06 — Process Diagrams
+# P2-07 — Process Diagrams
 
 **Status:** 🟡 Open
 **Owner:** PM + BE
-**Input:** P2-01, P2-04, P2-05, user_flow/*.md
+**Input:** P2-01, P2-04, P2-05, P2-06, user_flow/*.md
 **Output:** `discovery/diagrams/`
 
 ---
@@ -62,5 +62,5 @@ Chọn 6–8 flow quan trọng nhất:
 - [ ] Sequence diagrams cho 8 flows — mermaid syntax valid
 - [ ] Activity diagrams cho 3 flows — mermaid syntax valid
 - [ ] Mỗi diagram có title + 1 dòng mô tả context
-- [ ] Diagrams nhất quán với user flow + API spec
+- [ ] Diagrams nhất quán với user flow + API conventions (P2-05) + API spec (P2-06)
 - [ ] PM đã review và approve

@@ -8,8 +8,9 @@
 1. Feature → Platform Map (chỉ từ user flow)
 2. Screen List + Sitemap + Wireframe (gộp 1 task)
 3. ERD v1 finalized
-4. API Spec v1 (OpenAPI/Swagger)
-5. Process Diagrams (use case, sequence, activity)
+4. API Conventions (generic patterns)
+5. API Spec v1 (OpenAPI/Swagger)
+6. Process Diagrams (use case, sequence, activity)
 
 ## Flow
 
@@ -22,11 +23,13 @@ P2-03: Screen List + Sitemap + Wireframe
     ↓
 P2-04: ERD v1
     ↓
-P2-05: API Spec (OpenAPI)
+P2-05: API Conventions
     ↓
-P2-06: Process Diagrams
+P2-06: API Spec (OpenAPI)
     ↓
-P2-07: Design Freeze ✓
+P2-07: Process Diagrams
+    ↓
+P2-08: Design Freeze ✓
 ```
 
 ## Output
@@ -36,6 +39,7 @@ P2-07: Design Freeze ✓
 | Feature Platform Map | `discovery/product-platform-map.md` |
 | Screen List + Sitemap + Wireframes | `discovery/wire_frame/` |
 | ERD v1 | `discovery/erd-v1.md` |
+| API Conventions | `discovery/api-conventions.md` |
 | API Spec | `openapi.yaml` (trong `pbl6-backend`) |
 | Diagrams | `discovery/diagrams/` |
 | Decisions | `discovery/decisions.md` |

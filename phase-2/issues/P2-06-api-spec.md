@@ -1,8 +1,8 @@
-# P2-05 — API Spec v1 (OpenAPI/Swagger)
+# P2-06 — API Spec v1 (OpenAPI/Swagger)
 
 **Status:** 🟡 Open
 **Owner:** BE
-**Input:** P2-04 (ERD v1), user_flow/*.md, business-rules
+**Input:** P2-04 (ERD v1), P2-05 (API Conventions), user_flow/*.md, business-rules
 **Output:** `openapi.yaml` trong `pbl6-backend`
 
 ---
@@ -27,9 +27,9 @@ Với mỗi feature có label `PRIMARY` hoặc `co-PRIMARY` trên Web/Mobile:
 ### Bước 2: Design request/response schema
 
 - Request body theo entity fields từ P2-04
-- Response wrap theo format chuẩn (`{ data, meta, error }`)
-- Pagination format (cursor-based hoặc offset)
-- Error response code + message
+- Response wrap theo format chuẩn đã define ở P2-05 (`{ data, meta, error }`)
+- Pagination format theo convention ở P2-05
+- Error response code + message theo convention ở P2-05
 
 ### Bước 3: Write OpenAPI YAML
 
@@ -49,7 +49,7 @@ Với mỗi feature có label `PRIMARY` hoặc `co-PRIMARY` trên Web/Mobile:
 - [ ] File `openapi.yaml` tồn tại trong `pbl6-backend`
 - [ ] Mỗi feature từ P2-01 đều có endpoint(s) tương ứng
 - [ ] Mỗi endpoint có: method, path, request schema, response schema, auth
-- [ ] Error response format chuẩn
+- [ ] Error response format theo P2-05 conventions
 - [ ] YAML syntax valid (dùng swagger-cli validate hoặc tương đương)
 - [ ] Sync sang Apidog thành công
 - [ ] PM đã review (optional nhưng recommended)
