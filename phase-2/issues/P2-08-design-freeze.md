@@ -1,15 +1,15 @@
-# P2-07 — Design Review → Freeze
+# P2-08 — Design Review → Freeze
 
 **Status:** 🟡 Open
 **Owner:** All
-**Input:** P2-01–P2-06
+**Input:** P2-01–P2-07
 **Output:** Design frozen ✓
 
 ---
 
 ## Background
 
-Toàn bộ design artifacts đã hoàn thành (P2-01–P2-06). Cần team review chung → xác nhận không có issue → freeze design trước khi sang Phase 3 (scaffolding + code).
+Toàn bộ design artifacts đã hoàn thành (P2-01–P2-07). Cần team review chung → xác nhận không có issue → freeze design trước khi sang Phase 3 (scaffolding + code).
 
 ## Mục đích
 
@@ -23,10 +23,10 @@ Mỗi member đọc artifacts theo role:
 
 | Role | Review |
 |------|--------|
-| PM | P2-01 (map), P2-02 (sitemap), P2-06 (diagrams), overall consistency |
-| FE | P2-02 (sitemap web), P2-03 (wireframe web), P2-05 (API cho web) |
-| Mobile | P2-02 (sitemap mobile), P2-03 (wireframe mobile), P2-05 (API cho mobile) |
-| BE | P2-04 (ERD), P2-05 (API spec), consistency giữa ERD ↔ API ↔ wireframe |
+| PM | P2-01 (map), P2-02 (sitemap), P2-07 (diagrams), overall consistency |
+| FE | P2-02 (sitemap web), P2-03 (wireframe web), P2-06 (API cho web) |
+| Mobile | P2-02 (sitemap mobile), P2-03 (wireframe mobile), P2-06 (API cho mobile) |
+| BE | P2-04 (ERD), P2-05 (conventions), P2-06 (API spec), consistency giữa ERD ↔ API ↔ wireframe |
 
 ### Bước 2: Group review meeting
 
@@ -41,13 +41,13 @@ Mỗi member đọc artifacts theo role:
 
 ### Bước 4: Update status
 
-- Update `issues/README.md`: P2-01–P2-06 → 🟢 Done
+- Update `issues/README.md`: P2-01–P2-07 → 🟢 Done
 - Ghi design freeze vào `discovery/decisions.md`
 - Update `PROJECT_PLAN.md` nếu cần
 
 ## Definition of Done
 
-- [ ] P2-01–P2-06 tất cả đã 🟢 Done
+- [ ] P2-01–P2-07 tất cả đã 🟢 Done
 - [ ] Group review meeting đã diễn ra
 - [ ] Không có open issue nào chưa resolve
 - [ ] Decision log ghi nhận "Design Frozen"
