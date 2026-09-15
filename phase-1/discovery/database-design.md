@@ -16,7 +16,7 @@
 ### 2.1 User
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
-| phone | varchar(15) | UNIQUE, NOT NULL | định danh chính (VN) | Min length: 10; Max length: 12; Regex: `^0[0-9]{9}$` hoặc `^\+84[0-9]{9}$` | `0901234567` |
+| phone | varchar(12) | UNIQUE, NOT NULL | định danh chính (VN) | Min length: 10; Max length: 12; Regex: `^0[0-9]{9}$` hoặc `^\+84[0-9]{9}$` | `0901234567` |
 | email | varchar | UNIQUE, NOT NULL | | Min length: 5; Max length: 254; Regex: `^[^\s@]+@[^\s@]+\.[^\s@]+$` | `lan@example.com` |
 | password_hash | varchar | NOT NULL | | Min length: 60; Max length: 255 | `$2a$10$N9qo8uLOickgx2ZMRZoMye…` |
 | full_name | varchar | NOT NULL | | Min length: 1; Max length: 254 | `Lê Văn An` |
@@ -37,14 +37,12 @@
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | user_id | uuid | FK→User, UNIQUE, NOT NULL | 1-1, chỉ tồn tại nếu user có role landlord | | |
-| electricity_policy_id | uuid | FK→RatePolicy, **nullable** | **D30** — đơn giá điện mặc định (đáy chuỗi kế thừa); **D32** — NULL = chưa cấu hình, block khi lập hóa đơn (EC3 `RATE_MISSING`), không block ở login | | `NULL` |
-| water_policy_id | uuid | FK→RatePolicy, **nullable** | **D30**, **D32** | | `NULL` |
 > Cấu hình hạn thanh toán/nhắc nợ không lưu trong JSON: dùng `BillingSetting` (§2.11) để kế thừa theo profile → building → room.
 
 ### 2.4 Building
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
-| submitted_by | uuid | FK→User, NOT NULL | landlord tạo và nộp hồ sơ BĐS; **không** là nguồn ownership (D25) | | |
+| landlord_id | uuid | FK→User, NOT NULL | landlord sở hữu | | |
 | name | varchar | NOT NULL | | Min length: 1; Max length: 254 | `Nhà trọ Thanh Xuân` |
 | province | varchar | NOT NULL | tên Tỉnh/TP từ dropdown VN | Min length: 1; Max length: 100 | `Thành phố Hồ Chí Minh` |
 | ward | varchar | NOT NULL | tên Phường/Xã từ dropdown VN | Min length: 1; Max length: 100 | `Phường Bến Nghé` |
@@ -65,7 +63,7 @@
 |---|---|---|---|---|---|
 | building_id | uuid | FK→Building, NOT NULL | | | |
 | floor_number | int | nullable | tầng (1-based) | `> 0` | `2` |
-| owner_id | uuid | FK→User, **NOT NULL** | **D25 — bắt buộc, 1 chủ/phòng** | | |
+| landlord_id | uuid | FK→User, **NOT NULL** | **D25 — bắt buộc, 1 chủ/phòng** | | |
 | name | varchar | NOT NULL | | Min length: 1; Max length: 254 | `P.201` |
 | description | text | nullable | **D21** | Min length: 1; Max length: 500 | `Phòng trọ hiện đại, tiện nghi đầy đủ` |
 | area | decimal | nullable | Area in m²; used by `per_area_m2` fees | `>0` | `18.5` |
@@ -75,7 +73,7 @@
 | rent_price | decimal | NOT NULL | | `>=0`| `3500000` |
 | electricity_policy_id | uuid | FK→RatePolicy, nullable | **D30** — NULL = kế thừa tòa → landlord | | `NULL` |
 | water_policy_id | uuid | FK→RatePolicy, nullable | **D30** | | `override riêng phòng` |
-| room_status | enum (`available`,`occupied`,`cleaning`,`maintenance`) | cached/derived | `occupied` khi có HĐ active; `cleaning` sau checkout đến khi landlord xác nhận sẵn sàng; cache phục vụ dashboard (**D20**) | | `occupied` |
+| room_status | enum (`available`,`occupied`,`maintenance`) | cached/derived | `occupied` khi có HĐ active; | | `occupied` |
 
 > Ảnh phòng (bìa + gallery): `Media(owner_type='room', purpose='cover_photo'|'gallery_photo')`.
 
@@ -83,11 +81,11 @@
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | room_id | uuid | FK→Room, NOT NULL | | | |
+| landlord_id | uuid | FK→User, NOT NULL | | | |
 | tenant_id | uuid | FK→User, **nullable** | nullable để hỗ trợ tenant chưa có account (**D29**); nếu null thì lưu tên/SĐT trực tiếp trên contract | | `NULL` |
 | tenant_name | varchar | nullable | dùng khi tenant không có account | Min length: 1; Max length: 254 | `Trần Văn B` |
 | tenant_phone | varchar | nullable | dùng khi tenant không có account | Min length: 10; Max length: 12; Regex: `^0[0-9]{9}$` hoặc `^\+84[0-9]{9}$` | `0912345678` |
-| contract_status | enum (`draft`,`signed`,`active`,`suspended`,`expired`,`terminated`,`cancelled`) | NOT NULL default `draft` | `suspended` khi landlord bị khóa trong grace period; `cancelled` khi quá hạn hoặc admin/landlord hủy | | `active` |
-| signed_at | timestamp | nullable | | | `2026-09-01T10:00:00Z` |
+| contract_status | enum (`draft`,`signed`,`active`,`suspended`,`expired`,`terminated`) | NOT NULL default `draft` | `suspended` khi landlord bị khóa trong grace period; `terminated` khi quá hạn hoặc admin/landlord hủy | | `active` |
 | deposit_amount | decimal | NOT NULL | số cọc khi ký HĐ; lịch sử trả cọc/điều chỉnh lưu trong Payment | `>=0` | `7000000` |
 | monthly_rent | decimal | NOT NULL | | `>=0`| `3500000` |
 | start_date | date | NOT NULL | | `< end_date` | `2026-09-01` |
@@ -120,7 +118,6 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 | tenant_phone | varchar | nullable | | Min length: 10; Max length: 12; Regex: `^0[0-9]{9}$` hoặc `^\+84[0-9]{9}$` | `0921234567` |
 | joined_at | date | NOT NULL default `current_date` | ngày vào ở; phục vụ số người có hiệu lực theo kỳ | `< left_at` khi `left_at` có giá trị | `2026-09-01` |
 | left_at | date | nullable | không xóa bản ghi khi rời phòng; ngừng quyền chat/tenant portal từ ngày này | `> joined_at` | `NULL` |
-| cccd_ocr_data | jsonb | NOT NULL, default `{}` | **D17/5.6** — số, họ tên, ngày sinh, địa chỉ (OCR MVP; dữ liệu có cấu trúc, không phải file) | | `{"number":"0792…","full_name":"Nguyễn Thị C"}` |
 
 > Ảnh CCCD mặt trước/sau: `Media(owner_type='contract_member', purpose='cccd_front'|'cccd_back')` — **D17**, chụp 1 lần. **`ContractMember` là nguồn đếm `head_count`** cho `rate_kind='per_head'` và `fee_kind='per_head'`; chỉ tính thành viên có `joined_at ≤ period_end` và (`left_at IS NULL` hoặc `left_at ≥ period_start`).
 
@@ -132,11 +129,11 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | landlord_id | uuid | FK→User, NOT NULL | landlord sở hữu policy | | |
-| scope | enum (`landlord`,`building`,`room`) | NOT NULL | cấp áp dụng | | `room` |
+| scope | enum (`building`,`room`) | NOT NULL | cấp áp dụng | | `room` |
 | room_id | uuid | FK→Room, nullable | bắt buộc nếu `scope='room'` | | |
 | building_id | uuid | FK→Building, nullable | bắt buộc nếu `scope='building'` | | `NULL` |
 | name | varchar | NOT NULL | nhãn hiển thị | Min length: 1; Max length: 254 | `Điện EVN`, `Wifi` |
-| type | enum (`electricity`,`water`,`wifi`,`cleaning`,`parking`,`maintenance`,`other`) | NOT NULL | phân loại phí | | `electricity` |
+| type | enum (`electricity`,`water`,`wifi`,`cleaning`,`parking`,`maintenance`) | NOT NULL | phân loại phí | | `electricity` |
 | rate_kind | enum (`flat`,`tiered`,`per_head`,`per_area_m2`,`per_vehicle`) | NOT NULL | cách tính; service reject nếu `type` không hỗ trợ `rate_kind` (vd: `electricity` chỉ `flat`/`tiered`) | | `flat` |
 | unit_price | decimal | nullable | `flat`/`per_head`/`per_area_m2`/`per_vehicle`: đ/unit; `tiered`: NULL (dùng steps) | `>=0`| `80000` |
 | steps | jsonb | nullable | `tiered`: `[{from,to,price}]`, `to=null` = mở ∞ (EVN 6 bậc, bậc 3 TT 25/2018) | | `NULL` |
@@ -151,7 +148,7 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | landlord_id | uuid | FK→User, NOT NULL | landlord sở hữu cấu hình | | |
-| scope | enum (`landlord`,`building`,`room`) | NOT NULL | | | `room` |
+| scope | enum (`building`,`room`) | NOT NULL | | | `room` |
 | building_id | uuid | FK→Building, nullable | bắt buộc khi `scope='building'` | | |
 | room_id | uuid | FK→Room, nullable | bắt buộc khi `scope='room'` | | |
 | due_days | smallint | NOT NULL default 5 | ngày trong tháng chốt hóa đơn | `>= 1; <= 28` | `5` |
@@ -186,11 +183,11 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 | breakdown | jsonb | nullable | snapshot bất biến: điện/nước/phí định kỳ từ RatePolicy;每个item có `type` để phân loại | | `[{"type":"electricity","name":"Điện EVN","qty_kwh":180,"amount":720000}]` |
 | other_fees | jsonb | nullable | phí 1 lần / ngoài lệ (không trong cấu hình). **D33 — cho phép `amount` ÂM = giảm trừ/miễn giảm** (snapshot giữ dấu âm) | | `[{"name":"Vệ sinh lễ","amount":50000}]` |
 | total_amount | decimal | NOT NULL | **= làm tròn tổng** (round-half-up → hàng nghìn), kiểm tra khớp dòng; **≥ 0** (`TOTAL_NEGATIVE` — D33⑥) | `>=0` | `4610000` |
-| invoice_status | enum (`pending`,`partially_paid`,`paid`,`overdue`,`void`) | NOT NULL default `pending` | **D33③ — `partially_paid`** = đã thu được tiền nhưng chưa đủ (Σ success < total); `paid` khi Σ ≥ total; `overdue` khi quá hạn còn thiếu; **không sửa sau khi gửi** — void + tạo mới (audit trail, **D18/D20**) | | `pending` |
+| invoice_status | enum (`pending`,`partially_paid`,`paid`,`overdue`,`cancel`) | NOT NULL default `pending` | **D33③ — `partially_paid`** = đã thu được tiền nhưng chưa đủ (Σ success < total); `paid` khi Σ ≥ total; `overdue` khi quá hạn còn thiếu; **không sửa sau khi gửi** — cancel + tạo mới (audit trail, **D18/D20**) | | `pending` |
 | issued_at | timestamp | nullable | thời điểm **Phát hành** (rời `pending`) — audit D18/D20; `NULL` khi còn pending (D33② auto-sinh chưa phát hành) | | `2026-09-30T20:15:00Z` |
 | note | text | nullable | | | `Tháng nhập cư, prorate từ 15/09` |
 
-> **Cách tính toàn bộ (điện/nước/phí/prorate/làm tròn/block lỗi) → `utility-billing-calculations.md` §2–§11.** UNIQUE **partial** `(contract_id, period) WHERE invoice_status != 'void'` — **D33①** cho phép tạo hóa đơn thay thế sau khi void bản sai (bản cũ giữ audit). **D33② — Invoice pending auto-sinh theo TỪNG PHÒNG** khi phòng đủ 2 MeterReading + policy OK (không batch toàn kỳ). **`issued_at` set khi Phát hành (D37) — check overdue dựa trên `BillingSetting.due_days`, không cần lưu `due_date` riêng.**
+> **Cách tính toàn bộ (điện/nước/phí/prorate/làm tròn/block lỗi) → `utility-billing-calculations.md` §2–§11.** UNIQUE **partial** `(contract_id, period) WHERE invoice_status != 'cancel'` — **D33①** cho phép tạo hóa đơn thay thế sau khi cancel bản sai (bản cũ giữ audit). **D33② — Invoice pending auto-sinh theo TỪNG PHÒNG** khi phòng đủ 2 MeterReading + policy OK (không batch toàn kỳ). **`issued_at` set khi Phát hành (D37) — check overdue dựa trên `BillingSetting.due_days`, không cần lưu `due_date` riêng.**
 
 **DTO — Breakdown items:**
 
@@ -295,18 +292,17 @@ type InvoiceBreakdownItem = ElectricityItem | WaterItem | FeeItem;
 | room_id | uuid | FK→Room, NOT NULL | | | |
 | conversation_id | uuid | FK→Conversation, nullable | | | |
 | reporter_id | uuid | FK→User, **nullable** | null nếu landlord tự tạo thay tenant passive (**D29**) | | `NULL` |
-| issue_status | enum (`open`,`in_progress`,`resolved`,`cancelled`) | NOT NULL default `open` | `cancelled` là hủy sự cố, không hard-delete | | `open` |
+| status | enum (`open`,`in_progress`,`resolved`,`cancelled`) | NOT NULL default `open` | `cancelled` là hủy sự cố, không hard-delete | | `open` |
 | title | varchar | NOT NULL | | Min length: 1; Max length: 255 | `Đèn cháy` |
-| description | text | nullable | | | `Bóng đèn phòng ngủ cháy 2 bóng` |
-| resolved_at | timestamp | nullable | | | `NULL` |
-| resolution_note | text | nullable | | | `NULL` |
+| description | text | nullable | | Min length: 1; Max length: 500 | `Bóng đèn phòng ngủ cháy 2 bóng` |
+| note | text | nullable | | Min length: 1; Max length: 500 | `NULL` |
 | closed_at | timestamptz | nullable | set khi `resolved` hoặc `cancelled` | | |
 
 > Ảnh sự cố: `Media(owner_type='issue_report', purpose='issue_photo')`.
 ### 2.15 Conversation (Chat)
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
-| kind | enum (`room`,`building`,`direct`) | NOT NULL | | | `room` |
+| type | enum (`room`,`building`,`direct`) | NOT NULL | | | `room` |
 | room_id | uuid | FK→Room, nullable | bắt buộc nếu kind=room | | |
 | building_id | uuid | FK→Building, nullable | bắt buộc nếu kind=building | | `NULL` |
 | contract_id | uuid | FK→Contract, nullable | bắt buộc nếu kind=room; mỗi HĐ có một room chat mới | | |
@@ -336,7 +332,6 @@ type InvoiceBreakdownItem = ElectricityItem | WaterItem | FeeItem;
 | sender_id | uuid | FK→User, **nullable** | null = bot | | `NULL` |
 | type | enum (`text`,`image`,`file`,`bot`) | NOT NULL | | | `bot` |
 | content | text | nullable | | | `Đã chốt số điện tháng 09: 180 kWh` |
-| metadata | jsonb | nullable | card payload: `{invoice_id}`, `{issue_report_id}`, `{meter_reading_id}`,... + mention list | | `{"meter_reading_id":"<uuid>"}` |
 
 > File/ảnh đính kèm (khi `type = image|file`): `Media(owner_type='message', purpose='chat_attachment')`.
 
