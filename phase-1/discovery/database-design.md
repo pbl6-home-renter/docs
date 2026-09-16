@@ -91,7 +91,7 @@
 | start_date | date | NOT NULL | | `< end_date` | `2026-09-01` |
 | end_date | date | NOT NULL | | `> start_date` | `2027-08-31` |
 | description | text | nullable | | Min length: 1; Max length: 500 | `Đóng tiền trước ngày 5 hàng tháng…` |
-| vehicle_count | int | **nullable** | **D32** — số xe gửi tại nhà trọ, kê khai lúc tạo/cập nhật HĐ; `NULL` = chưa khai → block phí `per_vehicle` (EC8); `0` = không gửi xe | `>= 0` | `1` |
+
 
 > Mẫu HĐ / file ký: `Media(owner_type='contract', purpose='contract_template'|'contract_signed')` — file ký (`contract_signed`) vẫn là **nguồn chuẩn pháp lý**, `parsed_fields` chỉ hỗ trợ tra cứu.
 
@@ -118,6 +118,7 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 | tenant_phone | varchar | nullable | | Min length: 10; Max length: 12; Regex: `^0[0-9]{9}$` hoặc `^\+84[0-9]{9}$` | `0921234567` |
 | joined_at | date | NOT NULL default `current_date` | ngày vào ở; phục vụ số người có hiệu lực theo kỳ | `< left_at` khi `left_at` có giá trị | `2026-09-01` |
 | left_at | date | nullable | không xóa bản ghi khi rời phòng; ngừng quyền chat/tenant portal từ ngày này | `> joined_at` | `NULL` |
+| vehicle_count | int | **nullable** | **D32** — số xe gửi tại nhà trọ, kê khai lúc tạo/cập nhật HĐ; `NULL` = chưa khai → block phí `per_vehicle` (EC8); `0` = không gửi xe | `>= 0` | `1` |
 
 > Ảnh CCCD mặt trước/sau: `Media(owner_type='contract_member', purpose='cccd_front'|'cccd_back')` — **D17**, chụp 1 lần. **`ContractMember` là nguồn đếm `head_count`** cho `rate_kind='per_head'` và `fee_kind='per_head'`; chỉ tính thành viên có `joined_at ≤ period_end` và (`left_at IS NULL` hoặc `left_at ≥ period_start`).
 
@@ -183,6 +184,7 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 | breakdown | jsonb | nullable | snapshot bất biến: điện/nước/phí định kỳ từ RatePolicy;每个item có `type` để phân loại | | `[{"type":"electricity","name":"Điện EVN","qty_kwh":180,"amount":720000}]` |
 | other_fees | jsonb | nullable | phí 1 lần / ngoài lệ (không trong cấu hình). **D33 — cho phép `amount` ÂM = giảm trừ/miễn giảm** (snapshot giữ dấu âm) | | `[{"name":"Vệ sinh lễ","amount":50000}]` |
 | total_amount | decimal | NOT NULL | **= làm tròn tổng** (round-half-up → hàng nghìn), kiểm tra khớp dòng; **≥ 0** (`TOTAL_NEGATIVE` — D33⑥) | `>=0` | `4610000` |
+| paid_amount | decimal | NOT NULL | số tiền đã nộp hiện tại  | `>=0` | `3500000` |
 | invoice_status | enum (`pending`,`partially_paid`,`paid`,`overdue`,`cancel`) | NOT NULL default `pending` | **D33③ — `partially_paid`** = đã thu được tiền nhưng chưa đủ (Σ success < total); `paid` khi Σ ≥ total; `overdue` khi quá hạn còn thiếu; **không sửa sau khi gửi** — cancel + tạo mới (audit trail, **D18/D20**) | | `pending` |
 | issued_at | timestamp | nullable | thời điểm **Phát hành** (rời `pending`) — audit D18/D20; `NULL` khi còn pending (D33② auto-sinh chưa phát hành) | | `2026-09-30T20:15:00Z` |
 | note | text | nullable | | | `Tháng nhập cư, prorate từ 15/09` |
@@ -303,7 +305,6 @@ type InvoiceBreakdownItem = ElectricityItem | WaterItem | FeeItem;
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | type | enum (`room`,`building`,`direct`) | NOT NULL | | | `room` |
-| room_id | uuid | FK→Room, nullable | bắt buộc nếu kind=room | | |
 | building_id | uuid | FK→Building, nullable | bắt buộc nếu kind=building | | `NULL` |
 | contract_id | uuid | FK→Contract, nullable | bắt buộc nếu kind=room; mỗi HĐ có một room chat mới | | |
 | title | varchar | nullable | tên group chat (optional, cho building chat hoặc future use) | Min length: 1; Max length: 255 | `Chat tòa nhà` |
