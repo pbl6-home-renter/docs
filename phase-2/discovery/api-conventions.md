@@ -2,7 +2,7 @@
 
 > **Trạng thái:** Bản nháp, chờ BE và PM review  
 > **Owner:** BE  
-> **Đầu vào:** P2-04, user flow, `database-design.md`, các quyết định D18, D29, D33–D37  
+> **Đầu vào:** P2-04, user flow, `database-design.md`, `utility-billing-calculations.md`, các quyết định D13, D18, D29, D33–D37
 > **Đầu ra sử dụng:** `openapi.yaml` trong `pbl6-backend` (P2-06)  
 > **Cập nhật:** 2026-09-15
 
@@ -12,16 +12,18 @@ Tài liệu này quy định pattern chung cho REST API NestJS dùng bởi Web R
 
 Các quy ước phải giữ nghiệp vụ đã chốt: tenant không bắt buộc có tài khoản (D29), hợp đồng chỉ có giá trị trong app khi upload file ký tay (D18), hóa đơn sinh theo từng phòng, hỗ trợ thanh toán một phần và void thay vì xóa (D33, D37), và số công tơ luôn có ảnh chứng cứ kể cả khi hiệu chỉnh số OCR (D34, D35).
 
-> **Lưu ý:** `phase-1/business-rules.md` được các issue cũ tham chiếu nhưng hiện không tồn tại trong workspace. Bản nháp này đối chiếu `requirement.md`, decisions Phase 0/1, user flow, database design và `utility-billing-calculations.md`; PM cần xác nhận nguồn thay thế trước khi freeze P2-06.
+> **Nguồn nghiệp vụ thay thế:** `phase-1/business-rules.md` chưa từng được publish nên không dùng làm input cho P2. P2-06 phải đối chiếu `requirement.md`, `phase-0/feature-list.md`, decision logs Phase 0/1, `phase-1/discovery/user_flow/`, `phase-1/discovery/database-design.md` và `phase-1/discovery/utility-billing-calculations.md`. Đây là nguồn thay thế khi viết P2-06; các reference `business-rules.md` còn lại cần được PM cập nhật theo danh sách này.
 
 ## 1. Response Wrapper Format — Định dạng phản hồi chuẩn
 
-Ngoại trừ `204 No Content`, response tải file, và response xác nhận webhook bên thứ ba, mọi response JSON đều có `statusCode` và `message`. Response thành công có thêm `data`.
+Mọi response đều phải trả **HTTP status code**. Ngoại trừ `204 No Content`, response tải file, và response xác nhận webhook bên thứ ba, mọi response **JSON** còn có field `statusCode` và `message`. Response thành công có thêm `data`.
+
+Ba ngoại lệ không dùng JSON wrapper vì: `204` theo HTTP không được có body; response tải file là binary stream cần `Content-Type` và `Content-Disposition`; webhook acknowledgement chỉ trả status/body đúng contract của provider (thường `200` hoặc `204`). Vì vậy chúng không có field JSON `statusCode`/`message`, nhưng vẫn có HTTP status code.
 
 - `statusCode` trùng với HTTP status code.
-- `message` là thông điệp ngắn, an toàn để hiển thị cho người dùng.
+- Với success response, `message` là thông điệp ngắn do lập trình viên đặt theo action (ví dụ `Lấy thông tin phòng thành công.`). Với error response, `message` lấy HTTP reason phrase cố định tương ứng với `statusCode`.
 - `data` chứa một resource, mảng resource hoặc kết quả action khi thành công; response lỗi không có field này.
-- Response list có thêm `pagination`; response lỗi có thêm `errorCode` và `errors`.
+- Response list có thêm `pagination`; response lỗi có thêm `details`.
 - `201 Created` phải có header `Location` trỏ đến resource mới. `200 OK` dùng cho đọc/cập nhật/action đồng bộ. `202 Accepted` chỉ dùng khi OpenAPI mô tả rõ action bất đồng bộ và cách client theo dõi kết quả.
 
 Ví dụ response một resource:
@@ -45,19 +47,17 @@ Ví dụ lỗi validation:
 ```json
 {
   "statusCode": 422,
-  "message": "Một hoặc nhiều trường không hợp lệ.",
-  "errorCode": "VALIDATION_FAILED",
-  "errors": [
+  "message": "Unprocessable Content",
+  "details": [
     {
       "field": "phone",
-      "rule": "matches",
       "message": "Số điện thoại Việt Nam không hợp lệ."
     }
   ]
 }
 ```
 
-Client xử lý logic bằng `errorCode`, không dựa vào `message`. `errors` là mảng chi tiết theo field; nếu lỗi không gắn với field thì trả `[]`. Không trả stack trace, SQL, credential, prompt AI hay dữ liệu CCCD trong response lỗi.
+Client xử lý luồng chung bằng HTTP `statusCode`, không dựa vào `message`. `details` là mảng chi tiết theo field; nếu lỗi không gắn với field thì trả `[]`. Không trả stack trace, SQL, credential, prompt AI hay dữ liệu CCCD trong response lỗi.
 
 ## 2. Pagination — Phân trang
 
@@ -99,33 +99,55 @@ Toàn bộ collection thông thường dùng **offset pagination** để dashboa
 }
 ```
 
-Giá trị `pageNo` hoặc `pageSize` sai trả `422 VALIDATION_FAILED`; không tự âm thầm sửa về giá trị mặc định. Không trộn cursor pagination vào endpoint list v1.
+Giá trị `pageNo` hoặc `pageSize` sai trả `422` cùng validation `details`; không tự âm thầm sửa về giá trị mặc định. Không trộn cursor pagination vào endpoint list v1.
 
 ## 3. Error Codes & Messages — Mã lỗi và thông điệp
 
-`errorCode` có định dạng `DOMAIN_REASON`, viết hoa và dùng dấu gạch dưới. Các mã nghiệp vụ đã có trong billing spec phải giữ nguyên: `READING_MISSING`, `METER_REVERSED`, `RATE_MISSING`, `AREA_MISSING`, `HEADCOUNT_ZERO`, `VEHICLE_COUNT_MISSING`, `TIER_CONFIG_INVALID`, `INVOICE_DUPLICATE`, `INVOICE_VOIDED`, `TOTAL_NEGATIVE`.
+Mọi error response JSON dùng cấu trúc sau (không có `data`):
 
-| HTTP | Khi dùng | Mã ví dụ |
+```json
+{
+  "statusCode": 422,
+  "message": "Unprocessable Content",
+  "details": [
+    {
+      "field": "otherFees[0].amount",
+      "message": "Số tiền phải là số nguyên VND."
+    }
+  ]
+}
+```
+
+- `statusCode` là HTTP status code và là mã lỗi chuẩn của API.
+- `message` lấy đúng HTTP reason phrase tương ứng với `statusCode`; ví dụ `400` → `Bad Request`, `401` → `Unauthorized`, `403` → `Forbidden`, `404` → `Not Found`, `409` → `Conflict`, `422` → `Unprocessable Content`, `429` → `Too Many Requests`, `500` → `Internal Server Error`. Client không rẽ nhánh logic dựa vào message.
+- `details` luôn là mảng. Mỗi validation error có `field` (JSON path theo camelCase, có index mảng khi cần) và `message`. Với lỗi không gắn field như `401`, `403`, `404`, `409` hoặc `500`, trả `details: []`.
+- Không trả `rejectedValue`, stack trace, SQL, credential, prompt AI hay dữ liệu CCCD trong `details`.
+
+| HTTP status | Error `message` | Khi dùng |
 |---|---|---|
-| `200` | Đọc, cập nhật hoặc action đồng bộ thành công | — |
-| `201` | Tạo resource thành công | — |
-| `202` | Đã nhận action bất đồng bộ | — |
-| `204` | Thành công nhưng không có body | — |
-| `400` | JSON/header/media type sai cú pháp | `REQUEST_MALFORMED` |
-| `401` | Thiếu, hết hạn hoặc token không hợp lệ | `AUTH_UNAUTHENTICATED` |
-| `403` | Đã xác thực nhưng không được làm action | `AUTH_FORBIDDEN` |
-| `404` | Không tồn tại hoặc không có quyền nhìn thấy resource | `RESOURCE_NOT_FOUND` |
-| `409` | Trùng resource, state conflict, tái dùng idempotency key sai | `RESOURCE_CONFLICT` |
-| `422` | Body hợp lệ cú pháp nhưng vi phạm validate/nghiệp vụ | `VALIDATION_FAILED`, `RATE_MISSING` |
-| `429` | Vượt rate limit | `RATE_LIMITED` |
-| `500` | Lỗi không mong đợi phía server | `INTERNAL_ERROR` |
+| `200` | — (success message do endpoint đặt) | Đọc, cập nhật hoặc action đồng bộ thành công |
+| `201` | — (success message do endpoint đặt) | Tạo resource thành công; kèm `Location` |
+| `202` | — (success message do endpoint đặt) | Đã nhận action bất đồng bộ; OpenAPI nêu cách theo dõi |
+| `204` | — | Thành công nhưng không có body |
+| `400` | `Bad Request` | JSON, query, header hoặc media type sai cú pháp |
+| `401` | `Unauthorized` | Thiếu, hết hạn hoặc token không hợp lệ |
+| `403` | `Forbidden` | Đã xác thực nhưng không có quyền thực hiện action |
+| `404` | `Not Found` | Resource không tồn tại hoặc bị ẩn vì ownership |
+| `409` | `Conflict` | Trùng resource, conflict state hoặc tái dùng idempotency key với payload khác |
+| `422` | `Unprocessable Content` | Request đúng cú pháp nhưng lỗi validation hoặc vi phạm rule nghiệp vụ |
+| `429` | `Too Many Requests` | Vượt rate limit |
+| `500` | `Internal Server Error` | Lỗi không mong đợi phía server |
 
-`errors` là mảng lỗi theo field khi có thể trả an toàn; không có chi tiết thì trả mảng rỗng.
+Validation dùng `422` và trả **tất cả** lỗi field có thể kiểm tra an toàn trong một request. Ví dụ: field thiếu, format sai, vượt phạm vi hoặc sai enum đều có một phần tử tương ứng trong `details`. Rule nghiệp vụ không gắn với một field cũng dùng `422`, nhưng trả `details: []`; `message` vẫn là `Unprocessable Content`.
 
 ## 4. Authentication & Authorization — Xác thực và phân quyền
 
 - Endpoint bảo vệ dùng `Authorization: Bearer <access-token>` và OpenAPI scheme `http`/`bearer`, `bearerFormat: JWT`.
 - JWT chỉ chứa: `sub` (UUID user), `role` (`tenant`, `landlord`, `admin`), `iat`, `exp`. Không đưa mật khẩu, CCCD, URL media hoặc profile thay đổi thường xuyên vào token.
+- **Access token TTL là 15 phút.** Khi hết hạn, client gọi `POST /api/v1/auth/refresh` một lần trước khi yêu cầu đăng nhập lại; token access không được lưu lâu dài ở browser storage.
+- **Refresh strategy:** login và refresh tạo refresh token opaque ngẫu nhiên; token có lifetime cố định **30 ngày kể từ lúc login**. Backend chỉ lưu hash của token, session/family và thời điểm hết hạn. `POST /auth/refresh` chỉ nhận refresh token qua cookie, vô hiệu token cũ ngay khi dùng và cấp access token + refresh token mới, nhưng không kéo dài mốc hết hạn 30 ngày ban đầu.
+- Refresh token được gửi trong cookie `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/api/v1/auth`; không trả trong JSON, log hoặc error response. Mobile lưu cookie này qua cookie jar được mã hóa của ứng dụng; access token chỉ giữ trong memory hoặc secure storage ngắn hạn.
+- Dùng lại refresh token đã bị rotate, token hết hạn hoặc session đã revoke đều trả `401`; backend revoke toàn bộ refresh-token family và client phải xóa session cục bộ rồi đăng nhập lại. Logout revoke refresh session hiện tại và xóa cookie.
 - `PUBLIC` là mức truy cập endpoint, **không** là role lưu trong database. Endpoint public chỉ trả field an toàn của phòng/BĐS đã được duyệt.
 - Mỗi user chỉ có đúng một role bất biến theo D13. Không có role hierarchy kế thừa quyền: quyền là tổ hợp của role, action và ownership.
 - RBAC luôn đi kèm ownership check: landlord chỉ thao tác dữ liệu thuộc quyền quản lý; tenant chỉ xem/thanh toán hợp đồng liên kết với mình; admin có quyền được khai báo rõ ở từng endpoint.
@@ -141,9 +163,9 @@ NestJS DTO validation là nguồn kiểm tra phía server. Từ chối field JSO
 | Chuỗi | Trim khoảng trắng đầu/cuối nếu khoảng trắng không có nghĩa; min/max length nằm trong OpenAPI endpoint. |
 | Date | `YYYY-MM-DD`; không dùng format theo locale. Billing period là `YYYY-MM`. |
 | Timestamp | ISO 8601 UTC với hậu tố `Z`, ví dụ `2026-09-15T03:00:00.000Z`. |
-| Tiền | Mọi tiền và đơn giá VND gửi/nhận qua API là số nguyên JSON, không dùng float. `otherFees[].amount` được âm chỉ cho giảm trừ hợp lệ theo D33; tổng hóa đơn không âm. Backend tính bằng PostgreSQL `numeric`/Decimal. |
+| Tiền | **API contract:** mọi giá trị tiền/đơn giá VND là JSON integer, ví dụ `"rentPrice": 3500000`; không nhận số lẻ, float hoặc chuỗi tiền. **Dấu âm:** chỉ `otherFees[].amount` được âm, với nghĩa giảm trừ/miễn giảm (ví dụ `-100000`). Tiền thuê, tiền cọc, đơn giá, payment và `totalAmount` phải `>= 0`; nếu giảm trừ làm tổng hóa đơn âm thì backend từ chối tạo invoice, tổng bằng `0` vẫn hợp lệ (D33). **Tính toán:** client không tự tính hoặc làm tròn tiền. Backend dùng PostgreSQL `numeric`/Decimal, không dùng JavaScript float/double, rồi trả kết quả cuối cùng là VND nguyên. Quy tắc tính và làm tròn invoice theo `utility-billing-calculations.md`. |
 | Số đo thập phân | Chỉ số công tơ, diện tích và số lượng thập phân dùng JSON string, ví dụ `"1380.5"`, `"18.5"`, để không mất chính xác qua JavaScript/Kotlin. |
-| Số điện thoại | Chấp nhận `0xxxxxxxxx` hoặc `+84xxxxxxxxx`; chuẩn hóa lưu và trả về là `+84xxxxxxxxx`. Endpoint public không trả số điện thoại. |
+| Số điện thoại | Chấp nhận `0xxxxxxxxx` hoặc `+84xxxxxxxxx`; chuẩn hóa bằng cách đổi tiền tố `+84` thành `0`, sau đó lưu và trả về dạng `0xxxxxxxxx` (ví dụ `+84912345678` → `0912345678`). Endpoint public không trả số điện thoại. |
 | Boolean / enum | Dùng JSON boolean và enum đã khai báo, không dùng `0`/`1` hay display label. |
 
 Upload file dùng `multipart/form-data`, với một part `file` và metadata được endpoint yêu cầu (ví dụ `purpose`). MVP chỉ chấp nhận `image/jpeg`, `image/png`, `image/webp`, `application/pdf`; OpenAPI từng endpoint phải nêu giới hạn kích thước. Response trả resource `Media` theo envelope chuẩn; không lộ storage path, URL public vĩnh viễn hay media nhạy cảm.
@@ -173,10 +195,21 @@ UUID dùng dạng canonical lowercase. URL không có trailing slash. Resource k
 
 ## 8. Rate Limiting — Giới hạn tần suất
 
-- Hạn mức là cấu hình deployment, không hard-code một con số trong OpenAPI nếu hạ tầng chưa enforce được.
-- Có thể áp policy khác nhau cho auth, upload, payment và public search.
-- Khi áp dụng, response có `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset`.
-- Khi vượt hạn mức, trả `429`, header `Retry-After` và error envelope chuẩn với mã `RATE_LIMITED`.
+Con số cụ thể là **cấu hình deployment** (không hard-code trong OpenAPI); BE chịu trách nhiệm quyết định và ghi vào `infrastructure/rate-limit.md` trước khi P2-06 freeze.
+
+| Nhóm endpoint | Hạn mức tham chiếu (có thể điều chỉnh) |
+|---|---|
+| Auth (login, register, refresh) | 10 req / phút / IP |
+| Upload (ảnh, hợp đồng) | 20 req / phút / user |
+| Payment khởi tạo | 5 req / phút / user |
+| Public search / listing | 60 req / phút / IP |
+| Các endpoint khác (authenticated) | 120 req / phút / user |
+
+- Policy có thể khác nhau cho từng nhóm (auth, upload, payment, public search).
+- Khi áp dụng, response trả thêm header: `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset`.
+- Khi vượt hạn mức: `429 Too Many Requests`, header `Retry-After` và error envelope chuẩn.
+
+> **Deferred:** Con số trên là tham chiếu ban đầu. BE phải xác nhận và cập nhật trước P2-06 freeze dựa trên hạ tầng thực tế.
 
 ## 9. Timestamp & Timezone — Thời gian và múi giờ
 
@@ -187,34 +220,38 @@ UUID dùng dạng canonical lowercase. URL không có trailing slash. Resource k
 
 ## 10. Null vs Omitted Fields — `null` và field bị omit
 
-- Field optional trong **request**: omit nghĩa là không gửi giá trị. Với `PATCH`, omit nghĩa là không thay đổi field.
-- Field nullable trong **response**: trả `null` khi giá trị được biết là chưa có/không áp dụng, ví dụ `tenantId: null` theo D29 hoặc `issuedAt: null` khi invoice `pending`.
-- Không omit field response chỉ để biểu diễn `null`; field phải được mô tả nullable rõ trong OpenAPI.
-- Không dùng `null` để xóa field bắt buộc. Endpoint cho phép clear field phải khai báo nullable và validate nghiệp vụ riêng.
+- **Ưu tiên omit, không trả `null`.** Field không có giá trị, chưa phát sinh hoặc không áp dụng không xuất hiện trong response. Ví dụ invoice `pending` omit `issuedAt`; hợp đồng không liên kết tenant account theo D29 omit `tenantId`.
+- Field optional trong **request**: omit nghĩa là không gửi giá trị. Với `PATCH`, omit nghĩa là không thay đổi field. `null` không được dùng để thay cho omit và bị từ chối trừ khi OpenAPI của endpoint có ngoại lệ được phê duyệt rõ.
+- Không dùng `null` để xóa field. Endpoint cần clear một giá trị phải có action/domain input tường minh và rule nghiệp vụ riêng; không suy diễn “omit” là yêu cầu xóa.
 
 ## 11. Filtering & Sorting — Lọc và sắp xếp
 
 | Query param | Quy ước | Default |
 |---|---|---|
-| `sort` | Một field API được endpoint cho phép sort | `createdAt` nếu áp dụng |
-| `order` | `asc` hoặc `desc` | `desc` |
 | Filter | Query param camelCase theo từng resource | `status`, `buildingId`, `createdFrom`, `createdTo`, `q` |
+| `sort` | Một hoặc nhiều field được endpoint cho phép, theo cú pháp `field[:direction]`, ngăn cách bằng dấu phẩy; bỏ direction nghĩa là `asc` | `createdAt:asc` nếu áp dụng |
+
 
 - Multi-value enum filter dùng dấu phẩy: `status=pending,overdue`.
-- OpenAPI từng endpoint phải liệt kê field filter/sort hỗ trợ. Filter hoặc sort không hợp lệ trả `422 VALIDATION_FAILED`, không bị bỏ qua âm thầm.
-- Server dùng `id` làm tie-breaker cuối để thứ tự ổn định qua các trang.
+- Multi-field sort có thể khai báo direction cho từng field, ví dụ `sort=status,createdAt:desc`. Field đứng trước có độ ưu tiên cao hơn; `status` không ghi direction nên sắp xếp tăng dần, còn `createdAt` giảm dần trong từng nhóm status. Không dùng query param `order` riêng.
+- OpenAPI từng endpoint phải liệt kê field filter/sort hỗ trợ. Field, direction hoặc cú pháp sort không hợp lệ trả `422` cùng validation `details`, không bị bỏ qua âm thầm.
+- Server thêm `id:asc` làm tie-breaker cuối nếu client chưa khai báo `id`, để thứ tự ổn định qua các trang.
 
 ## 12. Soft Delete vs Hard Delete — Xóa mềm và xóa cứng
 
-Không cho client hard-delete dữ liệu tài chính, pháp lý, audit hoặc bằng chứng. Dùng action nghiệp vụ thay vì để client ép state tùy ý.
+Không cho client hard-delete dữ liệu tài chính, pháp lý, audit hoặc bằng chứng. **Soft delete** nghĩa là record vẫn được giữ để audit/retention nhưng bị ẩn khỏi kết quả thông thường; domain có thể biểu diễn bằng `deletedAt` hoặc lifecycle status.
 
 | Nhóm resource | Quy ước v1 |
 |---|---|
-| Invoice | Không `DELETE`; dùng action `void`. Invoice cũ, snapshot, payment và liên kết invoice thay thế được giữ lại (D33, D37). |
-| Payment, AuditLog, MeterReading, hợp đồng đã ký, ảnh OCR/evidence | Không có public delete. Giữ để audit/chứng cứ; chỉnh sửa qua record hoặc action được nghiệp vụ cho phép. |
-| Contract, Building, Room, policy/fee, BillingSetting, IssueReport, Conversation, Message, RoommateProfile, MatchRequest, Notification | Không hard-delete endpoint. Dùng lifecycle action như `terminate`, `deactivate`, `close`, `cancel`, `leave`, `dismiss` hoặc soft-delete/retention process của domain. |
+| Invoice | **Soft delete** qua action `cancel`; giữ snapshot, payment và liên kết invoice thay thế (D33, D37). |
+| Payment, AuditLog, MeterReading, hợp đồng đã ký, ảnh OCR/evidence | **Soft delete / retention**; không có public `DELETE`. |
+| Contract, Building, Room, policy/fee, BillingSetting, IssueReport, Conversation, Message, RoommateProfile, MatchRequest, Notification | **Soft delete** qua lifecycle action như `terminate`, `deactivate`, `close`, `cancel`, `leave`, `dismiss`. |
+| LandlordProfile, ContractMember, NotificationPreference, Media | **Soft delete / retention**; không có public hard delete. |
+| ConversationMember, MessageMention và các bảng join/snapshot nội bộ | **Soft delete / retention** nội bộ; không có endpoint CRUD/`DELETE` trực tiếp. |
 | FavoriteRoom, PushDevice | User được xóa record của chính mình; có thể hard delete vì không mang giá trị tài chính/pháp lý/audit. |
-| User | Không mặc định có self-service hard delete. Chính sách deactivation/retention cần được phê duyệt riêng. |
+| User | **Soft delete / deactivate**; không có self-service hard delete. |
+
+Database table không tự động tương đương một public API resource. Với mọi bảng/resource chưa liệt kê, mặc định **soft delete** và không expose `DELETE`; P2-06 chỉ thêm lifecycle action sau khi user flow, ownership, retention và audit requirement được xác định rõ.
 
 ## 13. Idempotency Key — Chống tạo thanh toán trùng
 
@@ -222,15 +259,28 @@ Không cho client hard-delete dữ liệu tài chính, pháp lý, audit hoặc b
 
 - Server lưu key, actor đã xác thực, request fingerprint và response kết quả tối thiểu 24 giờ.
 - Gửi lại cùng key và cùng request trả lại nguyên status/body ban đầu.
-- Dùng lại cùng key với payload khác trả `409 IDEMPOTENCY_KEY_REUSED`.
+- Dùng lại cùng key với payload khác trả `409` cùng message giải thích, không xử lý request mới.
 - Webhook payment dùng provider event/transaction ID đã ký để deduplicate và verify signature; không tin idempotency key do client gửi.
-- Idempotency chỉ xử lý retry; đối soát theo invoice code và webhook tới invoice `void` vẫn tuân theo D33.
+- Idempotency chỉ xử lý retry; đối soát theo invoice code và webhook tới invoice `cancel` vẫn tuân theo D33.
 
 ## 14. Batch / Bulk Operations — Thao tác hàng loạt
 
-Không có generic endpoint `/bulk` trong API v1. P2-06 chỉ được thêm batch action khi user flow thật sự cần, action phải có tên rõ, giới hạn số item và response kết quả cho từng item.
+### Có endpoint nào cần xử lý nhiều record một lần không?
 
-Đặc biệt, sinh hóa đơn là **theo từng phòng**, không phải batch endpoint (D33). Client không được gửi array vào endpoint dành cho một resource đơn lẻ.
+**Không.** Sau khi review toàn bộ user flow MVP, không có endpoint/action ghi nào cần xử lý nhiều record trong một request. API v1 thực hiện action riêng cho từng resource.
+
+Đặc biệt, sinh hóa đơn là **theo từng phòng**, không phải batch/bulk (D33), để giữ điều kiện dữ liệu, snapshot và audit riêng cho từng phòng. Không dùng batch/bulk cho invoice/payment, hợp đồng đã ký, chốt số công tơ/OCR, evidence, thay đổi trạng thái property hoặc khóa/mở khóa user. Import cũng ngoài scope MVP (D19).
+
+Collection `GET` có filter/pagination và array là field thuộc **một** resource (ví dụ `otherFees[]` của invoice) không được xem là batch/bulk operation.
+
+### Pattern cho bulk request/response
+
+**Không áp dụng trong API v1** vì không có batch/bulk endpoint. Nếu Phase 1+ có user flow thật sự cần action cùng domain, cùng owner và rủi ro thấp (ví dụ đánh dấu nhiều notification đã đọc), dùng pattern sau:
+
+- Dùng action endpoint có tên nghiệp vụ, ví dụ `POST /notifications/mark-read`; không dùng endpoint generic `/bulk`.
+- Request nhận danh sách ID tường minh (`notificationIds`), có giới hạn số item do OpenAPI quy định; không hỗ trợ “all records” hoặc action liên domain.
+- Server kiểm tra ownership/permission của từng ID. Response envelope trả kết quả từng item (`id`, `statusCode`, `message`) và số lượng thành công/thất bại; OpenAPI phải nêu rõ action atomic hay có thể partial success.
+- Action phải idempotent khi phù hợp. Các action có ảnh hưởng tài chính/pháp lý/evidence vẫn không được dùng bulk pattern.
 
 ## Checklist cho P2-06
 
@@ -238,6 +288,6 @@ Mỗi operation trong OpenAPI cần khai báo: method/path, request schema, resp
 
 ## Review còn lại
 
-- **BE:** xác nhận DTO/exception filter NestJS, JWT lifetime/refresh, giới hạn upload, rate limit và tên entity sau khi P2-04 chốt.
+- **BE:** triển khai DTO/exception filter NestJS, JWT lifetime/refresh, giới hạn upload, rate limit và tên entity sau khi P2-04 chốt.
 - **PM:** xác nhận public-field boundary, tenant-lock exception và không có quy ước nào làm rộng MVP.
 - **P2-04:** đối chiếu ERD cuối trước khi P2-06 freeze; tài liệu này không tự giải quyết các khác biệt schema đang mở.
