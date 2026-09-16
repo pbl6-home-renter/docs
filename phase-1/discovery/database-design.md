@@ -11,7 +11,7 @@
 | id | uuid | PK, default `gen_random_uuid()` | | | |
 | created_at | timestamptz | NOT NULL, default `now()` | | | `2026-09-05T10:00:00Z` |
 | updated_at | timestamptz | NOT NULL, default `now()` | tự cập nhật bằng trigger `set_updated_at()` mỗi lần `UPDATE` | | `2026-09-05T10:00:00Z` |
-| is_deleted | boolean | NOT NULL, default false | Soft-delete: `false` = existing record; default queries use `WHERE is_deleted = false`. Financial/audit records are retained; voiding an invoice changes its status, not this flag. | | `false` |
+| is_deleted | boolean | NOT NULL, default false | Soft-delete: `false` = existing record; default queries use `WHERE is_deleted = false`. Financial/audit records are retained; cancelling an invoice changes its status, not this flag. | | `false` |
 
 ### 2.1 User
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
@@ -279,12 +279,12 @@ type InvoiceBreakdownItem = ElectricityItem | WaterItem | FeeItem;
 | method | enum (`vietqr`,`vnpay`,`momo`,`cash`,`mock`) | NOT NULL | VietQR là kênh MVP; VNPay/MoMo là Stretch | | `vietqr` |
 | payment_status | enum (`pending`,`success`,`failed`) | NOT NULL | | | `success` |
 | amount | decimal | NOT NULL | **số tiền THỰC NHẬN** (có thể ≠ total khi trả một phần; thu dư vẫn ghi đủ số nhận) | `>=0`| `2000000` |
-| transaction_id | varchar | nullable | null cho cash | Min length: 1; Max length: 255 | `VNPAY-20260930183021` |
+| transaction_id | varchar | nullable, UNIQUE | null cho cash | Min length: 1; Max length: 255 | `VNPAY-20260930183021` |
 | raw_gateway_response | jsonb | nullable | bằng chứng đối soát QR | | `{"bank":"VCB","amount":4610000}` |
 | payer_id | uuid | FK→ContractMember, nullable | dùng khi shared_tracking (D22) | | `NULL` |
-| needs_review | boolean | NOT NULL default false | true nếu webhook thành công tới Invoice `void` (D33⑤) | | `false` |
+| needs_review | boolean | NOT NULL default false | true nếu webhook thành công tới Invoice `cancel` (D33⑤) | | `false` |
 
-> **D33③ — trả một phần / thu dư-đủ:** đối soát theo **mã định danh hóa đơn** (không theo amount — khách trả thiếu/dư vẫn khớp). Invoice → `partially_paid` khi Σ success ∈ (0, total); `paid` khi Σ ≥ total. Thu dư: KHÔNG hoàn tiền/bù trừ tự động — tab History hiển thị nhắc "thu dư X / còn thiếu Y" (D33). **D33⑤ — Payment success tới Invoice `void`:** không set `paid`, đánh cờ cảnh báo chủ trọ đối soát.
+> **D33③ — trả một phần / thu dư-đủ:** đối soát theo **mã định danh hóa đơn** (không theo amount — khách trả thiếu/dư vẫn khớp). Invoice → `partially_paid` khi Σ success ∈ (0, total); `paid` khi Σ ≥ total. Thu dư: KHÔNG hoàn tiền/bù trừ tự động — tab History hiển thị nhắc "thu dư X / còn thiếu Y" (D33). **D33⑤ — Payment success tới Invoice `cancel`:** không set `paid`, đánh cờ cảnh báo chủ trọ đối soát.
 >
 > **Trả cọc (checkout):** landlord tạo Payment với `invoice_id = NULL`, `contract_id = ?`, `method = 'cash'|'vnpay'`, `amount = số tiền trả lại`. `created_at` = thời điểm thanh lý. Không cần field riêng trên Contract.
 
@@ -377,7 +377,7 @@ type InvoiceBreakdownItem = ElectricityItem | WaterItem | FeeItem;
 | type | varchar | NOT NULL | invoice_due, contract_expiry,... | Min length: 1; Max length: 50 | `invoice_due` |
 | data | jsonb | nullable | deep-link payload | | `{"invoice_id":"<uuid>","amount":4610000}` |
 | read_at | timestamp | nullable | | | `NULL` |
-| sent_at | timestamptz | nullable | thời điểm gửi FCM | | |
+| sent_at | timestamp | nullable | thời điểm gửi FCM | | |
 
 ### 2.22 NotificationPreference
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
@@ -478,7 +478,7 @@ User/Room/Building/Contract/ContractMember/MeterReading/IssueReport/Message
 | **RatePolicy (gộp UtilityRatePolicy + RecurringFee), Invoice.breakdown, MeterReading.type** | **D30** — đơn giá điện/nước versioned (flat/bậc thang/khoán đầu người) + phí định kỳ; đóng open question #6; mở rộng D16 (giữ thứ tự room→building→landlord) |
 | **RatePolicy.steps bậc thang chỉ từ preset seed (EVN/TT25/nước địa phương), không nhập tay trong UI; đổi giá = policy mới `effective_from`** | **D31** — preset thân thiện landlord lớn tuổi; thuật toán `calcTiered` là code, giá là config |
 | **LandlordProfile.electricity_policy_id/water_policy_id nullable (NULL = chưa cấu hình), Contract.vehicle_count kê khai ở HĐ, phí 1 lần `other_fees`, preset phí seed** | **D32** — onboarding không chặn (banner + block tại hóa đơn), xe theo HĐ, preset phí |
-| **Invoice `invoice_status` `partially_paid`, UNIQUE partial `(contract_id, period) WHERE invoice_status != 'void'`, Payment đối soát theo invoice_id + thu dư/thiếu nhắc ở History, Invoice auto-sinh theo phòng, `other_fees` âm (total ≥ 0), `rate_kind` điện chỉ flat/tiered** | **D33** — thanh toán một phần + thu dư/thiếu nhắc, hóa đơn theo phòng, điện bỏ khoán đầu người |
+| **Invoice `invoice_status` `partially_paid`, UNIQUE partial `(contract_id, period) WHERE invoice_status != 'cancel'`, Payment đối soát theo invoice_id + thu dư/thiếu nhắc ở History, Invoice auto-sinh theo phòng, `other_fees` âm (total ≥ 0), `rate_kind` điện chỉ flat/tiered** | **D33** — thanh toán một phần + thu dư/thiếu nhắc, hóa đơn theo phòng, điện bỏ khoán đầu người |
 | Building/Room `electricity_policy_id`/`water_policy_id` (con trỏ policy) thay field decimal | D16 (nâng cấp), D30 |
 | Contract uses template generation + signed-file upload; `signed_at` + Media `contract_signed`, no signature-mode column | D18 |
 | ContractMember.share_amount, Contract.payment_config | D22 |
@@ -511,7 +511,7 @@ User/Room/Building/Contract/ContractMember/MeterReading/IssueReport/Message
 | Contract | Đọc | ✅ (owner) | ✅ (chỉ HĐ mình là `tenant_id`/`ContractMember`) | ✅ | |
 | MeterReading | Create/confirm | ✅ (owner phòng) | ❌ | ✅ | P2-01: chỉ landlord thao tác trên mobile |
 | MeterReading | Đọc | ✅ | ✅ (chỉ phòng mình đang thuê) | ✅ | |
-| Invoice | Create (auto)/void | ✅ (owner) | ❌ | ✅ | |
+| Invoice | Create (auto)/cancel | ✅ (owner) | ❌ | ✅ | |
 | Invoice | Đọc | ✅ (owner) | ✅ (contract của mình) | ✅ | |
 | Payment | Ghi nhận cash | ✅ (owner) | ❌ | ✅ | |
 | Payment | Webhook callback (VNPay/MoMo) | hệ thống (service account) | — | — | không qua user JWT |
