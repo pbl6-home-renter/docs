@@ -4,7 +4,7 @@
 > **Owner:** BE  
 > **Đầu vào:** P2-04, user flow, `database-design.md`, `utility-billing-calculations.md`, các quyết định D13, D18, D29, D33–D37
 > **Đầu ra sử dụng:** `openapi.yaml` trong `pbl6-backend` (P2-06)  
-> **Cập nhật:** 2026-09-15
+> **Cập nhật:** 2026-09-17
 
 ## Phạm vi
 
@@ -16,14 +16,15 @@ Các quy ước phải giữ nghiệp vụ đã chốt: tenant không bắt bu�
 
 ## 1. Response Wrapper Format — Định dạng phản hồi chuẩn
 
-Mọi response đều phải trả **HTTP status code**. Ngoại trừ `204 No Content`, response tải file, và response xác nhận webhook bên thứ ba, mọi response **JSON** còn có field `statusCode` và `message`. Response thành công có thêm `data`.
+Mọi response đều phải trả **HTTP status code**. Ngoại trừ `204 No Content`, response tải file, và response xác nhận webhook bên thứ ba, response JSON thành công có field `statusCode`, `message` và `data`; response lỗi JSON chỉ có `statusCode` và `code`.
 
-Ba ngoại lệ không dùng JSON wrapper vì: `204` theo HTTP không được có body; response tải file là binary stream cần `Content-Type` và `Content-Disposition`; webhook acknowledgement chỉ trả status/body đúng contract của provider (thường `200` hoặc `204`). Vì vậy chúng không có field JSON `statusCode`/`message`, nhưng vẫn có HTTP status code.
+Ba ngoại lệ không dùng JSON wrapper vì: `204` theo HTTP không được có body; response tải file là binary stream cần `Content-Type` và `Content-Disposition`; webhook acknowledgement chỉ trả status/body đúng contract của provider (thường `200` hoặc `204`). Vì vậy chúng không có field JSON `statusCode`/`message`/`code`, nhưng vẫn có HTTP status code.
 
 - `statusCode` trùng với HTTP status code.
-- Với success response, `message` là thông điệp ngắn do lập trình viên đặt theo action (ví dụ `Lấy thông tin phòng thành công.`). Với error response, `message` lấy HTTP reason phrase cố định tương ứng với `statusCode`.
-- `data` chứa một resource, mảng resource hoặc kết quả action khi thành công; response lỗi không có field này.
-- Response list có thêm `pagination`; response lỗi có thêm `details`.
+- Với success response, `message` là thông điệp ngắn do lập trình viên đặt theo action (ví dụ `Lấy thông tin phòng thành công.`).
+- Với error response, `code` là mã lỗi nghiệp vụ ổn định để client rẽ nhánh. Mã được viết in hoa và giữ nguyên đúng như OpenAPI đã công bố; có thể có khoảng trắng và dấu nháy đơn khi cần, ví dụ `CAN'T DELETE`.
+- `data` chứa một resource, mảng resource hoặc kết quả action khi thành công; response lỗi không có `data`, `message` hay `details`.
+- Response list thành công có thêm `pagination`.
 - `201 Created` phải có header `Location` trỏ đến resource mới. `200 OK` dùng cho đọc/cập nhật/action đồng bộ. `202 Accepted` chỉ dùng khi OpenAPI mô tả rõ action bất đồng bộ và cách client theo dõi kết quả.
 
 Ví dụ response một resource:
@@ -47,21 +48,19 @@ Ví dụ lỗi validation:
 ```json
 {
   "statusCode": 422,
-  "message": "Unprocessable Content",
-  "details": [
-    {
-      "field": "phone",
-      "message": "Số điện thoại Việt Nam không hợp lệ."
-    }
-  ]
+  "code": "VALIDATION FAILED"
 }
 ```
 
-Client xử lý luồng chung bằng HTTP `statusCode`, không dựa vào `message`. `details` là mảng chi tiết theo field; nếu lỗi không gắn với field thì trả `[]`. Không trả stack trace, SQL, credential, prompt AI hay dữ liệu CCCD trong response lỗi.
+Client xử lý luồng chung bằng HTTP `statusCode` và `code`. Không trả `message`, `details`, stack trace, SQL, credential, prompt AI hay dữ liệu CCCD trong response lỗi.
 
 ## 2. Pagination — Phân trang
 
-Toàn bộ collection thông thường dùng **offset pagination** để dashboard và trang quản trị có số trang/tổng bản ghi rõ ràng.
+Collection endpoint có thể dùng một trong hai strategy: **offset** cho màn hình cần số trang/tổng bản ghi rõ ràng (dashboard, trang quản trị), hoặc **cursor** cho danh sách lớn hay có dữ liệu thay đổi liên tục. Mỗi operation trong OpenAPI phải chọn và khai báo **một** strategy; không có query param chung để client đổi strategy trên cùng endpoint.
+
+Mọi collection response có `pagination.type` làm discriminator. `pageSize` là số nguyên dương, mặc định `20`, tối đa `100` cho cả hai strategy. Giá trị phân trang sai hoặc trộn query param giữa hai strategy trả `422` với `code: VALIDATION FAILED`; cursor không hợp lệ dùng `code: INVALID CURSOR`.
+
+### Offset pagination
 
 | Query param | Quy ước | Mặc định / giới hạn |
 |---|---|---|
@@ -91,54 +90,91 @@ Toàn bộ collection thông thường dùng **offset pagination** để dashboa
     }
   ],
   "pagination": {
+    "type": "offset",
     "pageNo": 1,
     "pageSize": 20,
     "totalItems": 2,
-    "totalPages": 1
+    "totalPages": 1,
+    "hasNextPage": false,
+    "hasPreviousPage": false
   }
 }
 ```
 
-Giá trị `pageNo` hoặc `pageSize` sai trả `422` cùng validation `details`; không tự âm thầm sửa về giá trị mặc định. Không trộn cursor pagination vào endpoint list v1.
+`totalItems` và `totalPages` bắt buộc có với offset pagination. `hasNextPage` và `hasPreviousPage` được backend tính từ `pageNo`, `pageSize` và `totalItems`; client không tự suy luận. Không tự âm thầm sửa `pageNo` hoặc `pageSize` sai về giá trị mặc định.
 
-## 3. Error Codes & Messages — Mã lỗi và thông điệp
+### Cursor pagination
+
+| Query param | Quy ước | Mặc định / giới hạn |
+|---|---|---|
+| `cursor` | Opaque cursor do server cấp từ `pagination.nextCursor` của response trước; không parse, sửa hoặc tự tạo ở client | Không gửi ở trang đầu |
+| `pageSize` | Số nguyên dương | `20`, tối đa `100` |
+
+```json
+{
+  "statusCode": 200,
+  "message": "Lấy lịch sử thông báo thành công.",
+  "data": [
+    {
+      "id": "7d7fbbac-7701-4143-b5c6-0b62620356e0",
+      "title": "Hóa đơn tháng 09/2026 đã được phát hành.",
+      "createdAt": "2026-09-15T03:00:00.000Z"
+    }
+  ],
+  "pagination": {
+    "type": "cursor",
+    "pageSize": 20,
+    "nextCursor": "eyJjcmVhdGVkQXQiOiIyMDI2LTA5LTE1VDAzOjAwOjAwLjAwMFoiLCJpZCI6IjdkN2ZiYmFjLTc3MDEtNDE0My1iNWM2LTBiNjI2MjAzNTZlMCJ9",
+    "hasNextPage": true
+  }
+}
+```
+
+- Cursor pagination chỉ đi về phía trước. Khi không còn trang sau, response trả `hasNextPage: false` và `nextCursor: null`.
+- Cursor là opaque và phải bao gồm đủ thông tin sắp xếp để không lặp hoặc bỏ sót record. Cursor hết hạn, không hợp lệ, sai filter/sort hoặc thuộc actor khác đều trả `422` với `code: INVALID CURSOR`.
+- Endpoint cursor phải có thứ tự ổn định và unique: OpenAPI khai báo sort cố định hoặc tập field sort được phép; backend luôn thêm `id` làm tie-breaker cuối. Không trả `totalItems` hoặc `totalPages` vì việc đếm làm mất lợi thế hiệu năng của cursor.
+- Khi client thay filter, sort hoặc `pageSize`, client phải bỏ cursor cũ và bắt đầu lại từ trang đầu.
+
+## 3. Error Codes — Mã lỗi
 
 Mọi error response JSON dùng cấu trúc sau (không có `data`):
 
 ```json
 {
   "statusCode": 422,
-  "message": "Unprocessable Content",
-  "details": [
-    {
-      "field": "otherFees[0].amount",
-      "message": "Số tiền phải là số nguyên VND."
-    }
-  ]
+  "code": "VALIDATION FAILED"
 }
 ```
 
-- `statusCode` là HTTP status code và là mã lỗi chuẩn của API.
-- `message` lấy đúng HTTP reason phrase tương ứng với `statusCode`; ví dụ `400` → `Bad Request`, `401` → `Unauthorized`, `403` → `Forbidden`, `404` → `Not Found`, `409` → `Conflict`, `422` → `Unprocessable Content`, `429` → `Too Many Requests`, `500` → `Internal Server Error`. Client không rẽ nhánh logic dựa vào message.
-- `details` luôn là mảng. Mỗi validation error có `field` (JSON path theo camelCase, có index mảng khi cần) và `message`. Với lỗi không gắn field như `401`, `403`, `404`, `409` hoặc `500`, trả `details: []`.
-- Không trả `rejectedValue`, stack trace, SQL, credential, prompt AI hay dữ liệu CCCD trong `details`.
+- `statusCode` là HTTP status code.
+- `code` là mã lỗi cụ thể, bắt buộc với mọi error response JSON và ổn định giữa các phiên bản không breaking. Client có thể dùng `code` để hiển thị hoặc rẽ nhánh theo lỗi nghiệp vụ; mỗi operation trong OpenAPI phải khai báo các giá trị `code` có thể trả về. Ví dụ `CAN'T DELETE` dùng khi resource không thể bị xóa do trạng thái, liên kết hoặc quy tắc retention; response này dùng HTTP `409`.
+- Không trả `message`, `details`, `rejectedValue`, stack trace, SQL, credential, prompt AI hay dữ liệu CCCD trong error response.
 
-| HTTP status | Error `message` | Khi dùng |
+Ví dụ lỗi không thể xóa resource:
+
+```json
+{
+  "statusCode": 409,
+  "code": "CAN'T DELETE"
+}
+```
+
+| HTTP status | Error `code` ví dụ | Khi dùng |
 |---|---|---|
-| `200` | — (success message do endpoint đặt) | Đọc, cập nhật hoặc action đồng bộ thành công |
-| `201` | — (success message do endpoint đặt) | Tạo resource thành công; kèm `Location` |
-| `202` | — (success message do endpoint đặt) | Đã nhận action bất đồng bộ; OpenAPI nêu cách theo dõi |
+| `200` | — | Đọc, cập nhật hoặc action đồng bộ thành công |
+| `201` | — | Tạo resource thành công; kèm `Location` |
+| `202` | — | Đã nhận action bất đồng bộ; OpenAPI nêu cách theo dõi |
 | `204` | — | Thành công nhưng không có body |
-| `400` | `Bad Request` | JSON, query, header hoặc media type sai cú pháp |
-| `401` | `Unauthorized` | Thiếu, hết hạn hoặc token không hợp lệ |
-| `403` | `Forbidden` | Đã xác thực nhưng không có quyền thực hiện action |
-| `404` | `Not Found` | Resource không tồn tại hoặc bị ẩn vì ownership |
-| `409` | `Conflict` | Trùng resource, conflict state hoặc tái dùng idempotency key với payload khác |
-| `422` | `Unprocessable Content` | Request đúng cú pháp nhưng lỗi validation hoặc vi phạm rule nghiệp vụ |
-| `429` | `Too Many Requests` | Vượt rate limit |
-| `500` | `Internal Server Error` | Lỗi không mong đợi phía server |
+| `400` | `BAD REQUEST` | JSON, query, header hoặc media type sai cú pháp |
+| `401` | `INVALID TOKEN` | Thiếu, hết hạn hoặc token không hợp lệ |
+| `403` | `FORBIDDEN` | Đã xác thực nhưng không có quyền thực hiện action |
+| `404` | `NOT FOUND` | Resource không tồn tại hoặc bị ẩn vì ownership |
+| `409` | `CONFLICT`, `CAN'T DELETE`, `IDEMPOTENCY KEY REUSED` | Trùng resource, conflict state, không thể xóa resource, hoặc tái dùng idempotency key với payload khác |
+| `422` | `VALIDATION FAILED`, `INVALID CURSOR` | Request đúng cú pháp nhưng lỗi validation, cursor không hợp lệ hoặc vi phạm rule nghiệp vụ |
+| `429` | `RATE LIMIT EXCEEDED` | Vượt rate limit |
+| `500` | `INTERNAL ERROR` | Lỗi không mong đợi phía server |
 
-Validation dùng `422` và trả **tất cả** lỗi field có thể kiểm tra an toàn trong một request. Ví dụ: field thiếu, format sai, vượt phạm vi hoặc sai enum đều có một phần tử tương ứng trong `details`. Rule nghiệp vụ không gắn với một field cũng dùng `422`, nhưng trả `details: []`; `message` vẫn là `Unprocessable Content`.
+Validation dùng `422` và `code: VALIDATION FAILED`; response không trả chi tiết theo field. Rule nghiệp vụ không gắn với một field cũng dùng `422`, với `code` được OpenAPI của operation quy định.
 
 ## 4. Authentication & Authorization — Xác thực và phân quyền
 
@@ -159,8 +195,8 @@ NestJS DTO validation là nguồn kiểm tra phía server. Từ chối field JSO
 
 | Dữ liệu | Quy ước |
 |---|---|
-| Bắt buộc / tùy chọn | Field bắt buộc phải có và không `null`. Field tùy chọn có thể omit. |
-| Chuỗi | Trim khoảng trắng đầu/cuối nếu khoảng trắng không có nghĩa; min/max length nằm trong OpenAPI endpoint. |
+| Bắt buộc / nullable | Mọi field đã khai báo trong JSON request body phải xuất hiện. Field bắt buộc không được `null`; field nullable không có giá trị phải gửi rõ là `null`, không được thiếu field. |
+| Chuỗi | Trim khoảng trắng đầu/cuối nếu khoảng trắng không có nghĩa; không dùng chuỗi rỗng để biểu diễn không có giá trị — dùng `null`. Min/max length nằm trong OpenAPI endpoint. |
 | Date | `YYYY-MM-DD`; không dùng format theo locale. Billing period là `YYYY-MM`. |
 | Timestamp | ISO 8601 UTC với hậu tố `Z`, ví dụ `2026-09-15T03:00:00.000Z`. |
 | Tiền | **API contract:** mọi giá trị tiền/đơn giá VND là JSON integer, ví dụ `"rentPrice": 3500000`; không nhận số lẻ, float hoặc chuỗi tiền. **Dấu âm:** chỉ `otherFees[].amount` được âm, với nghĩa giảm trừ/miễn giảm (ví dụ `-100000`). Tiền thuê, tiền cọc, đơn giá, payment và `totalAmount` phải `>= 0`; nếu giảm trừ làm tổng hóa đơn âm thì backend từ chối tạo invoice, tổng bằng `0` vẫn hợp lệ (D33). **Tính toán:** client không tự tính hoặc làm tròn tiền. Backend dùng PostgreSQL `numeric`/Decimal, không dùng JavaScript float/double, rồi trả kết quả cuối cùng là VND nguyên. Quy tắc tính và làm tròn invoice theo `utility-billing-calculations.md`. |
@@ -189,7 +225,7 @@ UUID dùng dạng canonical lowercase. URL không có trailing slash. Resource k
 ## 7. Versioning & Base URL — Phiên bản và URL gốc
 
 - Base URL phụ thuộc environment; client không hard-code host. Path chuẩn là `/api/v1`.
-- Thay đổi breaking dùng major path mới, ví dụ `/api/v2`. Thêm field optional không phải breaking change của v1.
+- Thay đổi breaking dùng major path mới, ví dụ `/api/v2`. Thêm hoặc xóa field trong JSON request/response body là breaking change vì client luôn nhận và gửi đủ field theo schema.
 - Endpoint tương lai bị deprecate trả `Deprecation: true`, `Sunset` và `Link` tới endpoint thay thế (nếu có). Chỉ được xóa sau migration period được duyệt hoặc khi chuyển major version.
 - API production dùng HTTPS. JSON mặc định UTF-8, trừ `multipart/form-data` và response tải file đã khai báo.
 
@@ -218,24 +254,28 @@ Con số cụ thể là **cấu hình deployment** (không hard-code trong OpenA
 - Tính kỳ hóa đơn, ngày đến hạn và quy tắc theo lịch dùng `Asia/Ho_Chi_Minh`. Client không tự tính ngày billing từ timezone của thiết bị.
 - `period` luôn là tháng dương lịch `YYYY-MM`.
 
-## 10. Null vs Omitted Fields — `null` và field bị omit
+## 10. Null Fields — Field `null`
 
-- **Ưu tiên omit, không trả `null`.** Field không có giá trị, chưa phát sinh hoặc không áp dụng không xuất hiện trong response. Ví dụ invoice `pending` omit `issuedAt`; hợp đồng không liên kết tenant account theo D29 omit `tenantId`.
-- Field optional trong **request**: omit nghĩa là không gửi giá trị. Với `PATCH`, omit nghĩa là không thay đổi field. `null` không được dùng để thay cho omit và bị từ chối trừ khi OpenAPI của endpoint có ngoại lệ được phê duyệt rõ.
-- Không dùng `null` để xóa field. Endpoint cần clear một giá trị phải có action/domain input tường minh và rule nghiệp vụ riêng; không suy diễn “omit” là yêu cầu xóa.
+- **JSON response:** mọi field đã khai báo trong response schema phải xuất hiện. Khi field chưa có giá trị hoặc không áp dụng, trả rõ `null`; không bỏ field và không dùng chuỗi rỗng thay cho `null`. Ví dụ invoice `pending` trả `issuedAt: null`; hợp đồng không liên kết tenant account theo D29 trả `tenantId: null`.
+- **JSON request:** mọi field đã khai báo trong request schema phải xuất hiện. Field không có giá trị gửi `null`; không gửi chuỗi rỗng hoặc bỏ field. OpenAPI phải nêu rõ field nào nullable; `null` cho field non-nullable trả `422` với `code: VALIDATION FAILED`.
+- Với `PATCH`, client gửi toàn bộ field có thể chỉnh sửa. `null` nghĩa là xóa/clear giá trị khi rule nghiệp vụ cho phép; nếu field không cho phép clear, backend trả `422`. Client muốn giữ giá trị phải gửi lại giá trị hiện tại, không dùng field thiếu để biểu thị "không thay đổi".
+- Quy tắc này chỉ áp dụng cho JSON body và JSON response. Query/path/header không biểu diễn được JSON `null`: tham số tùy chọn như cursor trang đầu có thể không gửi; OpenAPI nêu rõ điều đó.
+- `false`, `0` và `[]` là giá trị hợp lệ, không thay bằng `null`. Chỉ dùng `null` khi thật sự không có giá trị.
 
 ## 11. Filtering & Sorting — Lọc và sắp xếp
 
+Collection endpoint dùng ba query param chung `filter`, `sort` và `order`. Mỗi endpoint chỉ khai báo các filter và field sort được phép trong OpenAPI.
+
 | Query param | Quy ước | Default |
 |---|---|---|
-| Filter | Query param camelCase theo từng resource | `status`, `buildingId`, `createdFrom`, `createdTo`, `q` |
-| `sort` | Một hoặc nhiều field được endpoint cho phép, theo cú pháp `field[:direction]`, ngăn cách bằng dấu phẩy; bỏ direction nghĩa là `asc` | `createdAt:asc` nếu áp dụng |
+| `filter` | Object có field được endpoint cho phép, serialized theo OpenAPI `deepObject`; ví dụ `filter[status]=available` | Không filter |
+| `sort` | **Một** field từ whitelist của endpoint; ví dụ `createdAt` | Field mặc định do endpoint khai báo, ví dụ `createdAt` |
+| `order` | `asc` hoặc `desc` | `asc` |
 
-
-- Multi-value enum filter dùng dấu phẩy: `status=pending,overdue`.
-- Multi-field sort có thể khai báo direction cho từng field, ví dụ `sort=status,createdAt:desc`. Field đứng trước có độ ưu tiên cao hơn; `status` không ghi direction nên sắp xếp tăng dần, còn `createdAt` giảm dần trong từng nhóm status. Không dùng query param `order` riêng.
-- OpenAPI từng endpoint phải liệt kê field filter/sort hỗ trợ. Field, direction hoặc cú pháp sort không hợp lệ trả `422` cùng validation `details`, không bị bỏ qua âm thầm.
-- Server thêm `id:asc` làm tie-breaker cuối nếu client chưa khai báo `id`, để thứ tự ổn định qua các trang.
+- Filter dùng `deepObject`: `GET /rooms?filter[status]=available&filter[buildingId]=<uuid>&sort=rentPrice&order=desc`. Multi-value enum filter dùng dấu phẩy, ví dụ `filter[status]=pending,overdue`.
+- Client chỉ được gửi **một** `sort`. `sort` lặp lại hoặc chứa dấu phẩy trả `422` với `code: VALIDATION FAILED`; server không tự chọn field đầu tiên.
+- `order` chỉ áp dụng cho `sort`. Gửi `order` mà không có `sort` dùng default sort của endpoint; order hoặc field sort không nằm trong whitelist trả `422` với `code: VALIDATION FAILED`.
+- OpenAPI từng endpoint phải khai báo field filter, whitelist `sort`, default sort, default order và pagination strategy. Backend có thể thêm `id:asc` làm tie-breaker nội bộ để thứ tự ổn định qua các trang; đây không phải multi-field sort do client yêu cầu.
 
 ## 12. Soft Delete vs Hard Delete — Xóa mềm và xóa cứng
 
@@ -259,7 +299,7 @@ Database table không tự động tương đương một public API resource. V
 
 - Server lưu key, actor đã xác thực, request fingerprint và response kết quả tối thiểu 24 giờ.
 - Gửi lại cùng key và cùng request trả lại nguyên status/body ban đầu.
-- Dùng lại cùng key với payload khác trả `409` cùng message giải thích, không xử lý request mới.
+- Dùng lại cùng key với payload khác trả `409` và `code: IDEMPOTENCY KEY REUSED`; không xử lý request mới.
 - Webhook payment dùng provider event/transaction ID đã ký để deduplicate và verify signature; không tin idempotency key do client gửi.
 - Idempotency chỉ xử lý retry; đối soát theo invoice code và webhook tới invoice `cancel` vẫn tuân theo D33.
 
@@ -279,12 +319,12 @@ Collection `GET` có filter/pagination và array là field thuộc **một** res
 
 - Dùng action endpoint có tên nghiệp vụ, ví dụ `POST /notifications/mark-read`; không dùng endpoint generic `/bulk`.
 - Request nhận danh sách ID tường minh (`notificationIds`), có giới hạn số item do OpenAPI quy định; không hỗ trợ “all records” hoặc action liên domain.
-- Server kiểm tra ownership/permission của từng ID. Response envelope trả kết quả từng item (`id`, `statusCode`, `message`) và số lượng thành công/thất bại; OpenAPI phải nêu rõ action atomic hay có thể partial success.
+- Server kiểm tra ownership/permission của từng ID. Item thành công trả `id`, `statusCode`, `message`; item lỗi chỉ trả `id`, `statusCode`, `code`, không có `message` hoặc `details`. Response cũng trả số lượng thành công/thất bại; OpenAPI phải nêu rõ action atomic hay có thể partial success.
 - Action phải idempotent khi phù hợp. Các action có ảnh hưởng tài chính/pháp lý/evidence vẫn không được dùng bulk pattern.
 
 ## Checklist cho P2-06
 
-Mỗi operation trong OpenAPI cần khai báo: method/path, request schema, response envelope, lỗi chung, access class/auth, ownership rule, pagination/filter/sort nếu là list, lifecycle precondition nếu là action, và `Idempotency-Key` nếu action có ảnh hưởng payment.
+Mỗi operation trong OpenAPI cần khai báo: method/path, request schema, response envelope, lỗi chung, access class/auth, ownership rule, pagination strategy (`offset` hoặc `cursor`) cùng filter/sort nếu là list, lifecycle precondition nếu là action, và `Idempotency-Key` nếu action có ảnh hưởng payment.
 
 ## Review còn lại
 
