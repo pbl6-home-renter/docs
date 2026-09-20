@@ -1,3 +1,6 @@
+Link Stitch: 
+- Mobile: https://stitch.withgoogle.com/projects/6553481490454276302
+- Web: https://stitch.withgoogle.com/projects/13362193818790616208
 # Rentify — UI Screen Outline (Khung sườn v0.1)
 
 > **Trạng thái tài liệu:** Bản NHÁP KHUNG SƯỜN (Draft #1) — mới liệt kê đầy đủ màn hình + vai trò/nền tảng/điều hướng ở mức tối thiểu, **CHƯA đào sâu nội dung/bố cục/component chi tiết**. Mục tiêu bước này: hai bên rà soát xem đã liệt kê **ĐỦ** và **ĐÚNG** màn hình chưa, tên gọi/nhóm batch có hợp lý không, trước khi đào sâu từng phần.
@@ -20,12 +23,18 @@
 | Landlord | Bottom navigation (hoặc drawer): **Dashboard · Quản lý Phòng & BĐS · Sự cố · Chat · Cài đặt** | Sidebar cố định bên trái: cùng 5 mục, dạng console quản trị |
 | Admin | **Chỉ Web** (ngoại lệ đã chốt — xem 0.3) | Sidebar cố định: **Dashboard · Người dùng · Phê duyệt BĐS · Audit Logs · Đăng xuất** |
 
-### 0.1b Kiến trúc phân luồng trước khi đăng nhập (đã chốt)
+### 0.1b Kiến trúc ứng dụng — v1.2: TÁCH THÀNH APP RIÊNG THEO VAI TRÒ (thay thế hoàn toàn cách tiếp cận "1 app chung" trước đây)
 
-Do Tenant và Landlord có nhu cầu pre-login hoàn toàn khác nhau (Tenant cần browse công khai; Landlord không browse gì, chỉ cần Login/Đăng ký), hệ thống phân luồng **ngay từ trước khi có JWT/role**, theo nguyên tắc: tách biệt **trải nghiệm & UX**, nhưng **không tách hạ tầng** (1 codebase, 1 app, 1 web) để phù hợp phạm vi đồ án:
-
-* **Web:** `rentify.vn` (domain gốc) = mặc định trải nghiệm Guest/Tenant (Guest Home + danh sách phòng). Có mục **"Kênh Chủ trọ"** trên header/footer dẫn tới path riêng `rentify.vn/chu-tro` — trang landing giới thiệu dịch vụ cho Chủ trọ + Login/Đăng ký Landlord riêng biệt. Admin dùng route ẩn, không xuất hiện ở menu công khai nào.
-* **Mobile:** Dùng **chung 1 app**. Lần đầu mở app khi **chưa có tài khoản/token**, hiển thị màn hỏi vai trò: **"Tìm phòng trọ"** hoặc **"Tôi là Chủ trọ, muốn đăng tin"** → rẽ nhánh tương ứng (Guest Home browsing, hoặc thẳng Login/Register Landlord, bỏ qua Guest Home). Lựa chọn chỉ ảnh hưởng giai đoạn pre-login, được nhớ lại (persist local), chỉ hỏi lại khi logout về guest gốc. Sau khi đăng nhập, điều hướng luôn theo `User.role` từ JWT, không liên quan lựa chọn ban đầu.
+> **Quyết định mới (đã chốt):** Không còn dùng 1 app/web chung với màn "Chọn vai trò" hay trang Landing phân luồng. Thay vào đó, mỗi vai trò có **app/project riêng biệt hoàn toàn**:
+> - **Rentify Tenant — Mobile App** (project Stitch riêng)
+> - **Rentify Landlord — Mobile App** (project Stitch riêng)
+> - **Rentify Tenant — Web App** (project Stitch riêng)
+> - **Rentify Landlord — Web App** (project Stitch riêng)
+> - **Rentify Admin — Web App** (project Stitch riêng, tách biệt khỏi Landlord — không phải "Landlord nâng cao")
+>
+> Vì mỗi app đã cố định đúng 1 vai trò ngay từ lúc cài đặt/mở lần đầu, **KHÔNG CÒN CẦN**: màn "Chọn vai trò" (SH-01b cũ), trang Landing "Kênh Chủ trọ" (SH-02b cũ). Mỗi app có luồng Đăng nhập/Đăng ký riêng, chỉ dành đúng cho vai trò của app đó (vd Tenant App chỉ có "Đăng ký Tenant", không có lựa chọn "Tôi là Chủ trọ").
+>
+> Dữ liệu backend vẫn dùng chung (1 database, 1 API) — chỉ tách ở tầng UI/app. Các tính năng liên quan 2 vai trò cùng lúc (Property Chat, Chat riêng 1-1...) vẫn hoạt động xuyên suốt bình thường, chỉ hiển thị ở app riêng của mỗi bên.
 
 ### 0.3 Ngoại lệ nền tảng: Admin chỉ cần Web
 Đã chốt: vì hệ thống chỉ có **duy nhất 1 tài khoản Admin**, back-office/admin portal theo thông lệ chuyên nghiệp luôn là web-only — không cần đầu tư bản Mobile tương đương cho Admin. Đây là ngoại lệ **duy nhất** đối với nguyên tắc "Mobile/Web tương đương 100% chức năng".
@@ -362,78 +371,28 @@ Do Tenant và Landlord có nhu cầu pre-login hoàn toàn khác nhau (Tenant c�
 
 ---
 
-## PHẦN H — Danh sách màn hình đánh số theo Stitch Project (Mobile / Web tách riêng)
+## PHẦN H — Danh sách màn hình đánh số theo Stitch Project (v1.2 — 5 app riêng biệt theo vai trò)
 
-> Mobile và Web là **2 Project riêng biệt trên Stitch**. Nội dung/nghiệp vụ giống hệt nhau (đã chốt ở Phần A–D), chỉ khác bố cục trình bày. Vì vậy 2 project sau đây liệt kê **cùng 1 tập nội dung**, chỉ khác: (1) Mobile có thêm Splash + màn chọn vai trò mà Web không có; (2) Web có thêm trang Landing Chủ trọ (SH-02b) và toàn bộ 10 màn Admin mà Mobile không có. Số thứ tự dùng để đặt tên frame trên Stitch (vd "01. Splash"); mã trong ngoặc là ID tham chiếu tới quyết định chi tiết ở Phần A–D.
+> **Đã thay thế hoàn toàn cách đánh số cũ (1 app chung/Mobile+Web 2 project).** Theo kiến trúc v1.2 (Phần 0.1b, J.8), giờ có **5 app/project độc lập hoàn toàn**, mỗi app có bộ đánh số riêng bắt đầu lại từ 1 — không dùng chung số thứ tự giữa các app. Nội dung nghiệp vụ chi tiết từng màn nằm đầy đủ trong 2 file prompt (`Rentify_Stitch_Prompts_Mobile.md`, `Rentify_Stitch_Prompts_Web.md`); phần này chỉ tóm tắt danh mục để tra cứu nhanh.
 
-### H.1 — PROJECT: "Rentify — Mobile" (81 màn)
+### H.1 — "Rentify Tenant — Mobile App" (34 màn, 7 prompt)
+Auth(8): Splash·Login·Quên MK·Đặt lại MK·Đăng ký·Tài khoản hạn chế·Đăng xuất·Lỗi chung — Tìm phòng(4) — Ghép bạn(5, có badge AI Match%) — Inbox/Chat(5, 3 loại thread hợp nhất) — Hub Phòng của tôi(7) — Sự cố(3) — Tài khoản(2)
 
-**Cụm 1 — Auth & Onboarding (11 màn)**
-01. Splash *(SH-01)* · 02. Chọn vai trò *(SH-01b)* · 03. Đăng nhập *(SH-03)* · 04. Quên mật khẩu — Nhập email *(SH-03b)* · 05. Đặt lại mật khẩu *(SH-03c)* · 06. Đăng ký — Tenant *(SH-04a)* · 07. Đăng ký — Landlord *(SH-04b)* · 08. Tài khoản Landlord bị khóa *(SH-06)* · 09. Tài khoản Tenant bị hạn chế *(SH-07)* · 10. Xác nhận đăng xuất *(SH-08)* · 11. Lỗi chung (network/403/404) *(SH-09)*
+### H.2 — "Rentify Landlord — Mobile App" (55 màn, 11 prompt)
+Auth(8, không có màn Chọn vai trò) — Dashboard(1, 2 biến thể) — Tòa nhà & Phòng(13, gồm 13/13a/13b/13c chọn loại biểu giá điện nước + AI mô tả phòng) — Hợp đồng & Thành viên(7, có toggle "Có xe") — Chốt số điện nước(6) — Hóa đơn(5) — Chu kỳ & Công nợ(3) — Sự cố(3) — Thanh lý(5) — Chat(2) — Cài đặt(2)
 
-**Cụm 2 — Tìm phòng & Chi tiết (4 màn)**
-12. Trang chủ / Danh sách phòng *(SH-02 + TN-02, gộp 1 màn)* · 13. Bộ lọc tìm phòng *(TN-01)* · 14. Chi tiết phòng *(TN-03)* · 15. Phòng đã lưu *(TN-04)*
+### H.3 — "Rentify Tenant — Web App" (34 màn, 7 prompt)
+Cấu trúc & nội dung y hệt H.1 (bỏ Splash, không cần vì Web không cần loading screen riêng), chỉ khác bố cục: sidebar thay bottom-nav, modal thay bottom-sheet, lưới nhiều cột.
 
-**Cụm 3 — Ghép bạn (5 màn)**
-16. Feed Ghép bạn *(TN-05)* · 17. Chi tiết hồ sơ Roommate *(TN-06)* · 18. Tạo/Sửa hồ sơ Ghép bạn *(TN-07)* · 19. Yêu cầu Đã gửi/Đã nhận *(TN-08)* · 20. Match thành công *(TN-09)*
+### H.4 — "Rentify Landlord — Web App" (55 màn, 11 prompt)
+Cấu trúc & nội dung y hệt H.2 (bỏ Splash), khác bố cục: sidebar, bảng dữ liệu thay card, webcam thay camera app.
 
-**Cụm 4 — Inbox/Chat Tenant (5 màn)**
-21. Inbox tổng *(TN-MSG-01)* · 22. Chat riêng với Landlord *(TN-MSG-02)* · 23. Property Chat nhóm phòng *(TN-MSG-03)* · 24. Property Chat chung tòa *(TN-MSG-04)* · 25. Chat Match Roommate *(TN-MSG-05)*
+### H.5 — "Rentify Admin — Web App" (15 màn, 5 prompt) — App thứ 5, hoàn toàn độc lập
+Auth(5: Login·Quên MK·Đặt lại MK·Đăng xuất·Lỗi chung — **không có Đăng ký**, tài khoản Admin seed sẵn) — Dashboard(1, chỉ số liệu không biểu đồ) — Quản lý Người dùng(4) — Phê duyệt BĐS(3) — Audit Logs(2)
 
-**Cụm 5 — Hub "Phòng của tôi" (7 màn)**
-26. Danh sách hợp đồng *(TN-10)* · 27. Hub Phòng của tôi *(TN-11)* · 28. Xem hợp đồng *(TN-12)* · 29. Danh sách thành viên *(TN-13)* · 30. Danh sách hóa đơn *(TN-14)* · 31. Chi tiết hóa đơn *(TN-15)* · 32. Thanh toán *(TN-16)*
-
-**Cụm 6 — Sự cố Tenant (3 màn)**
-33. Danh sách sự cố của phòng *(TN-20a)* · 34. Popup chi tiết sự cố *(TN-20b)* · 35. Tạo báo cáo sự cố *(TN-19)*
-
-**Cụm 7 — Tài khoản Tenant (2 màn)**
-36. Hồ sơ cá nhân *(TN-21)* · 37. Cài đặt thông báo *(TN-22)*
-
-**Cụm 8 — Dashboard Landlord (1 màn)**
-38. Dashboard (kèm biến thể Empty state) *(LL-01)*
-
-**Cụm 9 — Quản lý Tòa nhà & Phòng (10 màn)**
-39. Danh sách Tòa nhà *(LL-02)* · 40. Thêm Tòa nhà B1/3 *(LL-03)* · 41. Upload giấy tờ B2/3 *(LL-04)* · 42. Cấu hình đơn giá B3/3 *(LL-05)* · 43. Chi tiết Tòa nhà *(LL-06)* · 44. Cấu hình VietQR Tòa nhà *(LL-06b)* · 45. Danh sách Phòng (Room Map) *(LL-07)* · 46. Thêm Phòng mới *(LL-08)* · 47. Chi tiết Phòng *(LL-09)* · 48. Menu Tiện ích Phòng *(LL-10)*
-
-**Cụm 10 — Hợp đồng & Thành viên (7 màn)**
-49. Tạo Hợp đồng *(LL-11)* · 50. Chọn mẫu HĐ *(LL-12)* · 51. Xuất PDF HĐ *(LL-13)* · 52. Upload HĐ đã ký *(LL-14)* · 53. Danh sách thành viên *(LL-15)* · 54. Thêm thành viên *(LL-16)* · 55. Xác nhận xóa thành viên *(LL-17)*
-
-**Cụm 11 — Chốt số điện nước (6 màn)**
-56. Chốt số đơn lẻ *(LL-18)* · 57. Entry Chốt hàng loạt *(LL-18b)* · 58. Luồng Chốt hàng loạt *(LL-18c)* · 59. Tổng kết hàng loạt *(LL-18d)* · 60. Camera chụp công tơ *(LL-19)* · 61. Kết quả OCR *(LL-20)*
-
-**Cụm 12 — Hóa đơn (5 màn)**
-62. Preview hóa đơn (trước phát hành) *(LL-21)* · 63. Danh sách hóa đơn đã phát hành *(LL-21a)* · 64. Sửa/Hủy hóa đơn *(LL-21b)* · 65. Phát hành hóa đơn *(LL-22)* · 66. Xác nhận thu tiền mặt *(LL-23)*
-
-**Cụm 13 — Cấu hình chu kỳ & Công nợ (3 màn)**
-67. Cấu hình chu kỳ & quét nợ *(LL-24)* · 68. Form hạn thanh toán *(LL-25)* · 69. Danh sách công nợ *(LL-25b)*
-
-**Cụm 14 — Sự cố Landlord (3 màn)**
-70. Tab Sự cố tổng *(LL-26)* · 71. Popup chi tiết sự cố *(LL-27)* · 72. Landlord tạo sự cố *(LL-28)*
-
-**Cụm 15 — Checkout/Thanh lý (5 màn)**
-73. Chốt số lần cuối *(LL-29)* · 74. Hóa đơn quyết toán *(LL-30)* · 75. Quyết toán cọc *(LL-31)* · 76. Xác nhận hoàn tất thanh lý *(LL-32)* · 77. Trạng thái chờ dọn dẹp *(LL-33)*
-
-**Cụm 16 — Chat Inbox Landlord (2 màn)**
-78. Inbox tổng *(LL-CHAT-01)* · 79. Chi tiết 1 thread chat *(LL-CHAT-02)*
-
-**Cụm 17 — Cài đặt Landlord (2 màn)**
-80. Hồ sơ cá nhân *(LL-36)* · 81. Cài đặt thông báo *(LL-37)*
-
----
-
-### H.2 — PROJECT: "Rentify — Web" (90 màn)
-
-**Cụm 1 — Auth & Onboarding (10 màn, KHÔNG có Splash/Chọn vai trò, CÓ thêm Landing Chủ trọ)**
-01. Landing "Kênh Chủ trọ" *(SH-02b)* · 02. Đăng nhập *(SH-03)* · 03. Quên mật khẩu *(SH-03b)* · 04. Đặt lại mật khẩu *(SH-03c)* · 05. Đăng ký — Tenant *(SH-04a)* · 06. Đăng ký — Landlord *(SH-04b)* · 07. Tài khoản Landlord bị khóa *(SH-06)* · 08. Tài khoản Tenant bị hạn chế *(SH-07)* · 09. Xác nhận đăng xuất *(SH-08)* · 10. Lỗi chung *(SH-09)*
-
-**Cụm 2–7 (Tenant, 22 màn):** giữ nguyên số thứ tự nội dung như bản Mobile (11→36), chỉ đổi bố cục Web (list/grid nhiều cột, sidebar filter, modal thay bottom-sheet...). *(SH-02+TN-02 → TN-22, tổng 22 màn)*
-
-**Cụm 8–17 (Landlord, 44 màn):** giữ nguyên nội dung như bản Mobile, đổi bố cục Web (sidebar nav, table thay vì card cho danh sách...).
-
-**Cụm 18 — Admin (10 màn, CHỈ CÓ trên Web)**
-81. Admin Dashboard *(AD-01)* · 82. Danh sách Người dùng *(AD-02)* · 83. Chi tiết hồ sơ Người dùng *(AD-03)* · 84. Khóa tài khoản *(AD-04)* · 85. Mở khóa tài khoản *(AD-05)* · 86. Danh sách BĐS chờ duyệt *(AD-06)* · 87. Chi tiết BĐS chờ duyệt *(AD-07)* · 88. Từ chối BĐS *(AD-08)* · 89. Audit Logs *(AD-09)* · 90. Popup chi tiết Audit Log *(AD-10)*
-
-> **Lưu ý số thứ tự Web:** Cụm 1 Web có 10 màn (thay vì 11 bên Mobile, do bỏ Splash+Chọn vai trò nhưng thêm Landing Chủ trọ). Vì vậy số thứ tự Cụm 2–17 bên Web = **số thứ tự Mobile tương ứng TRỪ 1** (vd "Chi tiết phòng" là #14 bên Mobile → là #13 bên Web). Cụm 2–17 kết thúc ở #80, Admin đánh số tiếp 81–90. Số thứ tự cụ thể từng màn được ghi rõ trong file prompt riêng.
+> **Tổng cộng:** 34+55+34+55+15 = **193 màn hình** trên 5 app độc lập (so với 93 màn nghiệp vụ gốc — chênh lệch do mỗi app cần luồng Auth riêng, không dùng chung).
+>
+> Nội dung chi tiết từng màn (content, trạng thái, "Comes from"/"Goes to") xem trực tiếp trong 2 file prompt Stitch — đây là nguồn dữ liệu chuẩn (source of truth) để copy-paste, Phần H chỉ để tra cứu nhanh danh mục.
 
 ---
 
@@ -456,3 +415,54 @@ Do Tenant và Landlord có nhu cầu pre-login hoàn toàn khác nhau (Tenant c�
 - Layout: Dashboard được phép có card xếp lớp/hơi lệch tạo chiều sâu; màn danh sách/dữ liệu (hóa đơn, thành viên, kết quả tìm kiếm) phải căn lưới chuẩn, không xếp lệch.
 
 **Logo (placeholder):** Icon hình mái nhà cách điệu đơn giản (roofline monogram), màu Primary Accent `#1E6FD9`, nền trong suốt/nền app. Đây là placeholder tạm — có thể yêu cầu Stitch thay logo thật bằng 1 Edit prompt riêng sau này mà không ảnh hưởng các màn khác.
+
+---
+
+## PHẦN J — Cập nhật bổ sung v1.1 (sau khi đối chiếu với `product-platform-map.md`)
+
+> Phần này ghi lại các thay đổi phát sinh **sau khi Phần A-D đã khóa**, do đối chiếu với tài liệu `product-platform-map.md` của PM. Theo nguyên tắc đã thống nhất: **bổ sung màn hình mới dùng hậu tố a/b/c..., KHÔNG đổi số thứ tự các màn đã có** để tránh vỡ toàn bộ liên kết điều hướng phía sau.
+
+### J.1 — Xác nhận lại nguyên tắc Web/Mobile tương đương (khớp lại platform-map)
+Toàn bộ các nhóm từng bị platform-map ghi nhầm là "Mobile only" — Chốt số điện nước, Hóa đơn, Chat, Sự cố, Ghép bạn — đã được xác nhận lại: **có trên cả Web và Mobile**, đúng như outline này đã thiết kế từ đầu. Không có thay đổi nào ở outline (outline vốn đã đúng); chỉ có `product-platform-map.md` được sửa lại cho khớp.
+
+### J.2 — Khai báo xe: chuyển từ Hợp đồng sang Thành viên
+- **LL-11 (Tạo Hợp đồng):** giữ nguyên như cũ, **KHÔNG có** field khai báo xe.
+- **LL-16 (Thêm thành viên mới) / LL-54 (Web):** bổ sung 1 field mới — **toggle "Có xe (xe máy/ô tô): Có / Không"**, đơn giản, không phân loại chi tiết loại xe hay biển số.
+- **LL-15 (Danh sách thành viên) / LL-53 (Web):** hiện thêm 1 icon xe nhỏ 🛵 cạnh tên nếu thành viên đó "Có xe" — chỉ Landlord thấy.
+- **TN-13 (Danh sách thành viên phía Tenant) / Web tương ứng:** KHÔNG hiển thị thông tin xe của thành viên khác — giữ nguyên nguyên tắc tối giản/riêng tư đã chốt trước đó (chỉ thấy tên).
+
+### J.3 — Biểu giá điện nước: thiết kế lại 2 bước, đủ 3 loại
+Thay thế nội dung cũ của **LL-05 (Bước 3/3 khi tạo Tòa)**: trước đây chỉ 1 ô nhập đơn giá phẳng — giờ tách thành 1 màn chọn loại + các màn con cấu hình cụ thể theo loại. **Không đổi số bước trong wizard (vẫn là Bước 3/3 tổng thể)**, chỉ mở rộng nội dung bên trong bước đó thành nhiều màn con:
+
+| ID mới | Tên màn | Mô tả |
+| -- | -- | -- |
+| LL-05a | Chọn loại biểu giá | 3 lựa chọn dạng radio card, mỗi card có mô tả ngắn: **"Cố định"** (đơn giá điện/nước phẳng, như cũ), **"EVN bậc thang"** (tính theo nhiều mức tiêu thụ), **"Khoán theo đầu người"** (giá trọn gói/người/tháng, không tính theo chỉ số thực tế). Nút "Tiếp tục". |
+| LL-05b | Cấu hình — Cố định | Giữ nguyên nội dung LL-05 gốc: 1 ô đơn giá điện (đ/kWh), 1 ô đơn giá nước (đ/khối). |
+| LL-05c | Cấu hình — EVN bậc thang | Bảng nhiều dòng động: mỗi dòng = khoảng tiêu thụ (Từ X - Đến Y kWh) + đơn giá tương ứng. Nút "+ Thêm bậc" / xóa từng dòng. |
+| LL-05d | Cấu hình — Khoán đầu người | 1 ô nhập "Giá điện nước khoán / người / tháng". |
+| LL-05e | *(Không phải frame mới — tái sử dụng LL-05a)* Sửa lại biểu giá đã cấu hình | Từ Chi tiết Tòa nhà (LL-06), thêm 1 mục menu mới "Cấu hình biểu giá điện nước" → mở lại đúng luồng LL-05a (giờ đóng vai trò vừa là bước wizard vừa là màn sửa sau này) để đổi loại/số liệu bất kỳ lúc nào. |
+| LL-05f | *(Không phải frame mới — tái sử dụng LL-05a-d)* Ghi đè biểu giá cấp Phòng (nâng cao) | Ở Chi tiết Phòng (LL-09), thêm 1 mục "Nâng cao" (thu gọn mặc định) chứa link "Tùy chỉnh biểu giá riêng cho phòng này" → mở lại đúng luồng LL-05a-d nhưng phạm vi chỉ 1 phòng, ghi đè giá trị kế thừa từ Tòa nhà. |
+
+> Cùng logic áp dụng cho **LL-24 (Cấu hình chu kỳ hóa đơn — cấp Profile/Building/Room)** — không đổi, đây là cấu hình khác (chu kỳ/hạn thanh toán), không phải đơn giá điện nước.
+
+### J.4 — AI Auto-Description (bổ sung mới, MVP)
+- **LL-08 (Thêm Phòng mới) / LL-45 (Web):** bổ sung field "Mô tả" (textarea, trước đây chưa có) + 1 ô "Từ khóa gợi ý" (vd: "gần trường, yên tĩnh, ban công") + nút **"✨ Tạo mô tả bằng AI"** → tự động điền vào ô Mô tả (Landlord vẫn có thể sửa tay sau khi AI tạo).
+
+### J.5 — AI Matchmaking (bổ sung mới, Stretch — không bắt buộc MVP)
+- **TN-05 (Feed Ghép bạn) / TN-06 (Chi tiết hồ sơ):** thêm 1 badge nhỏ "Độ phù hợp: 87%" (dùng style outlined-tag, không phải pill màu) — đánh dấu rõ đây là tính năng **Stretch**, có thể bỏ qua nếu không đủ thời gian mà không ảnh hưởng luồng chính.
+
+### J.6 — VNPay/MoMo (bổ sung mới, Stretch)
+- **TN-16 (Thanh toán) / TN-31 (Web):** thêm kênh thứ 3 bên cạnh VietQR/Tiền mặt: **"Ví điện tử (VNPay/MoMo)"** — đánh dấu **Stretch**, không bắt buộc MVP.
+
+### J.7 — Cập nhật số lượng màn hình
+Do bổ sung LL-05a/b/c (3 màn mới thay cho 1 màn LL-05 cũ — net +3; LL-05e/f tái sử dụng LL-05a-d, không tính thêm) vào cả Mobile và Web:
+- Mobile: 81 → **84 màn**.
+- Web: 89 frame thật → **92 frame thật**.
+- Các trường thay đổi khác (J.2, J.4, J.5, J.6) là chỉnh nội dung bên trong màn đã có, không phát sinh thêm số màn.
+
+### J.8 — v1.2: Tách thành App riêng theo vai trò (thay thế kiến trúc "1 app chung")
+- Đã chốt tại Phần 0.1b: bỏ hoàn toàn mô hình "1 app chung + màn Chọn vai trò/Landing phân luồng". Thay bằng **5 app/project độc lập**: Tenant Mobile, Landlord Mobile, Tenant Web, Landlord Web, Admin Web.
+- Bỏ 2 màn: "Chọn vai trò" (SH-01b) và "Landing Chủ trọ" (SH-02b) — không còn cần thiết vì mỗi app đã cố định vai trò.
+- Mỗi app có luồng Auth (Splash/Login/Quên MK/Đăng ký/Đăng xuất/Lỗi chung) **riêng, độc lập**, không dùng chung với app khác — dẫn đến tổng số màn Auth tăng lên (do không còn dùng chung) nhưng đơn giản hóa từng luồng (không cần rẽ nhánh theo vai trò).
+- 2 file prompt Stitch (Mobile/Web) **giữ nguyên tên file**, nhưng bên trong mỗi file được chia thành các **Vùng (Zone)** riêng biệt theo app — không còn xen kẽ màn của Tenant và Landlord trong cùng 1 dòng chảy prompt.
+- Số lượng màn hình cuối cùng: xem trực tiếp trong 2 file prompt (đã tính lại theo từng app độc lập).
