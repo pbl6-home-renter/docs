@@ -11,7 +11,7 @@
 | id | uuid | PK, default `gen_random_uuid()` | | | |
 | created_at | timestamptz | NOT NULL, default `now()` | | | `2026-09-05T10:00:00Z` |
 | updated_at | timestamptz | NOT NULL, default `now()` | tự cập nhật bằng trigger `set_updated_at()` mỗi lần `UPDATE` | | `2026-09-05T10:00:00Z` |
-| is_deleted | boolean | NOT NULL, default false | Soft-delete: `false` = existing record; default queries use `WHERE is_deleted = false`. Financial/audit records are retained; voiding an invoice changes its status, not this flag. | | `false` |
+| is_deleted | boolean | NOT NULL, default false | Soft-delete: `false` = existing record; default queries use `WHERE is_deleted = false`. Financial/audit records are retained; cancelling an invoice changes its status, not this flag. | | `false` |
 
 ### 2.1 User
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
@@ -86,12 +86,15 @@
 | tenant_name | varchar | nullable | dùng khi tenant không có account | Min length: 1; Max length: 254 | `Trần Văn B` |
 | tenant_phone | varchar | nullable | dùng khi tenant không có account | Min length: 10; Max length: 12; Regex: `^0[0-9]{9}$` hoặc `^\+84[0-9]{9}$` | `0912345678` |
 | contract_status | enum (`draft`,`signed`,`active`,`suspended`,`expired`,`terminated`) | NOT NULL default `draft` | `suspended` khi landlord bị khóa trong grace period; `terminated` khi quá hạn hoặc admin/landlord hủy | | `active` |
-| deposit_amount | decimal | NOT NULL | số cọc khi ký HĐ; lịch sử trả cọc/điều chỉnh lưu trong Payment | `>=0` | `7000000` |
+| deposit_amount | decimal | NOT NULL | Agreed deposit; actual collections and refunds are recorded in Payment | `>=0` | `7000000` |
+| deposit_deduction_amount | decimal | NOT NULL default 0 | Total deposit retained at checkout; this is not a new cash movement | `>=0` | `1000000` |
+| deposit_deduction_reason | text | nullable | Required and non-blank when deposit_deduction_amount > 0 | Max length: 500 | `Repair damaged door` |
+| deposit_settled_at | timestamptz | nullable | Set when checkout deposit reconciliation is complete, including full deduction with no refund | | |
 | monthly_rent | decimal | NOT NULL | | `>=0`| `3500000` |
 | start_date | date | NOT NULL | | `< end_date` | `2026-09-01` |
 | end_date | date | NOT NULL | | `> start_date` | `2027-08-31` |
 | description | text | nullable | | Min length: 1; Max length: 500 | `Đóng tiền trước ngày 5 hàng tháng…` |
-| vehicle_count | int | **nullable** | **D32** — số xe gửi tại nhà trọ, kê khai lúc tạo/cập nhật HĐ; `NULL` = chưa khai → block phí `per_vehicle` (EC8); `0` = không gửi xe | `>= 0` | `1` |
+
 
 > Mẫu HĐ / file ký: `Media(owner_type='contract', purpose='contract_template'|'contract_signed')` — file ký (`contract_signed`) vẫn là **nguồn chuẩn pháp lý**, `parsed_fields` chỉ hỗ trợ tra cứu.
 
@@ -99,7 +102,7 @@
 
 ```sql
 CONSTRAINT contract_tenant_identity_check CHECK (
-    tenant_user_id IS NOT NULL
+    tenant_id IS NOT NULL
     OR (
         NULLIF(BTRIM(tenant_name), '') IS NOT NULL
         AND NULLIF(BTRIM(tenant_phone), '') IS NOT NULL
@@ -108,6 +111,8 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 ```
 
 **Index quan trọng:** partial unique index `(room_id) WHERE contract_status = 'active'` — chỉ 1 hợp đồng active/phòng.
+
+**Deposit settlement:** use the three fields above on Contract and existing Payment rows; no separate settlement table. Remaining deposit = successful deposit collections − successful deposit refunds − `deposit_deduction_amount`. The service locks the contract when recording a refund or deduction, rejects a negative remaining deposit, and sets `deposit_settled_at` only when the remaining deposit is zero. Calculate from actual collections, not the agreed `deposit_amount`. AuditLog records changes and the actor; do not alter a completed settlement through normal checkout actions.
 
 ### 2.8 ContractMember (thành viên ở ghép + CCCD)
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
@@ -118,8 +123,11 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 | tenant_phone | varchar | nullable | | Min length: 10; Max length: 12; Regex: `^0[0-9]{9}$` hoặc `^\+84[0-9]{9}$` | `0921234567` |
 | joined_at | date | NOT NULL default `current_date` | ngày vào ở; phục vụ số người có hiệu lực theo kỳ | `< left_at` khi `left_at` có giá trị | `2026-09-01` |
 | left_at | date | nullable | không xóa bản ghi khi rời phòng; ngừng quyền chat/tenant portal từ ngày này | `> joined_at` | `NULL` |
+| vehicle_count | int | **nullable** | **D32** — số xe gửi tại nhà trọ, kê khai lúc tạo/cập nhật HĐ; `NULL` = chưa khai → block phí `per_vehicle` (EC8); `0` = không gửi xe | `>= 0` | `1` |
 
 > Ảnh CCCD mặt trước/sau: `Media(owner_type='contract_member', purpose='cccd_front'|'cccd_back')` — **D17**, chụp 1 lần. **`ContractMember` là nguồn đếm `head_count`** cho `rate_kind='per_head'` và `fee_kind='per_head'`; chỉ tính thành viên có `joined_at ≤ period_end` và (`left_at IS NULL` hoặc `left_at ≥ period_start`).
+
+**Index:** UNIQUE `(id, contract_id)`. Composite key này được `Payment` tham chiếu để bảo đảm người trả (nếu xác định được) thuộc chính hợp đồng của khoản thu.
 
 ### 2.9 RatePolicy — đơn giá & phí định kỳ
 
@@ -148,15 +156,15 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | landlord_id | uuid | FK→User, NOT NULL | landlord sở hữu cấu hình | | |
-| scope | enum (`building`,`room`) | NOT NULL | | | `room` |
+| scope | enum (`landlord`,`building`,`room`) | NOT NULL | Default for the landlord, or an override for one building/room | | `room` |
 | building_id | uuid | FK→Building, nullable | bắt buộc khi `scope='building'` | | |
 | room_id | uuid | FK→Room, nullable | bắt buộc khi `scope='room'` | | |
-| due_days | smallint | NOT NULL default 5 | ngày trong tháng chốt hóa đơn | `>= 1; <= 28` | `5` |
+| due_days | smallint | NOT NULL default 5 | Days allowed after invoice issuance; copied into the invoice due_date calculation (D37) | `>= 1; <= 28` | `5` |
 | remind_days | smallint | NOT NULL default 3 | ngày trong tháng nhắc nộp tiền | `>= 1; <= 28` | `3` |
 | bot_enabled | boolean | NOT NULL default true | cho bot gửi card nhắc nợ vào room chat | | `true` |
 | is_active | boolean | NOT NULL default true | chỉ 1 record active/trùng index; `false` = tắt → kế thừa cấp trên | | `true` |
 
-**Constraint:** đúng một FK mục tiêu theo `scope`; partial UNIQUE `(scope, landlord_id, building_id, room_id) WHERE is_active = true` — mỗi index chỉ 1 record active.
+**Constraints:** `scope='landlord'` requires both target FKs to be NULL; `building` requires only `building_id`; `room` requires only `room_id`. Validate that the target belongs to the configuring landlord. Use three partial UNIQUE indexes, each filtered by its scope and `is_active = true AND is_deleted = false`: `(landlord_id)` for landlord defaults, `(landlord_id, building_id)` for building overrides, and `(landlord_id, room_id)` for room overrides. Resolution skips inactive/deleted settings. Changes affect newly issued invoices only.
 
 ### 2.11 MeterReading
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
@@ -178,16 +186,23 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 |---|---|---|---|---|---|
 | contract_id | uuid | FK→Contract, NOT NULL | | | |
 | code | varchar(32) | UNIQUE, NOT NULL | mã nhận diện nhúng trong VietQR; webhook đối soát theo mã này, không theo amount | Min length: 1; Max length: 32 | `INV-202609-8F2K` |
+| payment_account_id | uuid | FK→LandlordPaymentAccount, nullable | tài khoản/kênh nhận tiền đã chọn; bắt buộc khi phát hành hóa đơn có VietQR | | |
+| payment_recipient_snapshot | jsonb | nullable | snapshot bất biến lúc phát hành: `account_type`, `bank_code`, `account_number_encrypted`, `account_number_masked`, `account_name`, `merchant_id`; API chỉ trả QR render + số TK đã che | | |
 | period | varchar(7) | NOT NULL | | Min length: 7; Max length: 7; Regex: `^[0-9]{4}-(0[1-9]\|1[0-2])$` | `2026-09` |
 | rent_amount | decimal | NOT NULL | tiền phòng **prorated** theo §8 (`monthly_rent × ratio`); denormalized cho Dashboard (D20) | `>=0` | `3500000` |
 | breakdown | jsonb | nullable | snapshot bất biến: điện/nước/phí định kỳ từ RatePolicy;每个item có `type` để phân loại | | `[{"type":"electricity","name":"Điện EVN","qty_kwh":180,"amount":720000}]` |
 | other_fees | jsonb | nullable | phí 1 lần / ngoài lệ (không trong cấu hình). **D33 — cho phép `amount` ÂM = giảm trừ/miễn giảm** (snapshot giữ dấu âm) | | `[{"name":"Vệ sinh lễ","amount":50000}]` |
 | total_amount | decimal | NOT NULL | **= làm tròn tổng** (round-half-up → hàng nghìn), kiểm tra khớp dòng; **≥ 0** (`TOTAL_NEGATIVE` — D33⑥) | `>=0` | `4610000` |
-| invoice_status | enum (`pending`,`partially_paid`,`paid`,`overdue`,`cancel`) | NOT NULL default `pending` | **D33③ — `partially_paid`** = đã thu được tiền nhưng chưa đủ (Σ success < total); `paid` khi Σ ≥ total; `overdue` khi quá hạn còn thiếu; **không sửa sau khi gửi** — cancel + tạo mới (audit trail, **D18/D20**) | | `pending` |
-| issued_at | timestamp | nullable | thời điểm **Phát hành** (rời `pending`) — audit D18/D20; `NULL` khi còn pending (D33② auto-sinh chưa phát hành) | | `2026-09-30T20:15:00Z` |
+| paid_amount | decimal | NOT NULL default 0 | Sum of successful invoice collections; updated with Payment in the same transaction | `>=0` | `3500000` |
+| invoice_status | enum (`pending`,`unpaid`,`partially_paid`,`paid`,`overdue`,`cancel`) | NOT NULL default `pending` | pending = draft; unpaid = issued with no payment; partially_paid = some payment before the deadline; overdue = past the deadline with money still owed; paid = paid_amount >= total_amount; cancel = retained for audit | | `pending` |
+| issued_at | timestamptz | nullable | Issuance time; NULL while pending. Issued financial details are immutable; corrections require cancellation and replacement | | `2026-09-30T20:15:00Z` |
+| due_date | date | nullable | Set once at issuance: local issue date in Asia/Ho_Chi_Minh + resolved due_days (D37); subsequent setting changes do not alter it | | `2026-10-06` |
+| voided_invoice_id | uuid | FK→Invoice, nullable | Replacement points to the cancelled invoice it replaces (new → old, D37); same contract and period, validated by the service | | |
 | note | text | nullable | | | `Tháng nhập cư, prorate từ 15/09` |
 
-> **Cách tính toàn bộ (điện/nước/phí/prorate/làm tròn/block lỗi) → `utility-billing-calculations.md` §2–§11.** UNIQUE **partial** `(contract_id, period) WHERE invoice_status != 'cancel'` — **D33①** cho phép tạo hóa đơn thay thế sau khi cancel bản sai (bản cũ giữ audit). **D33② — Invoice pending auto-sinh theo TỪNG PHÒNG** khi phòng đủ 2 MeterReading + policy OK (không batch toàn kỳ). **`issued_at` set khi Phát hành (D37) — check overdue dựa trên `BillingSetting.due_days`, không cần lưu `due_date` riêng.**
+> **Billing calculation:** see `utility-billing-calculations.md` §2–§11. Partial UNIQUE `(contract_id, period) WHERE invoice_status != 'cancel'` permits a replacement after cancellation (D33①). Auto-create a pending invoice per room when both readings and policies are ready (D33②). At issuance, select the landlord's payment account, freeze the recipient snapshot, and generate VietQR using `code`, `total_amount`, and that snapshot. Set `issued_at` and `due_date` together (D37); use `unpaid`, or `paid` immediately if the total is zero. Do not create a zero-value Payment for a zero-total invoice. An issued invoice is overdue when the current date in Asia/Ho_Chi_Minh is later than `due_date` and a balance remains; a partial payment after that date leaves it overdue. Never change `cancel` through payment processing. CHECK `(issued_at IS NULL) = (due_date IS NULL)`; pending requires both NULL, and unpaid/partially_paid/paid/overdue require both present. A cancelled draft may keep both NULL.
+
+**Constraint:** UNIQUE `(id, contract_id)` để `Payment` có thể dùng foreign key kép xác nhận invoice thực sự thuộc contract đã ghi. `payment_account_id` phải thuộc `Contract.landlord_id`; đây là ràng buộc xuyên bảng, thực thi bằng trigger `validate_invoice_payment_account_owner()` khi tạo/cập nhật invoice. Trigger cũng buộc `payment_account_id` và snapshot cùng có mặt khi `issued_at IS NOT NULL`.
 
 **DTO — Breakdown items:**
 
@@ -269,24 +284,61 @@ type InvoiceBreakdownItem = ElectricityItem | WaterItem | FeeItem;
 ]
 ```
 
-### 2.13 Payment
+### 2.13 LandlordPaymentAccount (tài khoản/kênh nhận tiền)
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
-| invoice_id | uuid | FK→Invoice, **nullable** | nullable khi trả cọc hoặc hoàn tiền (không liên quan HĐ) | | |
-| contract_id | uuid | FK→Contract, nullable | bắt buộc khi `invoice_id` null (trả cọc/hoàn tiền theo HĐ) | | |
-| method | enum (`vietqr`,`vnpay`,`momo`,`cash`,`mock`) | NOT NULL | VietQR là kênh MVP; VNPay/MoMo là Stretch | | `vietqr` |
+| landlord_id | uuid | FK→User, NOT NULL | chủ sở hữu tài khoản/kênh nhận tiền | | |
+| account_type | enum (`bank_account`,`vnpay_merchant`,`momo_merchant`) | NOT NULL | `bank_account` là nguồn sinh VietQR; hai loại merchant phục vụ gateway khi được bật | | `bank_account` |
+| bank_code | varchar(32) | nullable | mã ngân hàng/VietQR; bắt buộc với `bank_account` | Min length: 1; Max length: 32 | `VCB` |
+| account_number_encrypted | bytea | nullable | số tài khoản mã hóa ở tầng ứng dụng; không trả qua API | | |
+| account_number_masked | varchar(32) | nullable | số TK đã che để hiển thị/audit; bắt buộc với `bank_account` | Min length: 4; Max length: 32 | `****1234` |
+| account_name | varchar | nullable | tên chủ tài khoản; bắt buộc với `bank_account` | Min length: 1; Max length: 254 | `NGUYEN VAN A` |
+| merchant_id | varchar | nullable | mã merchant của VNPay/MoMo; bắt buộc với loại merchant tương ứng | Min length: 1; Max length: 255 | `MOMO_MERCHANT_01` |
+| credential_ref | varchar | nullable | khóa tham chiếu secret manager; không lưu API key/secret trong DB | Min length: 1; Max length: 255 | `secrets/payment/momo/01` |
+| is_default | boolean | NOT NULL default false | gợi ý khi tạo invoice; invoice vẫn snapshot tài khoản thực được chọn | | `true` |
+| is_active | boolean | NOT NULL default true | false = không được chọn cho hóa đơn mới, vẫn giữ để audit hóa đơn cũ | | `true` |
+| verified_at | timestamptz | nullable | thời điểm xác minh ownership/gateway thành công | | |
+
+**Constraints & indexes:**
+
+- `account_type='bank_account'` bắt buộc có `bank_code`, `account_number_encrypted`, `account_number_masked`, `account_name`; loại merchant bắt buộc có `merchant_id` và `credential_ref`.
+- Partial UNIQUE `(landlord_id) WHERE is_default = true AND is_active = true AND is_deleted = false` — mỗi landlord tối đa một tài khoản mặc định đang hoạt động.
+- Không hard-delete tài khoản đã được `Invoice.payment_account_id` tham chiếu; chỉ `is_active=false`/soft-delete sau khi đã ngừng dùng.
+
+### 2.14 Payment
+| Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
+|---|---|---|---|---|---|
+| invoice_id | uuid | FK→Invoice, nullable | bắt buộc chỉ với `payment_purpose='invoice_collection'` | | |
+| contract_id | uuid | FK→Contract, **NOT NULL** | luôn giữ contract để đối soát cả thu hóa đơn, thu cọc và hoàn cọc | | |
+| payment_purpose | enum (`invoice_collection`,`deposit_collection`,`deposit_refund`) | NOT NULL | phân biệt thu hóa đơn, nhận cọc và trả cọc; không suy luận bằng `invoice_id` | | `invoice_collection` |
+| direction | enum (`inflow`,`outflow`) | NOT NULL | `inflow` là tiền vào landlord; `outflow` là tiền trả từ landlord | | `inflow` |
+| channel | enum (`bank_transfer_qr`,`vnpay`,`momo`,`cash`,`mock`) | NOT NULL | kênh thanh toán; VietQR là `bank_transfer_qr` | | `bank_transfer_qr` |
 | payment_status | enum (`pending`,`success`,`failed`) | NOT NULL | | | `success` |
-| amount | decimal | NOT NULL | **số tiền THỰC NHẬN** (có thể ≠ total khi trả một phần; thu dư vẫn ghi đủ số nhận) | `>=0`| `2000000` |
-| transaction_id | varchar | nullable | null cho cash | Min length: 1; Max length: 255 | `VNPAY-20260930183021` |
+| amount | decimal | NOT NULL | Actual money received or refunded; record the full amount even for underpayment/overpayment | `>0` | `2000000` |
+| provider | varchar | nullable | nguồn đối soát/gateway: `sepay`, `casso`, `vnpay`, `momo`, `mock`, `manual` | Min length: 1; Max length: 50 | `sepay` |
+| provider_event_id | varchar | nullable | event ID do provider gửi; dùng chống xử lý lặp webhook | Min length: 1; Max length: 255 | `evt_01J...` |
+| transaction_id | varchar | nullable | mã giao dịch do ngân hàng/gateway trả về; null cho cash chưa có biên lai điện tử | Min length: 1; Max length: 255 | `VNPAY-20260930183021` |
 | raw_gateway_response | jsonb | nullable | bằng chứng đối soát QR | | `{"bank":"VCB","amount":4610000}` |
-| payer_id | uuid | FK→ContractMember, nullable | dùng khi shared_tracking (D22) | | `NULL` |
-| needs_review | boolean | NOT NULL default false | true nếu webhook thành công tới Invoice `void` (D33⑤) | | `false` |
+| payer_contract_member_id | uuid | FK→ContractMember, nullable | người trả nếu xác định được; nullable khi webhook QR chỉ biết mã invoice hoặc tenant passive (D29) | | `NULL` |
+| paid_at | timestamptz | nullable | thời điểm tiền thực sự được nhận/trả thành công; không dùng `created_at` cho báo cáo tài chính | | `2026-09-30T20:15:00Z` |
+| needs_review | boolean | NOT NULL default false | true nếu webhook thành công tới Invoice `cancel` (D33⑤) | | `false` |
 
-> **D33③ — trả một phần / thu dư-đủ:** đối soát theo **mã định danh hóa đơn** (không theo amount — khách trả thiếu/dư vẫn khớp). Invoice → `partially_paid` khi Σ success ∈ (0, total); `paid` khi Σ ≥ total. Thu dư: KHÔNG hoàn tiền/bù trừ tự động — tab History hiển thị nhắc "thu dư X / còn thiếu Y" (D33). **D33⑤ — Payment success tới Invoice `void`:** không set `paid`, đánh cờ cảnh báo chủ trọ đối soát.
+**Constraints & indexes:**
+
+- CHECK `payment_purpose='invoice_collection'` ⟺ `invoice_id IS NOT NULL AND direction='inflow'`; `deposit_collection` yêu cầu `invoice_id IS NULL AND direction='inflow'`; `deposit_refund` yêu cầu `invoice_id IS NULL AND direction='outflow'`.
+- CHECK `provider_event_id IS NOT NULL OR transaction_id IS NOT NULL` thì `provider IS NOT NULL`; khoản cash thu tay không có mã điện tử dùng `provider='manual'` khi cần lưu biên lai.
+- UNIQUE `(provider, provider_event_id) WHERE provider_event_id IS NOT NULL` và UNIQUE `(provider, transaction_id) WHERE transaction_id IS NOT NULL` — callback/webhook gửi lại không tạo thêm Payment.
+- FK `(invoice_id, contract_id)` → `Invoice(id, contract_id)` và FK `(payer_contract_member_id, contract_id)` → `ContractMember(id, contract_id)`. Vì `contract_id` luôn có, Payment không thể trỏ sang invoice hoặc member của hợp đồng khác.
+- CHECK `payment_status != 'success' OR paid_at IS NOT NULL`.
+- **Manual-entry retries:** reuse the existing Payment `id` as the request identifier. The client generates one UUID per collection/refund action and reuses it on retries. After owner authorization, an existing ID with the same payment details returns the existing result; different details are rejected. The primary key prevents double insertion, and retries must not increment `paid_amount` again. AuditLog records who confirmed the payment.
+
+**Reconciliation (existing tables):** authenticate the provider callback, require a provider event/transaction ID, then validate invoice code, incoming direction, and the actual recipient bank account/merchant against the frozen invoice snapshot before recording an invoice collection. An amount mismatch is allowed under D33. Unmatched transfers do not create a Payment or change invoice balances: record the authenticated event in the existing AuditLog (`payment.unmatched`, system actor), retaining the provider ID and received data needed for manual reconciliation. The landlord checks the provider/bank history and confirms the correct invoice manually through the same recipient/direction checks; keep the original provider IDs and raw response so a later callback cannot record it twice. Do not expose a new unmatched-event screen or automatic matching workflow. Payments for draft invoices also require manual review after issuance; cancelled invoices keep the existing D33⑤ behavior.
+
+> **D33③ — partial payment / overpayment:** after recipient/direction checks, match by invoice code, not exact amount. For an issued, non-cancelled invoice, use `paid` when the successful invoice-collection sum reaches the total; otherwise use `overdue` if the deadline has passed, `partially_paid` if any money was received, or `unpaid`. Keep the full amount received; show excess/remaining amounts in History without automatic refunds or carry-forward. Update Payment and `Invoice.paid_amount` atomically while holding the invoice row lock; cancellation uses the same lock. A duplicate callback must not add to the aggregate again or downgrade success. **D33⑤:** a successful payment to a cancelled invoice is retained with `needs_review=true`; never revive the invoice or automatically move the payment to its replacement.
 >
-> **Trả cọc (checkout):** landlord tạo Payment với `invoice_id = NULL`, `contract_id = ?`, `method = 'cash'|'vnpay'`, `amount = số tiền trả lại`. `created_at` = thời điểm thanh lý. Không cần field riêng trên Contract.
+> **Tiền cọc:** nhận cọc dùng `payment_purpose='deposit_collection'`, `direction='inflow'`; hoàn cọc lúc checkout dùng `payment_purpose='deposit_refund'`, `direction='outflow'`. Hai loại này không được cộng vào doanh thu hóa đơn. Báo cáo doanh thu chỉ lấy `invoice_collection` + `inflow` + `payment_status='success'`, theo `paid_at`.
 
-### 2.14 IssueReport
+### 2.15 IssueReport
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | room_id | uuid | FK→Room, NOT NULL | | | |
@@ -299,11 +351,10 @@ type InvoiceBreakdownItem = ElectricityItem | WaterItem | FeeItem;
 | closed_at | timestamptz | nullable | set khi `resolved` hoặc `cancelled` | | |
 
 > Ảnh sự cố: `Media(owner_type='issue_report', purpose='issue_photo')`.
-### 2.15 Conversation (Chat)
+### 2.16 Conversation (Chat)
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | type | enum (`room`,`building`,`direct`) | NOT NULL | | | `room` |
-| room_id | uuid | FK→Room, nullable | bắt buộc nếu kind=room | | |
 | building_id | uuid | FK→Building, nullable | bắt buộc nếu kind=building | | `NULL` |
 | contract_id | uuid | FK→Contract, nullable | bắt buộc nếu kind=room; mỗi HĐ có một room chat mới | | |
 | title | varchar | nullable | tên group chat (optional, cho building chat hoặc future use) | Min length: 1; Max length: 255 | `Chat tòa nhà` |
@@ -315,7 +366,7 @@ type InvoiceBreakdownItem = ElectricityItem | WaterItem | FeeItem;
 - UNIQUE `contract_id` khi room chat
 - Chat cũ vẫn giữ history sau checkout, không archive/read-only
 
-### 2.16 ConversationMember
+### 2.17 ConversationMember
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | conversation_id | uuid | FK→Conversation, NOT NULL | | | |
@@ -325,7 +376,7 @@ type InvoiceBreakdownItem = ElectricityItem | WaterItem | FeeItem;
 
 **Index:** UNIQUE `(conversation_id, user_id)`.
 
-### 2.17 Message
+### 2.18 Message
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | conversation_id | uuid | FK→Conversation, NOT NULL | | | |
@@ -335,7 +386,7 @@ type InvoiceBreakdownItem = ElectricityItem | WaterItem | FeeItem;
 
 > File/ảnh đính kèm (khi `type = image|file`): `Media(owner_type='message', purpose='chat_attachment')`.
 
-### 2.18 MessageMention
+### 2.19 MessageMention
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | message_id | uuid | FK→Message, NOT NULL | | | |
@@ -343,7 +394,7 @@ type InvoiceBreakdownItem = ElectricityItem | WaterItem | FeeItem;
 
 **Index:** UNIQUE `(message_id, user_id)`.
 
-### 2.19 RoommateProfile
+### 2.20 RoommateProfile
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | user_id | uuid | FK→User, UNIQUE, NOT NULL | chỉ tenant có account | | |
@@ -357,7 +408,7 @@ type InvoiceBreakdownItem = ElectricityItem | WaterItem | FeeItem;
 | is_visible | boolean | NOT NULL default true | ẩn/hiện bài trong feed, không xóa profile | | `true` |
 | id_verified | boolean | default false | badge xác minh tự nguyện (**D26**) | | `true` |
 
-### 2.20 MatchRequest
+### 2.21 MatchRequest
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | requester_id | uuid | FK→User, NOT NULL | | | |
@@ -369,16 +420,16 @@ type InvoiceBreakdownItem = ElectricityItem | WaterItem | FeeItem;
 
 **Index:** UNIQUE `(requester_id, target_id)` — cache mỗi cặp 1 lần (**D28**). Service chặn request đảo chiều trùng cặp.
 
-### 2.21 Notification (MVP inbox + FCM)
+### 2.22 Notification (MVP inbox + FCM)
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | user_id | uuid | FK→User, NOT NULL | | | |
 | type | varchar | NOT NULL | invoice_due, contract_expiry,... | Min length: 1; Max length: 50 | `invoice_due` |
 | data | jsonb | nullable | deep-link payload | | `{"invoice_id":"<uuid>","amount":4610000}` |
 | read_at | timestamp | nullable | | | `NULL` |
-| sent_at | timestamptz | nullable | thời điểm gửi FCM | | |
+| sent_at | timestamp | nullable | thời điểm gửi FCM | | |
 
-### 2.22 NotificationPreference
+### 2.23 NotificationPreference
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | user_id | uuid | FK→User, NOT NULL | | | |
@@ -387,7 +438,7 @@ type InvoiceBreakdownItem = ElectricityItem | WaterItem | FeeItem;
 
 **Index:** UNIQUE `(user_id, type)`.
 
-### 2.23 PushDevice
+### 2.24 PushDevice
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | user_id | uuid | FK→User, NOT NULL | một user có thể nhiều thiết bị | | |
@@ -395,7 +446,7 @@ type InvoiceBreakdownItem = ElectricityItem | WaterItem | FeeItem;
 | platform | enum (`android`,`web`) | NOT NULL | | | `android` |
 | last_seen_at | timestamptz | nullable | dùng dọn token hết hạn | | |
 
-### 2.24 AuditLog
+### 2.25 AuditLog
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | actor_id | uuid | FK→User, nullable | null cho webhook/system | | |
@@ -408,7 +459,7 @@ type InvoiceBreakdownItem = ElectricityItem | WaterItem | FeeItem;
 
 **Index:** `(entity_type, entity_id, created_at DESC)`, `(actor_id, created_at DESC)`.
 
-### 2.25 Media (polymorphic — gom mọi file/ảnh của hệ thống)
+### 2.26 Media (polymorphic — gom mọi file/ảnh của hệ thống)
 
 **Thiết kế polymorphic** — 1 bảng `media` quản lý file/ảnh mọi entity (user, room, building, contract, contract_member, meter_reading, issue_report, message). `owner_type` enum cố định + `purpose` enum ràng buộc hợp lệ theo từng owner_type. Toàn vẹn tham chiếu kiểm tra ở service layer (không FK thật vì 1 cột `owner_id` reference nhiều bảng).
 
@@ -443,7 +494,11 @@ User 1--N Room (owner_id, NOT NULL)
 Room 1--N Contract
 Contract 1--N ContractMember
 Contract 1--N Invoice
+Contract 1--N Payment              (cọc / hoàn cọc / đối soát)
+User 1--N LandlordPaymentAccount
+LandlordPaymentAccount 1--N Invoice (tài khoản đã snapshot khi phát hành)
 Invoice 1--N Payment
+ContractMember 1--N Payment        (payer_contract_member_id, optional)
 Room 1--N MeterReading            (điện + nước: 2 bản ghi/kỳ qua type)
 Building/Room 1--N BillingSetting (cấu hình hạn/nhắc; còn: landlord)
 User 1--N BillingSetting
@@ -477,7 +532,9 @@ User/Room/Building/Contract/ContractMember/MeterReading/IssueReport/Message
 | **RatePolicy (gộp UtilityRatePolicy + RecurringFee), Invoice.breakdown, MeterReading.type** | **D30** — đơn giá điện/nước versioned (flat/bậc thang/khoán đầu người) + phí định kỳ; đóng open question #6; mở rộng D16 (giữ thứ tự room→building→landlord) |
 | **RatePolicy.steps bậc thang chỉ từ preset seed (EVN/TT25/nước địa phương), không nhập tay trong UI; đổi giá = policy mới `effective_from`** | **D31** — preset thân thiện landlord lớn tuổi; thuật toán `calcTiered` là code, giá là config |
 | **LandlordProfile.electricity_policy_id/water_policy_id nullable (NULL = chưa cấu hình), Contract.vehicle_count kê khai ở HĐ, phí 1 lần `other_fees`, preset phí seed** | **D32** — onboarding không chặn (banner + block tại hóa đơn), xe theo HĐ, preset phí |
-| **Invoice `invoice_status` `partially_paid`, UNIQUE partial `(contract_id, period) WHERE invoice_status != 'void'`, Payment đối soát theo invoice_id + thu dư/thiếu nhắc ở History, Invoice auto-sinh theo phòng, `other_fees` âm (total ≥ 0), `rate_kind` điện chỉ flat/tiered** | **D33** — thanh toán một phần + thu dư/thiếu nhắc, hóa đơn theo phòng, điện bỏ khoán đầu người |
+| **Invoice `invoice_status` `partially_paid`, UNIQUE partial `(contract_id, period) WHERE invoice_status != 'cancel'`, Payment đối soát theo invoice_id + thu dư/thiếu nhắc ở History, Invoice auto-sinh theo phòng, `other_fees` âm (total ≥ 0), `rate_kind` điện chỉ flat/tiered** | **D33** — thanh toán một phần + thu dư/thiếu nhắc, hóa đơn theo phòng, điện bỏ khoán đầu người |
+| **LandlordPaymentAccount, Invoice payment-recipient snapshot, Payment purpose/direction + composite FKs + webhook idempotency** | Payment-design fix — VietQR đúng recipient, tách tiền cọc khỏi doanh thu, chặn Payment gắn sai hợp đồng/member |
+| **Invoice unpaid/due_date, manual Payment retry via existing id, Contract deposit settlement fields, unmatched events in existing AuditLog** | Payment simplification using existing tables only; retain D33/D37 behavior |
 | Building/Room `electricity_policy_id`/`water_policy_id` (con trỏ policy) thay field decimal | D16 (nâng cấp), D30 |
 | Contract uses template generation + signed-file upload; `signed_at` + Media `contract_signed`, no signature-mode column | D18 |
 | ContractMember.share_amount, Contract.payment_config | D22 |
@@ -510,10 +567,11 @@ User/Room/Building/Contract/ContractMember/MeterReading/IssueReport/Message
 | Contract | Đọc | ✅ (owner) | ✅ (chỉ HĐ mình là `tenant_id`/`ContractMember`) | ✅ | |
 | MeterReading | Create/confirm | ✅ (owner phòng) | ❌ | ✅ | P2-01: chỉ landlord thao tác trên mobile |
 | MeterReading | Đọc | ✅ | ✅ (chỉ phòng mình đang thuê) | ✅ | |
-| Invoice | Create (auto)/void | ✅ (owner) | ❌ | ✅ | |
+| Invoice | Create (auto)/cancel | ✅ (owner) | ❌ | ✅ | |
 | Invoice | Đọc | ✅ (owner) | ✅ (contract của mình) | ✅ | |
-| Payment | Ghi nhận cash | ✅ (owner) | ❌ | ✅ | |
-| Payment | Webhook callback (VNPay/MoMo) | hệ thống (service account) | — | — | không qua user JWT |
+| LandlordPaymentAccount | CRUD | ✅ (chỉ của mình) | ❌ | ✅ | không trả `account_number_encrypted`/`credential_ref` ra API client |
+| Payment | Record cash / confirm a verified bank transfer manually | ✅ (owner) | ❌ | ✅ | Retain provider IDs for bank transfers; use the existing Payment id for manual-entry retries |
+| Payment | Webhook callback (bank/VNPay/MoMo) | hệ thống (service account) | — | — | xác minh chữ ký provider + idempotency, không qua user JWT |
 | Payment | Đọc | ✅ (owner) | ✅ (của mình) | ✅ | |
 | IssueReport | Create | ✅ (owner, tạo thay tenant passive) | ✅ (tenant tự tạo qua @issue) | ✅ | |
 | IssueReport | Update status | ✅ (owner) | ❌ | ✅ | |
