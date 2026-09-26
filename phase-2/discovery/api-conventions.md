@@ -4,7 +4,7 @@
 > **Owner:** BE  
 > **Đầu vào:** P2-04, user flow, `database-design.md`, `utility-billing-calculations.md`, các quyết định D13, D18, D29, D33–D37
 > **Đầu ra sử dụng:** `openapi.yaml` trong `pbl6-backend` (P2-06)  
-> **Cập nhật:** 2026-09-17
+> **Cập nhật:** 2026-09-25
 
 ## Phạm vi
 
@@ -16,12 +16,12 @@ Các quy ước phải giữ nghiệp vụ đã chốt: tenant không bắt bu�
 
 ## 1. Response Wrapper Format — Định dạng phản hồi chuẩn
 
-Mọi response đều phải trả **HTTP status code**. Ngoại trừ `204 No Content`, response tải file, và response xác nhận webhook bên thứ ba, response JSON thành công có field `statusCode`, `message` và `data`; response lỗi JSON chỉ có `statusCode` và `code`.
+Mọi response đều phải trả **HTTP status code**. Ngoại trừ `204 No Content`, response tải file, và response xác nhận webhook bên thứ ba, response JSON thành công có field `statusCode`, `code` và `data`; response lỗi JSON chỉ có `statusCode` và `code`.
 
-Ba ngoại lệ không dùng JSON wrapper vì: `204` theo HTTP không được có body; response tải file là binary stream cần `Content-Type` và `Content-Disposition`; webhook acknowledgement chỉ trả status/body đúng contract của provider (thường `200` hoặc `204`). Vì vậy chúng không có field JSON `statusCode`/`message`/`code`, nhưng vẫn có HTTP status code.
+Ba ngoại lệ không dùng JSON wrapper vì: `204` theo HTTP không được có body; response tải file là binary stream cần `Content-Type` và `Content-Disposition`; webhook acknowledgement chỉ trả status/body đúng contract của provider (thường `200` hoặc `204`). Vì vậy chúng không có field JSON `statusCode`/`code`/`data`, nhưng vẫn có HTTP status code.
 
 - `statusCode` trùng với HTTP status code.
-- Với success response, `message` là thông điệp ngắn do lập trình viên đặt theo action (ví dụ `Lấy thông tin phòng thành công.`).
+- Với success response, `code` là mã thành công nghiệp vụ ổn định do lập trình viên đặt theo action (ví dụ `ROOM_FETCHED`, `INVOICE_CREATED`). Mã được viết in hoa, snake_case và giữ nguyên đúng như OpenAPI đã công bố.
 - Với error response, `code` là mã lỗi nghiệp vụ ổn định để client rẽ nhánh. Mã được viết in hoa và giữ nguyên đúng như OpenAPI đã công bố; có thể có khoảng trắng và dấu nháy đơn khi cần, ví dụ `CAN'T DELETE`.
 - `data` chứa một resource, mảng resource hoặc kết quả action khi thành công; response lỗi không có `data`, `message` hay `details`.
 - Response list thành công có thêm `pagination`.
@@ -32,7 +32,7 @@ Ví dụ response một resource:
 ```json
 {
   "statusCode": 200,
-  "message": "Lấy thông tin phòng thành công.",
+  "code": "ROOM_FETCHED",
   "data": {
     "id": "4a8c559a-a010-4c42-b564-c79c05a3c22a",
     "name": "P.201",
@@ -70,7 +70,7 @@ Mọi collection response có `pagination.type` làm discriminator. `pageSize` l
 ```json
 {
   "statusCode": 200,
-  "message": "Lấy danh sách phòng thành công.",
+  "code": "ROOMS_FETCHED",
   "data": [
     {
       "id": "4a8c559a-a010-4c42-b564-c79c05a3c22a",
@@ -113,7 +113,7 @@ Mọi collection response có `pagination.type` làm discriminator. `pageSize` l
 ```json
 {
   "statusCode": 200,
-  "message": "Lấy lịch sử thông báo thành công.",
+  "code": "NOTIFICATIONS_FETCHED",
   "data": [
     {
       "id": "7d7fbbac-7701-4143-b5c6-0b62620356e0",
@@ -188,6 +188,8 @@ Validation dùng `422` và `code: VALIDATION FAILED`; response không trả chi 
 - Mỗi user chỉ có đúng một role bất biến theo D13. Không có role hierarchy kế thừa quyền: quyền là tổ hợp của role, action và ownership.
 - RBAC luôn đi kèm ownership check: landlord chỉ thao tác dữ liệu thuộc quyền quản lý; tenant chỉ xem/thanh toán hợp đồng liên kết với mình; admin có quyền được khai báo rõ ở từng endpoint.
 - Khi tenant bị khóa, quyền xem/thanh toán hợp đồng hiện tại vẫn phải tuân theo user flow; không dùng role guard chung để chặn nhầm quyền này.
+- `/me` là **ngoại lệ tự phục vụ duy nhất** (profile, bảo mật, tuỳ biến cá nhân) và **không bao giờ** trỏ tới tài nguyên của người dùng khác.
+- Quyền truy cập bản ghi `Media` **kế thừa từ tài nguyên cha** qua `ownerType`/`ownerId`; do đó các thao tác trên Media có cột quyền **để trống có chủ ý**, và server nạp rule của tài nguyên cha thay vì so sánh role.
 
 ## 5. Request Validation — Quy ước validate request
 
@@ -204,7 +206,7 @@ NestJS DTO validation là nguồn kiểm tra phía server. Từ chối field JSO
 | Số điện thoại | Chấp nhận `0xxxxxxxxx` hoặc `+84xxxxxxxxx`; chuẩn hóa bằng cách đổi tiền tố `+84` thành `0`, sau đó lưu và trả về dạng `0xxxxxxxxx` (ví dụ `+84912345678` → `0912345678`). Endpoint public không trả số điện thoại. |
 | Boolean / enum | Dùng JSON boolean và enum đã khai báo, không dùng `0`/`1` hay display label. |
 
-Upload file dùng `multipart/form-data`, với một part `file` và metadata được endpoint yêu cầu (ví dụ `purpose`). MVP chỉ chấp nhận `image/jpeg`, `image/png`, `image/webp`, `application/pdf`; OpenAPI từng endpoint phải nêu giới hạn kích thước. Response trả resource `Media` theo envelope chuẩn; không lộ storage path, URL public vĩnh viễn hay media nhạy cảm.
+Upload file dùng quy trình **2 bước presign**, **không** dùng `multipart/form-data` từ client; backend **không bao giờ nhận file bytes qua multipart**. Các bước: (1) `POST /media/presign-upload` — body gồm `ownerType`, `ownerId`, `purpose`, `fileName`, `contentType`, `size`; response trả `mediaId`, `uploadUrl` (signed URL) và `requiredHeaders`; (2) client `PUT` file thẳng lên storage với đúng header, sau đó gọi `POST /media/{mediaId}/complete-upload` để backend chốt bản ghi `Media`. MVP chỉ chấp nhận `image/jpeg`, `image/png`, `image/webp`, `application/pdf`; OpenAPI từng endpoint phải nêu giới hạn kích thước. Response trả resource `Media` theo envelope chuẩn; **không lộ storage path, URL public vĩnh viễn hay media nhạy cảm**.
 
 ## 6. Naming Conventions — Quy ước đặt tên
 
@@ -214,13 +216,15 @@ Upload file dùng `multipart/form-data`, với một part `file` và metadata đ
 | Collection path | Danh từ số nhiều, lowercase kebab-case | `/match-requests` |
 | Resource path | UUID ở path param camelCase | `/rooms/{roomId}` |
 | CRUD path | Không dùng động từ | `POST /rooms`, `PATCH /rooms/{roomId}` |
-| Domain action | Động từ rõ ràng ở subpath khi không phải CRUD | `POST /invoices/{invoiceId}/issue` |
+| Domain action | Động từ rõ ràng ở subpath khi không phải CRUD | `POST /invoices/issue-invoice`, `POST /media/{mediaId}/complete-upload`, `POST /payments/record-cash-payment` |
 | JSON field / query param | `camelCase` | `createdAt`, `buildingId` |
 | Database field | Không expose trực tiếp | `created_at` → `createdAt` |
-| Enum | lowercase snake_case | `partially_paid` |
+| Enum | lowercase snake_case | `pending` |
 | Header custom | Pascal-Case có dấu gạch nối | `Idempotency-Key`, `X-Request-Id` |
 
 UUID dùng dạng canonical lowercase. URL không có trailing slash. Resource không tồn tại và resource bị ẩn do ownership đều trả `404` để không lộ dữ liệu.
+
+**Lưu ý về domain action:** action cấp collection (không có parent id trong path) nhận danh sách ID trong body (ví dụ `POST /invoices/issue-invoice` nhận `invoiceIds[]`). **Endpoint generic `/bulk` hoặc `/batch` bị cấm** — mọi thao tác nhiều bản ghi phải mang tên nghiệp vụ tường minh.
 
 ## 7. Versioning & Base URL — Phiên bản và URL gốc
 
@@ -271,25 +275,33 @@ Collection endpoint dùng ba query param chung `filter`, `sort` và `order`. M�
 | `filter` | Object có field được endpoint cho phép, serialized theo OpenAPI `deepObject`; ví dụ `filter[status]=available` | Không filter |
 | `sort` | **Một** field từ whitelist của endpoint; ví dụ `createdAt` | Field mặc định do endpoint khai báo, ví dụ `createdAt` |
 | `order` | `asc` hoặc `desc` | `asc` |
+| `format` | **Chỉ dùng trên collection `GET`** để tải file: `xlsx`, `csv`, `pdf`, `json`; **không được khai báo trên resource-detail `GET`** (detail luôn trả JSON) | `json`, tức response JSON kèm `pagination` |
 
-- Filter dùng `deepObject`: `GET /rooms?filter[status]=available&filter[buildingId]=<uuid>&sort=rentPrice&order=desc`. Multi-value enum filter dùng dấu phẩy, ví dụ `filter[status]=pending,overdue`.
+- Filter dùng `deepObject`: `GET /rooms?filter[status]=available&filter[buildingId]=<uuid>&sort=rentPrice&order=desc`. Multi-value enum filter dùng dấu phẩy, ví dụ `filter[invoiceStatus]=pending,issued`. **D39:** không có `overdue`/`partially_paid` trong enum hóa đơn — công nợ được tính ở server từ Σ `Payment` success (`GET /debts` cũng đã bỏ, xem D53).
 - Client chỉ được gửi **một** `sort`. `sort` lặp lại hoặc chứa dấu phẩy trả `422` với `code: VALIDATION FAILED`; server không tự chọn field đầu tiên.
 - `order` chỉ áp dụng cho `sort`. Gửi `order` mà không có `sort` dùng default sort của endpoint; order hoặc field sort không nằm trong whitelist trả `422` với `code: VALIDATION FAILED`.
 - OpenAPI từng endpoint phải khai báo field filter, whitelist `sort`, default sort, default order và pagination strategy. Backend có thể thêm `id:asc` làm tie-breaker nội bộ để thứ tự ổn định qua các trang; đây không phải multi-field sort do client yêu cầu.
+- **Export** không có endpoint riêng. Client gọi chính collection `GET` kèm `format`; `json` (hoặc không gửi) trả response chuẩn kèm `pagination`, còn `xlsx`/`csv`/`pdf` trả file stream với `Content-Type` và `Content-Disposition` và không có JSON wrapper. `format` không hợp lệ trả `422` với `code: VALIDATION FAILED`. Endpoint không có ý định export thì không khai báo `format`. **Endpoint xuất riêng (`*/export`) bị cấm**, bao gồm cả route tải một tài liệu đơn lẻ — tài liệu đơn lẻ lấy bằng cách filter collection, còn route detail luôn trả JSON.
 
 ## 12. Soft Delete vs Hard Delete — Xóa mềm và xóa cứng
 
-Không cho client hard-delete dữ liệu tài chính, pháp lý, audit hoặc bằng chứng. **Soft delete** nghĩa là record vẫn được giữ để audit/retention nhưng bị ẩn khỏi kết quả thông thường; domain có thể biểu diễn bằng `deletedAt` hoặc lifecycle status.
+Không cho client hard-delete dữ liệu tài chính, pháp lý, audit hoặc bằng chứng. **Soft delete** nghĩa là record vẫn được giữ để audit/retention nhưng bị ẩn khỏi kết quả thông thường; domain biểu diễn bằng cờ `is_deleted` trong Base Entity (xem `phase-1/discovery/database-design.md` §2.0) — **không có cột `deletedAt`** và không cần migration thêm cột cho flag này.
 
 | Nhóm resource | Quy ước v1 |
 |---|---|
+| User | **Soft delete** qua admin `DELETE /users/{userId}` (không có self-service delete). |
+| Building | **Soft delete** qua `DELETE /buildings/{buildingId}`. |
+| Media | **Soft delete** qua `DELETE /media/{mediaId}` cho media của chính người gọi. |
 | Invoice | **Soft delete** qua action `cancel`; giữ snapshot, payment và liên kết invoice thay thế (D33, D37). |
-| Payment, AuditLog, MeterReading, hợp đồng đã ký, ảnh OCR/evidence | **Soft delete / retention**; không có public `DELETE`. |
-| Contract, Building, Room, policy/fee, BillingSetting, IssueReport, Conversation, Message, RoommateProfile, MatchRequest, Notification | **Soft delete** qua lifecycle action như `terminate`, `deactivate`, `close`, `cancel`, `leave`, `dismiss`. |
-| LandlordProfile, ContractMember, NotificationPreference, Media | **Soft delete / retention**; không có public hard delete. |
+| Payment, AuditLog, MeterReading, Contract, ContractMember, IssueReport, Message, Conversation | **Soft delete / retention**; không có public `DELETE`. Các bảng này **không bao giờ bị cascade** khi User/Building xóa mềm — giữ nguyên cho truy vết tài chính/pháp lý/audit, chỉ ẩn khỏi list thông thường. |
+| Room, RatePolicy, BillingSetting, RoommateProfile, Notification | **Soft delete** qua lifecycle action như `terminate`, `deactivate`, `close`, `cancel`, `leave`, `dismiss`. `MatchRequest` nằm ngoài danh sách: enum status có `pending`, `accepted`, `rejected`, `withdrawn`, và `withdrawn` là một trạng thái nghiệp vụ chứ không phải xoá mềm — bản ghi được giữ nguyên. Xem D50. |
+| LandlordProfile, NotificationPreference | **Soft delete / retention**; không có public hard delete. |
 | ConversationMember, MessageMention và các bảng join/snapshot nội bộ | **Soft delete / retention** nội bộ; không có endpoint CRUD/`DELETE` trực tiếp. |
-| FavoriteRoom, PushDevice | User được xóa record của chính mình; có thể hard delete vì không mang giá trị tài chính/pháp lý/audit. |
-| User | **Soft delete / deactivate**; không có self-service hard delete. |
+| FavoriteRoom, PushDevice | User được xóa record của chính mình; có thể **hard delete** vì không mang giá trị tài chính/pháp lý/audit. |
+
+### Phạm vi cascade (cascade boundary)
+
+Khi `DELETE /users/{userId}` hoặc `DELETE /buildings/{buildingId}` đặt `is_deleted = true`, cờ này **chỉ cascade sang các con trực tiếp mang tính vận hành** (ví dụ: `LandlordProfile`, `PushDevice`, `NotificationPreference`, `RoommateProfile`, `FavoriteRoom`, `MatchRequest`, `Room`, `RatePolicy`, `BillingSetting`; **không** có `VietQrReceiverConfig` vì D39 đã bỏ bảng này). **Các bảng tài chính/pháp lý/audit sau đây KHÔNG bị cascade**: `Contract`, `ContractMember`, `Invoice`, `Payment`, `MeterReading`, `IssueReport`, `Message`, `Conversation`, `AuditLog`. Chúng giữ nguyên dữ liệu để tra cứu và chỉ bị ẩn khỏi danh sách khi tài nguyên cha đã xóa mềm.
 
 Database table không tự động tương đương một public API resource. Với mọi bảng/resource chưa liệt kê, mặc định **soft delete** và không expose `DELETE`; P2-06 chỉ thêm lifecycle action sau khi user flow, ownership, retention và audit requirement được xác định rõ.
 
@@ -301,30 +313,36 @@ Database table không tự động tương đương một public API resource. V
 - Gửi lại cùng key và cùng request trả lại nguyên status/body ban đầu.
 - Dùng lại cùng key với payload khác trả `409` và `code: IDEMPOTENCY KEY REUSED`; không xử lý request mới.
 - Webhook payment dùng provider event/transaction ID đã ký để deduplicate và verify signature; không tin idempotency key do client gửi.
-- Idempotency chỉ xử lý retry; đối soát theo invoice code và webhook tới invoice `cancel` vẫn tuân theo D33.
+- Idempotency chỉ xử lý retry; đối soát theo `Invoice.code` (không theo amount) và webhook tới invoice `void` vẫn tuân theo D33⑤ + D39 (ghi `Payment` + cờ `needs_review`).
+- **Business-named bulk actions** `POST /invoices/issue-invoice` và `POST /invoices/send-reminder` **cũng bắt buộc `Idempotency-Key`**, cùng retention 24h và hành vi `409 IDEMPOTENCY KEY REUSED` khi tái dùng key với payload khác. Lỗi nghiệp vụ từng bản ghi được trả **bên trong response** (trong `failed[]`) chứ không phải là HTTP error.
 
 ## 14. Batch / Bulk Operations — Thao tác hàng loạt
 
-### Có endpoint nào cần xử lý nhiều record một lần không?
+### Quy tắc chung
 
-**Không.** Sau khi review toàn bộ user flow MVP, không có endpoint/action ghi nào cần xử lý nhiều record trong một request. API v1 thực hiện action riêng cho từng resource.
+Luật chung vẫn là **không có bulk/import generic** (`/bulk`, `/batch`), **sinh hóa đơn theo từng phòng** (D33), và **không dùng bulk** cho: payment, hợp đồng đã ký, chốt số công tơ/OCR, evidence, thay đổi trạng thái property, khóa/mở khóa user. Import ngoài scope MVP (D19).
 
-Đặc biệt, sinh hóa đơn là **theo từng phòng**, không phải batch/bulk (D33), để giữ điều kiện dữ liệu, snapshot và audit riêng cho từng phòng. Không dùng batch/bulk cho invoice/payment, hợp đồng đã ký, chốt số công tơ/OCR, evidence, thay đổi trạng thái property hoặc khóa/mở khóa user. Import cũng ngoài scope MVP (D19).
+### Hai bulk action có tên nghiệp vụ (v1)
+
+API v1 có **chính xác hai** bulk action, đều mang tên nghiệp vụ tường minh (không dùng `/bulk` hay `/batch`):
+
+1. `POST /invoices/issue-invoice` — phát hành nhiều hóa đơn chờ
+2. `POST /invoices/send-reminder` — nhắc **ngày thu dự kiến** cho nhiều hóa đơn (theo `BillingSetting.remind_day`). **D39:** không phải "nhắc quá hạn" — không tồn tại `overdue`/`due_date`; đây chỉ là nhắc một lần, không block, không ghi trạng thái.
+
+Cả hai tuân theo pattern sau (tham chiếu quyết định **D43** trong `phase-2/discovery/decisions.md`):
+
+- **Request:** body chứa mảng ID tường minh (`invoiceIds[]`), có **giới hạn số item do OpenAPI khai báo** (item cap); không hỗ trợ "all records".
+- **Ownership/permission:** server kiểm tra quyền của **từng ID** riêng lẻ.
+- **Response:** trả kết quả **theo từng bản ghi**, tách thành `succeeded[]` và `failed[]` (mỗi item gồm `id` + `code` nghiệp vụ). Một bản ghi lỗi **không làm fail cả lô** (partial success allowed — **không atomic**).
+- **Counts:** response có trường đếm `requested`, `succeeded.length`, `failed.length`.
+- **Idempotency:** bắt buộc header `Idempotency-Key` (xem §13), retention 24h, `409 IDEMPOTENCY KEY REUSED` khi tái dùng key với payload khác.
+- **Cấm bulk** cho: signed contract, meter/OCR commit, evidence, property status change, user lock/unlock. Xem chi tiết D43.
 
 Collection `GET` có filter/pagination và array là field thuộc **một** resource (ví dụ `otherFees[]` của invoice) không được xem là batch/bulk operation.
 
-### Pattern cho bulk request/response
-
-**Không áp dụng trong API v1** vì không có batch/bulk endpoint. Nếu Phase 1+ có user flow thật sự cần action cùng domain, cùng owner và rủi ro thấp (ví dụ đánh dấu nhiều notification đã đọc), dùng pattern sau:
-
-- Dùng action endpoint có tên nghiệp vụ, ví dụ `POST /notifications/mark-read`; không dùng endpoint generic `/bulk`.
-- Request nhận danh sách ID tường minh (`notificationIds`), có giới hạn số item do OpenAPI quy định; không hỗ trợ “all records” hoặc action liên domain.
-- Server kiểm tra ownership/permission của từng ID. Item thành công trả `id`, `statusCode`, `message`; item lỗi chỉ trả `id`, `statusCode`, `code`, không có `message` hoặc `details`. Response cũng trả số lượng thành công/thất bại; OpenAPI phải nêu rõ action atomic hay có thể partial success.
-- Action phải idempotent khi phù hợp. Các action có ảnh hưởng tài chính/pháp lý/evidence vẫn không được dùng bulk pattern.
-
 ## Checklist cho P2-06
 
-Mỗi operation trong OpenAPI cần khai báo: method/path, request schema, response envelope, lỗi chung, access class/auth, ownership rule, pagination strategy (`offset` hoặc `cursor`) cùng filter/sort nếu là list, lifecycle precondition nếu là action, và `Idempotency-Key` nếu action có ảnh hưởng payment.
+Mỗi operation trong OpenAPI cần khai báo: method/path, request schema, response envelope, lỗi chung, access class/auth, ownership rule, pagination strategy (`offset` hoặc `cursor`) cùng filter/sort/`format` nếu là list, header `Location` nếu trả `201 Created`, lifecycle precondition nếu là action, và `Idempotency-Key` nếu action có ảnh hưởng payment.
 
 ## Review còn lại
 
