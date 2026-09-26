@@ -35,7 +35,7 @@
 | 2.2 | Advanced filters (price, area, amenities, distance) | MVP | Users expect filtering; competitor standard | Medium |
 | 2.3 | Room detail view (photos, price, location, landlord info) | MVP | Required for decision-making | Low |
 | 2.4 | Monthly invoice view | MVP | Core billing flow — tenant xem qua app, hoặc landlord đẩy qua kênh ngoài app/QR/tiền mặt (D29) | Low |
-| 2.5 | Online payment (VNPay/Momo) | MVP | Critical for digitizing payment; currently paper/cash | High |
+| 2.5 | Online payment (VietQR sandbox) | MVP | Critical for digitizing payment; currently paper/cash. **D39:** `mock`/`cash` là kênh chính; VNPay/MoMo chuyển sang **Stretch** | High |
 | 2.6 | Payment history | Stretch | Useful for tenant records; low effort if invoice view exists | Low |
 | 2.7 | Báo sự cố + Property Chat riêng phòng | MVP | Pain point (Chị Mai SLA); **D24′**: IssueReport (open→in_progress→resolved) qua `@issue` trong chat riêng phòng; bot auto-remind (OCR, hóa đơn, hợp đồng); mention `@user`; realtime Socket.io khi app mở, FCM offline | High |
 | 2.8 | In-app messaging with landlord | Nice-to-have | Đã hợp nhất vào **Property Chat (D24′)** — chat riêng phòng + chung toà; không xây kênh riêng 1-1 ngoài phòng | High |
@@ -51,7 +51,7 @@
 | 3.3 | OCR meter closing + manual confirm | MVP | Major pain point — manual Excel today (F5); OCR from photo + 1-tap confirm + photo evidence; manual fallback always | Medium |
 | 3.4 | Auto-invoice generation from utility data | MVP | Reduces manual work; key value prop for landlords | Medium |
 | 3.5 | Invoice listing & status (paid/unpaid) | MVP | Landlord needs payment overview | Low |
-| 3.6 | Payment tracking & overdue reminders | Stretch | Reduces follow-up work; can be manual for MVP | Medium |
+| 3.6 | Payment tracking & thu dư/còn thiếu reminder | MVP (giảm scope) | **D39:** bỏ khái niệm `overdue` + hạn chót; theo dõi công nợ = suy ra từ Σ `Payment` success vs tổng HĐ, chỉ nhắc "thu dư X / còn thiếu Y" | Medium |
 | 3.10 | Dynamic named-QR + auto-reconciliation | MVP | Core differentiator (vision §1 Unlike); webhook callback auto gạch nợ; mock toggle fallback (R1) | High |
 | 3.11 | Utility rate config (landlord-default global + building/room override) | MVP | Hóa đơn phụ thuộc rate; UC-L3 fail case "missing rate → blocked". D16: `LandlordProfile` default 1 lần, `Building`/`Room` override tùy chọn; invoice đọc room→building→landlord; flat vs bậc thang EVN = open Q#6 | Low–Med |
 | 3.7 | **Realtime revenue & debt dashboard** (doanh thu/công nợ theo thời gian thực, period grouping tháng/quý/năm) | MVP | Nâng từ ledger Stretch → MVP theo D20; biểu đồ realtime + công nợ đến hạn | Medium |

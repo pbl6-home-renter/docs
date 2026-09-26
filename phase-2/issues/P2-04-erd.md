@@ -31,16 +31,21 @@ Finalized ERD v1 — đảm bảo schema nhất quán với feature map + busine
 - Feature nào trong P2-01 mà chưa có entity hỗ trợ?
 - Entity nào thừa (không có feature nào dùng)?
 
-### Bước 3: Kiểm tra decisions D30–D38
+### Bước 3: Kiểm tra decisions D30–D39
 
-- D30: UtilityRatePolicy + RecurringFee — đã có trong schema?
+> **D39 (2026-09-26) đã thu hẹp D30/D32/D33/D36/D37 — kiểm tra theo D39, các ID cũ chỉ để tham chiếu lịch sử.**
+
+- **D39:** `RatePolicy` gộp `UtilityRatePolicy` + `RecurringFee` vào `rates` jsonb, scope `building`|`room`, chỉ UPDATE, không versioning → đã có trong schema?
+- **D39:** bỏ 2 con trỏ `*_policy_id`, bỏ cấp `landlord` → đã xóa?
+- **D39:** `Invoice.invoice_status` = `pending`|`issued`|`void`, bỏ `partially_paid`/`paid`/`overdue`/`cancel` + bỏ `due_date` → đã update?
+- **D39:** `Invoice.breakdown` gộp `utility_breakdown` + `fees_breakdown` thành 1 mảng, đủ `service_start`/`service_end`/`prorate_ratio`/`unit` → đã update?
+- **D39:** `BillingSetting` → `payment_due_day`/`remind_day` advisory, scope `building`|`room` → đã update?
+- **D39:** tài khoản nhận tiền nằm ở `LandlordProfile`, **không** tạo bảng `VietQrReceiverConfig` → đã loại?
 - D31: Preset steps chỉ từ seed — schema note đúng?
-- D32: Nullable policy + vehicle_count — đã update?
-- D33: Partial unique, partially_paid, other_fees — đã update?
+- D32: `Contract.vehicle_count` — đã update?
+- D33: Partial unique `(contract_id, period) WHERE invoice_status IN ('pending','issued')`, `other_fees` âm — đã update?
 - D34: Baseline OCR bắt buộc — schema note đúng?
 - D35: Manual correction allowed — schema note đúng?
-- D36: Bỏ charged_in_invoice — đã xóa khỏi schema?
-- D37: Bỏ electricity_amount/water_amount, void soft — đã update?
 - D38: ResidencyGateway — entity cho Phase 2?
 
 ### Bước 4: Adjust & finalize

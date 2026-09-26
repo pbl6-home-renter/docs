@@ -26,9 +26,9 @@ Một tài khoản có thể **đi qua nhiều trạng thái cùng lúc hoặc n
 2. **Tenant không tự tạo hoặc tự sửa hợp đồng/thành viên** — mọi thao tác pháp lý/hợp đồng đều do landlord thực hiện. App tenant ở các màn liên quan chỉ **hiển thị (read-only)**.
 3. **Ghép bạn tách biệt hoàn toàn khỏi việc chọn phòng** — không áp ràng buộc landlord (giới tính, số người, ngân sách) trong giai đoạn tìm bạn; ràng buộc đó chỉ có tác dụng ở bước landlord tạo hợp đồng sau này.
 4. **Property Chat chỉ tồn tại sau khi có hợp đồng active** — trước đó, mọi liên hệ với landlord là qua thông tin liên hệ tĩnh (SĐT).
-5. **Mọi hóa đơn/thanh toán đều có song song 2 kênh:** online (QR/VNPay/MoMo) và tiền mặt (landlord xác nhận thủ công) — không có màn hình nào chỉ có 1 lựa chọn duy nhất.
-6. **Thuê ngắn hạn tính theo ngày:** Hệ thống chỉ tính thời gian thuê theo ngày (mốc 00:00 nửa đêm làm chuẩn chuyển ngày, trước 0h tính là 1 ngày, qua sau 0h tính sang ngày kế tiếp), tuyệt đối không tính theo giờ.
-7. **Bỏ qua khai báo lưu trú/tạm trú:** Ứng dụng không xử lý thủ tục khai báo tạm trú của người dùng.
+5. **Mọi hóa đơn/thanh toán đều có song song 2 kênh:** online (VietQR) và tiền mặt (chủ trọ xác nhận) — không có màn hình nào chỉ có 1 lựa chọn duy nhất. **D39:** MVP chạy sandbox (`mock`/`cash` là kênh chính, `vietqr` sandbox tầng 1); VNPay/MoMo để **Stretch**.
+6. **Hợp đồng dài hạn, tính tiền theo tháng — vào/ra giữa tháng thì prorate theo ngày (D9):** không có khái niệm thuê theo ngày/ngắn hạn. Hệ thống chỉ quy về **tháng dịch vụ** (`Invoice.period = YYYY-MM`); HĐ bắt đầu 15/09 thì tiền phòng và từng dòng dịch vụ đều nhân `prorate_ratio` theo số ngày thực tế, tuyệt đối không tính theo giờ. Mỗi dòng hóa đơn hiển thị kèm `service_start`–`service_end` để minh bạch.
+7. **Bỏ qua khai báo lưu trú/tạm trú:** Ứng dụng không xử lý thủ tục khai báo tạm trú của người dùng (D17 — MVP chỉ lưu ảnh CCCD + OCR).
 8. **Quy tắc khi tài khoản Khách thuê bị khóa:** Khách thuê vẫn được phép đăng nhập để xem và thanh toán hợp đồng/hóa đơn hiện tại nhằm đảm bảo nghĩa vụ tài chính, nhưng bị khóa hoàn toàn chức năng gia hạn hợp đồng, không thể tìm thuê phòng mới hay tạo hợp đồng mới.
 9. **Quy định Camera và tải ảnh công tơ điện nước:** Hệ thống tích hợp Camera chụp trực tiếp tại chỗ cho phép cả Chủ trọ và Khách thuê đều có thể dùng để chụp ảnh đồng hồ điện nước. Tuy nhiên, **Khách thuê KHÔNG ĐƯỢC PHÉP tải ảnh có sẵn từ bộ nhớ thiết bị (thư viện ảnh) lên**, quyền tải ảnh từ máy lên chỉ dành riêng cho Chủ trọ.
 10. **Gộp chi phí vào danh mục Dịch vụ & Quy về từng tháng:** Hóa đơn trên hệ thống gồm Tiền phòng và Dịch vụ (gộp điện, nước, wifi, máy giặt, rác...). Toàn bộ hóa đơn được chuẩn hóa quy về theo từng tháng.
@@ -267,7 +267,7 @@ Mọi hóa đơn trên hệ thống được **chuẩn hóa quy về từng thá
 ```mermaid
 flowchart TD
     Start(["Chạm mục Hóa đơn"]) --> LoadInvoice["Tải danh sách hóa đơn theo tháng của phòng"]
-    LoadInvoice --> ViewInvoice["Mọi thành viên trong phòng đều xem được toàn bộ hóa đơn\n(Kỳ thanh toán, hạn nộp, Tiền phòng + Dịch vụ)"]
+    LoadInvoice --> ViewInvoice["Mọi thành viên trong phòng đều xem được toàn bộ hóa đơn\n(Kỳ tháng, ngày thu dự kiến, Tiền phòng + Dịch vụ,\n+ đã thu X / còn thiếu Y)"]
     ViewInvoice --> ActionPay["Nút 'Thanh toán' hiển thị cho mọi thành viên trong phòng"]
     ActionPay --> Pay1[["Sub-Flow 12 — Thanh toán"]]
 
@@ -278,35 +278,37 @@ flowchart TD
     style Pay1 fill:#eaf3de,stroke:#639922
 ```
 
-**Lưu ý quan trọng:** **Bất kỳ thành viên nào trong phòng** cũng có thể thanh toán hóa đơn bằng cách quét mã VietQR động hoặc nộp tiền mặt cho chủ trọ.
+**Lưu ý quan trọng:** **Bất kỳ thành viên nào trong phòng** cũng có thể thanh toán hóa đơn bằng cách quét mã VietQR động hoặc nộp tiền mặt cho chủ trọ. Trạng thái hóa đơn **không phải** enum nghiệp vụ: hệ thống suy ra từ Σ `Payment` success so với tổng (D39).
 
 ### Sub-Flow 12: Thanh toán hóa đơn (online / tiền mặt)
 
 ```mermaid
 flowchart TD
-    Start(["Xem chi tiết 1 hóa đơn tháng"]) --> Detail["Số tiền tổng, kỳ tháng, hạn thanh toán,\nChi tiết: Tiền phòng + Danh mục Dịch vụ (Điện, Nước, Wifi, Rác, Máy giặt)"]
-    Detail --> Status{"Trạng thái hóa đơn?"}
-    Status -->|"Đã thu một phần"| PartialNote["Hiển thị 'Đã thu X / còn nợ Y'\nnút thanh toán phần còn lại"]
-    Status -->|"Đã thanh toán / Thanh toán đủ"| HistoryTab["Khi mở tab History: ghi nhận 'Đã thanh toán đủ'"]
-    Status -->|"Chưa thanh toán / Quá hạn"| Choose{"Chọn kênh thanh toán"}
-    Choose -->|"Online VietQR"| QR["Quét mã VietQR động định danh phòng"]
-    QR --> Webhook[["Webhook ngân hàng đối soát tự động"]]
-    Webhook --> Paid1["Trạng thái: Đã thanh toán (Gạch nợ cho phòng)"]
+    Start(["Xem chi tiết 1 hóa đơn tháng"]) --> Detail["Tổng tiền, kỳ tháng, ngày thu dự kiến (gợi ý),<br/>Chi tiết: Tiền phòng + Danh mục Dịch vụ (Điện, Nước, Wifi, Rác, Máy giặt)"]
+    Detail --> Status{"Suy ra từ Σ Payment success<br/>so với tổng (D39)"}
+    Status -->|"Chưa thu gì"| Choose{"Chọn kênh thanh toán"}
+    Status -->|"Thu một phần"| PartialNote["Hiển thị 'Đã thu X / còn thiếu Y'<br/>nút thanh toán phần còn lại"]
+    Status -->|"Thu đủ"| Done1["Ẩn nút thanh toán; tab History ghi 'Đã thu đủ'"]
+    Status -->|"Thu dư"| Done2["Tab History nhắc 'thu dư X' — không tự hoàn/bù trừ"]
+    Choose -->|"Online VietQR"| QR["Quét mã VietQR động (chứa Invoice.code)"]
+    QR --> Reconcile[["Đối soát theo mã hóa đơn<br/>Sandbox: chủ trọ xác nhận · Auto-reconciliation thật → STRETCH"]]
     Choose -->|"Tiền mặt"| Cash[/"Nộp tiền mặt trực tiếp cho chủ trọ"/]
-    Cash --> Confirm[["Chủ trọ xác nhận thu tiền mặt trên hệ thống"]]
-    Confirm --> Paid2["Trạng thái: Đã thanh toán (Gạch nợ cho phòng)"]
+    Cash --> Confirm[["Chủ trọ bấm 'Đã thu tiền' trên hệ thống"]]
+    Reconcile --> Pending1["Chờ chủ trọ xác nhận khoản đã thu"]
+    Confirm --> Pending1
+    Pending1 --> Derived["Trạng thái cập nhật khi chủ trọ xác nhận<br/>(app KHÔNG tự gạch nợ)"]
 
     style Start fill:#faeeda,stroke:#ba7517
     style Detail fill:#faeeda,stroke:#ba7517
     style QR fill:#faeeda,stroke:#ba7517
-    style Paid1 fill:#eaf3de,stroke:#639922
-    style Paid2 fill:#eaf3de,stroke:#639922
+    style Done1 fill:#eaf3de,stroke:#639922
+    style Done2 fill:#eaf3de,stroke:#639922
     style Cash fill:#f1efe8,stroke:#5f5e5a,stroke-dasharray: 5 5
 ```
 
-**Lưu ý minh bạch phí:** Màn chi tiết hóa đơn quy về theo từng tháng, hiển thị rõ ràng Tiền phòng và nhóm **Dịch vụ** (trong đó bóc tách chi tiết lượng điện, nước theo chỉ số công tơ do chủ trọ chốt hoặc khách thuê hỗ trợ chụp bằng Camera trong app, cùng các chi phí dịch vụ cố định như Wifi, rác, máy giặt...). Khách thuê chỉ được chụp trực tiếp qua Camera hệ thống, không được tải ảnh có sẵn từ máy lên.
+**Lưu ý minh bạch phí:** Màn chi tiết hóa đơn quy về theo từng tháng, hiển thị rõ ràng Tiền phòng và nhóm **Dịch vụ** (trong đó bóc tách chi tiết lượng điện, nước theo chỉ số công tơ do chủ trọ chốt hoặc khách thuê hỗ trợ chụp bằng Camera trong app, cùng các chi phí dịch vụ cố định như Wifi, rác, máy giặt...). Khách thuê chỉ được chụp trực tiếp qua Camera hệ thống, không được tải ảnh có sẵn từ máy lên. Mỗi dòng dịch vụ hiển thị kèm **khoảng dịch vụ thực tế** (`service_start`–`service_end`) để khách biết khoản này thu cho tháng nào kể cả khi vào/ra giữa kỳ.
 
-**Nhắc quá hạn:** nếu hóa đơn quá hạn, bot tự động post card nhắc vào Property Chat riêng phòng (xem Sub-Flow 13) — không có màn hình riêng cho việc này, chỉ là 1 loại card trong chat.
+**Nhắc thu (không phải nhắc quá hạn):** theo `BillingSetting.remind_day` của tòa/phòng, bot post 1 card nhắc vào Property Chat riêng phòng (xem Sub-Flow 13) — **không có màn hình riêng**, chỉ là 1 loại card trong chat. **D39:** không có trạng thái `overdue`, không có hạn chót, app không hiện "bạn nợ hạn" — chỉ nhắc mốc ngày thu dự kiến do chủ trọ tự đặt.
 
 ### Sub-Flow 13: Property Chat riêng phòng
 
@@ -315,7 +317,7 @@ flowchart TD
     Start(["Chạm mục Chat"]) --> Room["Chat riêng phòng"]
     Room --> Type{"Loại nội dung?"}
     Type -->|"Tin nhắn thường"| Text["Text / ảnh / file"]
-    Type -->|"Card bot tự động"| Bot["Card: kết quả chốt số,\nhóa đơn mới, nhắc quá hạn"]
+    Type -->|"Card bot tự động"| Bot["Card: kết quả chốt số,\nhóa đơn mới, nhắc thu"]
     Type -->|"@mention"| Mention["Autocomplete gắn tên\nthành viên/landlord"]
 
     Room --> Switch["Chuyển sang Chat chung tòa\n(chỉ text/ảnh/file + mention)"]
@@ -373,7 +375,7 @@ flowchart TD
 ```mermaid
 flowchart TD
     Push(["FCM push đến"]) --> Type{"Loại thông báo?"}
-    Type -->|"Hóa đơn mới/quá hạn"| Deep1["Deep link → Chi tiết hóa đơn"]
+    Type -->|"Hóa đơn mới / nhắc thu"| Deep1["Deep link → Chi tiết hóa đơn"]
     Type -->|"Tin nhắn mới trong Chat"| Deep2["Deep link → Property Chat"]
     Type -->|"Cập nhật sự cố"| Deep3["Deep link → Chi tiết báo cáo sự cố"]
     Type -->|"Match request mới"| Deep4["Deep link → Danh sách Yêu cầu đã nhận"]

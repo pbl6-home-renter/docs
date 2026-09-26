@@ -2377,7 +2377,9 @@ SCREENS TO GENERATE:
 
 40. Debt List
 - Exactly: a simple, strictly aligned list — Room/Building name, Amount
-  still owed (red, bold), Days overdue. No complex actions here.
+  still owed (red, bold), Days since the expected payment day. Do NOT label
+  the column "Days overdue" and do NOT show an "Overdue" badge: this system
+  has no overdue state, no due date, and no penalty (D39).
 - Comes from: the "Outstanding Debt" section on "9b. Dashboard" (Prompt
   L2).
 - Goes to: a row → "34. Issued Invoice List" (Prompt L6) for that room.

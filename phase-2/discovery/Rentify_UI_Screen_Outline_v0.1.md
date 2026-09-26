@@ -161,7 +161,7 @@ Link Stitch:
 | LL-04 | **[Bước 2/3]** Upload bằng chứng sở hữu (sổ đỏ/giấy tờ đất/ủy quyền) — **cho phép upload NHIỀU ảnh** (vd sổ đỏ 2 mặt) và **cả 2 quyền: Camera chụp trực tiếp + Upload từ thư viện** | 🔲 |
 | LL-05 | **[Bước 3/3]** Cấu hình đơn giá điện nước mặc định của Tòa nhà | 🔲 |
 | LL-06 | Chi tiết Tòa nhà — trạng thái duyệt (Chờ duyệt / Đã duyệt / Bị từ chối + lý do) | 🔲 |
-| LL-06b | **[MỚI]** Cấu hình Tài khoản nhận tiền / VietQR của Tòa nhà — STK, Tên ngân hàng, Chủ tài khoản; **chỉ khả dụng sau khi Tòa nhà đã được Admin duyệt**; dùng để sinh mã VietQR cho mọi hóa đơn của các phòng trong tòa này (LL-22) | 🔲 |
+| LL-06b | **[MỚI]** Tài khoản nhận tiền / VietQR — STK, Tên ngân hàng, Chủ tài khoản; dùng để sinh mã VietQR cho hóa đơn (LL-22). **D39 — thuộc hồ sơ CHỦ TRỌ, không theo tòa nhà** (`LandlordProfile`, khai 1 lần); chặn đổi khi còn hóa đơn `pending` | 🔲 |
 | LL-07 | Danh sách Phòng trong 1 Tòa nhà — **dùng chung 1 kiểu hiển thị Room Map trực quan như LL-01**, chỉ lọc riêng cho 1 tòa nhà này | 🔲 |
 | LL-08 | Form Thêm Phòng mới (số phòng, diện tích, giá, quy tắc tùy chọn giới tính/tiện nghi) — **chỉ khả dụng sau khi Tòa nhà đã được Admin duyệt** (đúng nghiệp vụ gốc) | 🔲 |
 | LL-09 | Chi tiết 1 Phòng (card tổng quan + trạng thái) | 🔲 |
@@ -206,7 +206,7 @@ Link Stitch:
 | -- | -- | -- |
 | LL-24 | Cài đặt Chu kỳ Hóa đơn & Quét nợ (chọn cấp: Profile/Building/Room) | 🔲 |
 | LL-25 | Form cấu hình hạn thanh toán + ngày nhắc nhở | 🔲 |
-| LL-25b | **[MỚI]** Danh sách công nợ (đơn giản) — list các hóa đơn Quá hạn: Phòng, Số tiền còn thiếu, Số ngày quá hạn. Truy cập từ mục "Công nợ" trên Dashboard (LL-01). Khi quá hạn: hệ thống **tự động đánh dấu "Quá hạn" + gửi thông báo nhắc** cho Tenant, đồng thời hiện vào list này cho Landlord theo dõi — **không làm thêm hành động phức tạp** (không tự động phạt/tính lãi...) | 🔲 |
+| LL-25b | **[MỚI]** Danh sách công nợ (đơn giản) — list các hóa đơn **chưa thu đủ**: Phòng, Số tiền còn thiếu, Số ngày từ ngày thu dự kiến. Truy cập từ mục "Công nợ" trên Dashboard (LL-01). Bot nhắc một lần theo `BillingSetting.remind_day` cho Tenant. **D39: KHÔNG có nhãn "Quá hạn"** — không tồn tại `overdue`/`due_date`, app không tự đánh dấu trạng thái, **không** tự động phạt/tính lãi/đuổi khách | 🔲 |
 
 ### C.7 Sự cố (Tab riêng) ✅ ĐÃ KHÓA
 
@@ -355,7 +355,7 @@ Link Stitch:
 | 46 | LL-31 Khấu trừ cọc | 1 ô tổng số tiền + 1 ô lý do chung, không tách nhiều hạng mục | ✅ |
 | 47 | Sửa/Hủy hóa đơn đã phát hành | **[Bổ sung ngược lại C.5 đã khóa]** Thêm LL-21a (danh sách hóa đơn đã phát hành) + LL-21b (sửa/hủy). Chỉ cho sửa/hủy khi hóa đơn CHƯA có thanh toán nào; đã có tiền vào (1 phần/đủ) → chỉ xem, không cho sửa. Sửa xong tự sinh lại VietQR mới + báo qua Property Chat | ✅ |
 | 48 | C.9 Chat Landlord | Gộp thành 1 Inbox duy nhất (LL-CHAT-01/02), giống cấu trúc Tenant — mỗi phòng vẫn có Property Chat nhóm riêng, deep-link vào Inbox chung | ✅ |
-| 49 | STK/VietQR nhận tiền | Cấu hình ở cấp **Tòa nhà** (LL-06b, mới thêm), khả dụng sau khi được duyệt — KHÔNG nằm trong Hồ sơ cá nhân Landlord | ✅ |
+| 49 | STK/VietQR nhận tiền | **D39: chuyển từ cấp Tòa nhà sang Hồ sơ cá nhân Landlord** (`LandlordProfile.bank_code`/`account_number`/`account_name`, khai 1 lần). Bỏ `VietQrReceiverConfig` + `PUT/GET /vietqr-configs` | ✅ |
 | 50 | LL-37 Thông báo Landlord | Chỉ 1 toggle Bật/Tắt tổng, giống Tenant, không tách nhỏ theo loại | ✅ |
 | 51 | Báo cáo/Thống kê chuyên sâu | KHÔNG làm màn riêng ở giai đoạn này — trước mắt chỉ dùng Dashboard tổng quan (LL-01), nhưng đảm bảo Dashboard ở **mức đầy đủ** (biểu đồ doanh thu + công nợ + room map, không sơ sài) | ✅ |
 | 52 | AD-01 Admin Dashboard | Chỉ số liệu/card tổng quan, KHÔNG cần biểu đồ (khác Landlord) | ✅ |
