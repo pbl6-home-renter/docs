@@ -2154,7 +2154,7 @@ SCREENS TO GENERATE:
 - Goes to: "Issue Invoice" → "36".
 
 34. Issued Invoice List
-- A full table by month + status (Unpaid/Overdue/Partial/Paid/Cancelled).
+- A full table by month with a derived payment state column (Unpaid / Partial / Paid / Overpaid) and an invoice lifecycle column (Draft / Issued / Void). No "Overdue" state.
 - Comes from: "19".
 - Goes to: unpaid row → "35"; "Confirm cash payment" button → "37".
 
@@ -2302,7 +2302,7 @@ SCREENS TO GENERATE:
 - Goes to: Save → "38".
 
 40. Debt List
-- A strict table: Room/Building, Amount owed, Days overdue.
+- A strict table: Room/Building, Amount still owed, Days since the expected payment day. Column header must NOT say "Days overdue" — there is no overdue state in this system.
 - Comes from: "9b" (Dashboard).
 - Goes to: a row → "34" (Prompt L6).
 ```

@@ -49,9 +49,9 @@ Nguồn: [phase-0/discovery/short-vs-long-term-analysis.md](../phase-0/discovery
 Nguồn: [business-rules.md](business-rules.md) §3 · [discovery/utility-billing-calculations.md](discovery/utility-billing-calculations.md)
 
 - **Cách tính:** theo quy định nhà nước (bậc thang EVN 6 bậc, bậc 3 TT 25/2018) **hoặc** giá thỏa thuận cố định (flat) — chủ trọ chọn preset.
-- **Mô hình đơn giá versioned:** bảng `UtilityRatePolicy` (`flat` / `tiered` / `per_head`) — điện chỉ flat/tiered; nước thêm khoán đầu người. Giá theo `effective_from/to`, đổi giá giữa kỳ áp từ kỳ sau.
+- ~~**Mô hình đơn giá versioned:** bảng `UtilityRatePolicy` … Giá theo `effective_from/to`, đổi giá giữa kỳ áp từ kỳ sau.~~ → **⚠️ Cập nhật theo D39 (2026-09-26): đã bỏ versioning.** Mô hình đúng hiện tại: **một bộ `RatePolicy` mỗi scope** (`building`/`room`, kế thừa `room → building`), đơn giá **và** phí định kỳ nằm chung trong `rates` jsonb, chỉ **UPDATE tại chỗ**. Lịch sử giá nằm ở snapshot `Invoice.breakdown` + `AuditLog`, không cần bảng version. Xem `discovery/database-design.md` §2.9.
 - **Nhập số công tơ bắt buộc bằng ảnh:** chụp công tơ trực tiếp qua app → OCR → xác nhận tay (OCR sai/mờ thì sửa tay đúng số thực tế, vẫn kèm ảnh nguồn). **Baseline = OCR lúc bàn giao phòng** (`is_baseline=true`).
-- **Phí định kỳ** (`RecurringFee`): Wifi / QLVH / gửi xe / vệ sinh… chọn preset seed, không hard-code; đều thu qua hóa đơn app.
+- ~~**Phí định kỳ** (`RecurringFee`): Wifi / QLVH / gửi xe / vệ sinh…~~ → **⚠️ Cập nhật theo D39: bỏ bảng `RecurringFee` riêng**, gộp vào `RatePolicy.rates[]` cùng đơn giá điện/nước. Preset seed vẫn giữ nguyên (không hard-code); mọi phí vẫn thu qua hóa đơn app.
 - **Spec tính tiền 100% case + pseudocode + edge case** tại [utility-billing-calculations.md](discovery/utility-billing-calculations.md) — dùng làm spec cho `InvoiceService` (BE).
 
 ### 2.4 Cơ chế Thông báo (thay kênh Zalo truyền thống)
@@ -117,7 +117,7 @@ Nguồn: [phase-0/discovery/ai-matching-spec.md](../phase-0/discovery/ai-matchin
 Nguồn: [business-rules.md](business-rules.md) §8
 
 - Hệ thống **phải vận hành được khi tenant KHÔNG đăng nhập** — chủ trọ tự làm toàn bộ vòng đời (HĐ, CCCD, chốt số, hóa đơn, QR/tiền mặt/giấy). App tenant là optional/passive.
-- Thanh toán không phụ thuộc login tenant: dynamic-QR (quét bằng app ngân hàng bất kỳ), tiền mặt, chuyển khoản.
+- Thanh toán không phụ thuộc login tenant: dynamic-QR (quét bằng app ngân hàng bất kỳ), tiền mặt, chuyển khoản. **D39: chủ trọ tự nhập khoản đã thu (`mock`/`cash`) — app không tự gạch nợ, không có `overdue`/hạn chót, không phạt.**
 
 ---
 

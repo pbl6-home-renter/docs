@@ -92,7 +92,7 @@
 | # | Feature | Tenant View | Tenant Edit | Landlord View | Landlord Edit | Anonymous | Web | Mobile | Ghi chú |
 |---|---------|:-----------:|:-----------:|:-------------:|:-------------:|:---------:|:---:|:------:|---------|
 | H1 | Lập Hóa đơn tháng (kèm phí 1 lần) | — | — | ✅ | ✅ | — | ✅ | ✅ | Tiền phòng + dịch vụ + other_fees, phát hành |
-| H2 | Tạo mã VietQR động | — | — | ✅ | ✅ | — | ✅ | ✅ | Mã QR gắn mã định danh phòng |
+| H2 | Tạo mã VietQR động | — | — | ✅ | ✅ | — | ✅ | ✅ | Mã QR gắn `Invoice.code` + đúng số tiền (D39: đối soát theo mã, không theo amount) |
 | H3 | Xem chi tiết hóa đơn | ✅ | — | ✅ | — | — | ✅ | ✅ | Tiền phòng + breakdown dịch vụ, trạng thái |
 | H4 | Thanh toán qua VietQR | ✅ | ✅ | — | — | — | ✅ | ✅ | Quét mã QR → chuyển khoản qua app ngân hàng |
 | H5 | Xác nhận thu tiền mặt | — | — | ✅ | ✅ | — | ✅ | ✅ | Landlord xác nhận khi tenant nộp tiền mặt (hỗ trợ thu 1 phần) |
@@ -109,7 +109,7 @@
 | I1d | Cấu hình biểu giá — Khoán đầu người | — | — | ✅ | ✅ | — | ✅ | ✅ | Bước 2 (nếu chọn Khoán): 1 ô đ/người/tháng |
 | I1e | Sửa lại biểu giá đã cấu hình | — | — | ✅ | ✅ | — | ✅ | ✅ | Vào lại từ Chi tiết Tòa nhà, quay lại I1a để đổi loại/số liệu |
 | I1f | Ghi đè biểu giá cấp Phòng (nâng cao) | — | — | ✅ | ✅ | — | ✅ | ✅ | Ẩn dưới mục "Nâng cao" ở Chi tiết Phòng — dùng lại luồng I1a-d nhưng phạm vi 1 phòng |
-| I2 | Cấu hình phí định kỳ (RecurringFee) | — | — | ✅ | ✅ | — | ✅ | ✅ | Preset Wifi/QLVH/Gửi xe/Vệ sinh + phí tự nhập |
+| I2 | Cấu hình phí định kỳ (trong `RatePolicy.rates[]`) | — | — | ✅ | ✅ | — | ✅ | ✅ | Preset Wifi/QLVH/Gửi xe/Vệ sinh + phí tự nhập (D39: gộp vào bộ đơn giá, bỏ bảng `RecurringFee` riêng) |
 | I3 | Cài đặt chu kỳ quét nợ tự động | — | — | ✅ | ✅ | — | ✅ | ✅ | Hạn thanh toán, ngày nhắc, bật/tắt bot. 3 cấp |
 
 ### J. Property Chat & Inbox (CẢ Web lẫn Mobile — hợp nhất 1 Inbox: Chat riêng 1-1 + Chat nhóm phòng + Chat chung tòa + Chat Match)
@@ -120,7 +120,7 @@
 | J2 | Chat nhóm phòng | ✅ | ✅ | ✅ | ✅ | — | ✅ | ✅ | Text, ảnh, file + bot card. Tự tạo khi HĐ active. Chuyển read-only khi HĐ kết thúc |
 | J3 | Chat chung tòa | ✅ | ✅ | ✅ | ✅ | — | ✅ | ✅ | Text, ảnh, file + @mention. KHÔNG có bot card |
 | J4 | @mention thành viên/landlord | ✅ | ✅ | ✅ | ✅ | — | ✅ | ✅ | Autocomplete gắn tên trong chat |
-| J5 | Bot auto-remind nhắc nợ | ✅ | — | ✅ | — | — | ✅ | ✅ | Bot post card nhắc vào chat khi hóa đơn quá hạn |
+| J5 | Bot auto-remind nhắc thu | ✅ | — | ✅ | — | — | ✅ | ✅ | Bot post card nhắc vào chat theo `BillingSetting.remind_day` (D39: nhắc ngày thu dự kiến, không phải nhắc quá hạn, không ghi trạng thái) |
 | J6 | Bot thông báo sự cố | ✅ | — | ✅ | — | — | ✅ | ✅ | Bot post card + push khi có sự cố mới |
 | J7 | Chat Match Roommate (peer-to-peer) | ✅ | ✅ | — | — | — | ✅ | ✅ | Mở tự động sau khi match thành công, thay cho việc lộ SĐT/Zalo |
 
@@ -159,7 +159,7 @@
 
 | # | Feature | Tenant View | Tenant Edit | Landlord View | Landlord Edit | Anonymous | Web | Mobile | Ghi chú |
 |---|---------|:-----------:|:-----------:|:-------------:|:-------------:|:---------:|:---:|:------:|---------|
-| N1 | Webhook ngân hàng đối soát | — | — | ✅ | — | — | ✅ | — | Backend service: nhận kết quả CK, tự gạch nợ |
+| N1 | Webhook ngân hàng đối soát | — | — | ✅ | — | — | — | — | **D39 → STRETCH.** MVP chỉ `mock`/`cash` + VietQR sandbox; nhận callback thật cần merchant/đối tác + idempotency + verify chữ ký. Đối soát MVP theo `Invoice.code` do chủ trọ xác nhận |
 | N2 | Tích hợp VNPay/MoMo (Stretch) | ✅ | ✅ | — | — | — | ✅ | ✅ | Nice-to-have — thêm làm kênh thứ 3 bên cạnh VietQR/Tiền mặt ở màn Thanh toán |
 
 ### O. AI Features
@@ -208,8 +208,8 @@
 | 6 | Khai báo xe KHÔNG nằm trong Hợp đồng — chuyển sang mục Thành viên, đơn giản hóa thành toggle "Có xe: Có/Không" cho từng thành viên. |
 | 7 | Web và Mobile tương đương 100% chức năng cho Tenant/Landlord (chỉ khác bố cục trình bày). Admin là ngoại lệ duy nhất: chỉ có Web. |
 | 8 | Sau khi HĐ kết thúc (check-out), Property Chat của phòng đó chuyển sang trạng thái read-only/archive — không xóa lịch sử, chỉ khóa gửi tin mới. |
-| 9 | Biểu giá điện/nước có 3 loại (Cố định / EVN bậc thang / Khoán đầu người), cấu hình theo 2 bước: chọn loại trước, cấu hình cụ thể sau. Có thể ghi đè ở cấp Phòng (nâng cao). |
-| 10 | AI Auto-Description (O1) và AI Matchmaking (O2) đều có trên cả Web & Mobile. VNPay/MoMo (N2) là kênh thanh toán thứ 3 bên cạnh VietQR/Tiền mặt. |
+| 9 | Biểu giá điện/nước + phí định kỳ nằm trong **một bộ `RatePolicy.rates[]`** theo scope `building`/`room`, kế thừa `room → building`; chỉ UPDATE tại chỗ, không versioning (D39). |
+| 10 | AI Auto-Description (O1) và AI Matchmaking (O2) đều có trên cả Web & Mobile. VNPay/MoMo (N2) là kênh thanh toán thứ 3 bên cạnh VietQR/Tiền mặt — **Stretch**. |
 
 ---
 

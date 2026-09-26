@@ -59,6 +59,9 @@ Không có hạng mục nào ở mức **Blocked**. Đề tài khả thi để t
 - Feasibility: ✅ OK. Xem thêm edge case ở mục 3.
 
 **Invoice**
+
+> ⚠️ **Ghi chú (2026-09-26):** mô hình dưới đây là ước lượng Phase 0, **đã bị D39 thay thế**. Xem `phase-1/discovery/database-design.md` §2.12 là bản đúng: `invoice_status` = `pending`|`issued`|`void`, không `due_date`/`paid_at`/`overdue`; `utility_breakdown`+`fees_breakdown` gộp thành `breakdown`. Giữ nguyên ở đây để giữ lịch sử khả năng.
+
 - `id` (uuid, PK), `contract_id` (FK), `period`
 - `rent_amount` (prorated), `other_fees` (jsonb — mảng `{label, amount}` cho phí phát sinh: giặt ủi, gửi xe...); điện/nước/phí định kỳ đọc từ snapshot `utility_breakdown`/`fees_breakdown` (D30/D37)
 - `total_amount`, `status` (enum: `pending` \| `paid` \| `overdue` \| `void`)

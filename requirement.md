@@ -28,7 +28,7 @@ Học theo tuần lẻ (2 tuần lên trường 1 lần)
     - Thống kê doanh thu, chi phí.
 - **Mobile (Kotlin/Android — Primary: Tenant portal; Secondary: Landlord lite: FCM push, duyệt sự cố, xem dashboard/hóa đơn) [D13]:**
     - Tìm kiếm phòng trọ theo bản đồ, filter nâng cao.
-    - Nhận hóa đơn hàng tháng, thanh toán (tích hợp VNPay/Momo) + dynamic named-QR.
+    - Nhận hóa đơn hàng tháng, thanh toán (VietQR sandbox) + dynamic named-QR. **D39:** `mock`/`cash` là kênh chính, **auto-reconciliation → Stretch**; app không cưỡng chế thu tiền (không `overdue`/`due_date`, không phạt).
     - Tính năng "Tìm người ở ghép" (hồ sơ tính cách, thói quen sinh hoạt) + match request [D28].
     - Báo cáo sự cố (hỏng điện, nước) cho chủ trọ qua **Property Chat riêng phòng** (D24′: `@issue` tạo IssueReport, bot auto-remind, mention `@user`; realtime Socket.io khi app mở + FCM offline; loại Zalo khỏi kênh).
 - **Chức năng AI (FastAPI + LLM provider-agnostic — OpenAI/Gemini qua adapter, cấu hình env) [D3]:**
