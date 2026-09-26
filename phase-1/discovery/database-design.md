@@ -287,7 +287,7 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 |---|---|---|---|---|---|
 | requester_id | uuid | FK→User, NOT NULL | | | |
 | target_id | uuid | FK→User, NOT NULL | Matching độc lập với phòng; ràng buộc phòng chỉ xét lúc tạo HĐ | | |
-| status | enum (`pending`,`accepted`,`rejected`) | NOT NULL default `pending` | | | `accepted` |
+| status | enum (`pending`,`accepted`,`rejected`,`withdrawn`) | NOT NULL default `pending` | `withdrawn` = người gửi rút yêu cầu, **D50** | | `accepted` |
 | responded_at | timestamptz | nullable | thời điểm target chấp nhận/từ chối | | |
 | ai_score | decimal | nullable | **D28**, Stretch | `>= 0.0; <= 100.0` | `87.5` |
 | ai_advice | text | nullable | **D28** | | `Hai người cùng giờ ngủ, ít rủi ro xung đột` |
