@@ -796,12 +796,6 @@ Mỗi service expose `GET /health` (không xác thực) trả:
 
 **Chống "flapping":** nếu đặt heartbeat = TTL = 2s, chỉ cần mạng trễ 1ms là instance bị gỡ khỏi registry rồi đăng ký lại liên tục — danh sách instance nhấp nháy, gateway phải xử lý danh sách IP không ổn định. Khoảng cách 6s/2s tạo "vùng đệm" chịu độ trễ.
 
----
-
-## 8. Portability — mang service sang đồ án khác
-
-Mục tiêu: `payment-service` phải chạy được trong một dự án khác mà không sửa code.
-
 ### 8.1 Bốn nguyên tắc
 
 | # | Nguyên tắc | Nếu vi phạm thì sao |
@@ -841,22 +835,6 @@ Mỗi repo có đủ: `Dockerfile` riêng · migrations riêng · `README.md` ri
 
 ---
 
-## 9. Ảnh hưởng lên artifacts hiện có
-
-| Artifact | Cần sửa gì | Mức độ |
-|----------|-----------|--------|
-| `api-docs/` | Tách 1 OpenAPI spec thành **4 spec** theo service + 1 spec gateway. `src/` hiện chia theo **loại artifact** (`paths/`, `requests/`, `responses/`, `schemas/`, `common/`, `parameters/`), trong đó `paths/` + `requests/` chia theo **resource** còn `schemas/` chia theo **domain** (`property/`, `billing/`, `contract/`, `matching/`, `chat/`, `notification/`, `user/`, …). Cả hai cách chia đều phải đổi lại theo **service** để mỗi bundle chỉ chứa schema của nó | 🔴 Lớn |
-| Apidog | Sync 4 spec thay vì 1. Mobile/FE vẫn chỉ cần trỏ gateway, nên **không đổi** workflow Apidog Mock của P3-01 | 🟡 Vừa |
-| `pm/phase-1/discovery/database-design.md` | Bổ sung cột `service` cho 25 entity; ghi rõ bảng nào không được FK chéo | 🟡 Vừa |
-| `pm/PROJECT_PLAN.md:118` | Đổi "Railway/Fly.io + Vercel" → "1 EC2 + Docker Compose" | 🟡 Vừa |
-| `pm/phase-0/discovery/tech-feasibility.md:257` | Mục 6 chốt combo Render + Neon + Vercel — **mất hiệu lực**, thay bằng EC2 | 🟡 Vừa |
-| `pm/phase-3/README.md:13` | Tương tự `PROJECT_PLAN.md:118` | 🟢 Nhỏ |
-| `pm/requirement.md:10` | Không cần sửa — ghi *"Khuyến khích: thêm AI"* nên bỏ AI vẫn hợp lệ | ⚪ Không |
-| `pm/PROJECT_PLAN.md:13` | **Sửa** — đang xếp Auto-Description là MVP, mâu thuẫn với quyết định bỏ AI | 🔴 Bắt buộc |
-| `pm/phase-2/discovery/api-spec.md` | Ghi chú phân nhóm endpoint theo service (không sửa nội dung endpoint) | 🟡 Vừa |
-
----
-
 ## 10. Rủi ro & biện pháp
 
 | # | Rủi ro | Mức | Biện pháp |
@@ -869,34 +847,6 @@ Mỗi repo có đủ: `Dockerfile` riêng · migrations riêng · `README.md` ri
 | R6 | Provider sandbox không ổn định | 🟠 TB | Circuit breaker + `record-cash-payment` chạy độc lập → luồng chủ trọ vẫn demo được (D29) |
 | R7 | Tách quá sớm, chưa có code để tách | 🟢 Thấp | Đây là **thuận lợi** — phase-3 chưa scaffold gì, nên tách lúc này rẻ nhất |
 | R8 | GV SOA không chấp nhận 4 service NestJS | 🟠 TB | Xác nhận **trước khi code** — xem §12 câu hỏi mở 1 |
-
----
-
-## 11. Decision đề xuất
-
-| ID | Nội dung | Trạng thái |
-|----|----------|-----------|
-| **D51** | Bỏ AI khỏi scope MVP. OCR chốt số điện nước chuyển thành Tesseract chạy trong `tenancy-service` | ⏳ Cần PM chốt |
-| **D52** | Backend tách thành 4 service theo bounded context: `identity`, `tenancy`, `payment`, `community` | 🟡 Đề xuất |
-| **D53** | Database-per-service trên 1 Postgres instance: 4 database, 4 Postgres role riêng, cấm FK chéo | 🟡 Đề xuất |
-| **D54** | RabbitMQ làm message broker; giao thức nội bộ HTTP/JSON + AMQP cho event | 🟡 Đề xuất |
-| **D55** | API Gateway kiểu **server-side discovery**, service registry với heartbeat 6s / TTL 2s | 🟡 Đề xuất |
-| **D56** | Triển khai toàn bộ trên **1 EC2** bằng Docker Compose, thay cho Render + Neon + Vercel | 🟡 Đề xuất |
-| **D57** | Saga **Orchestration**, `tenancy-service` làm orchestrator cho luồng phát hành hoá đơn | 🟡 Đề xuất |
-| **D58** | 4 service = 4 repo Git riêng, cấm thư viện dùng chung; mọi URL cấu hình qua env var | 🟡 Đề xuất |
-
----
-
-## 12. Câu hỏi mở — cần ai trả lời
-
-| # | Câu hỏi | Cần ai | Vì sao chặn |
-|---|---------|--------|------------|
-| 1 | GV SOA có chấp nhận **4 service NestJS + 1 API Gateway** không? Gateway có được tính vào con số "4" không? Nếu GV yêu cầu tính cả gateway thì cần nâng lên 5 service | GV môn SOA | 🔴 Chặn — quyết định số service cuối cùng |
-| 2 | Bỏ AI có được GV PBL6 chấp nhận không? `PROJECT_PLAN.md:13` đang xếp Auto-Description là MVP | GV PBL6 + PM | 🔴 Chặn — SoT đang mâu thuẫn nội tại |
-| 3 | OCR đặt ở `tenancy-service` (Tesseract) có được không, hay để Phase 1+? | PM | 🟠 Ảnh hưởng ảnh/file phụ thuộc |
-| 4 | 1 BE ôm 4 service có khả thi không, hay cần phân công lại? Nếu giữ nguyên, có chấp nhận cắt bớt endpoint để đủ mốc W9/W11 không? | PM | 🟠 Ảnh hưởng tiến độ Phase 3–4 |
-| 5 | Ngân sách EC2: `t3.small` hay `t3.medium`? Ai phụ trách thanh toán? | PM | 🟠 Ảnh hưởng an toàn buổi bảo vệ |
-| 6 | `api-docs/` tách 4 spec — Mobile/FE có chịu đổi workflow Apidog không, hay giữ 1 spec hợp nhất ở tầng gateway? | BE + Mobile + FE | 🟢 Có thể quyết sau |
 
 ---
 

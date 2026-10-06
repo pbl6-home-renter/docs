@@ -14,6 +14,8 @@
 | is_deleted | boolean | NOT NULL, default false | Soft-delete: `false` = existing record; default queries use `WHERE is_deleted = false`. Financial/audit records are retained; voiding an invoice changes its status, not this flag. | | `false` |
 
 ### 2.1 User
+> **Service:** `identity-service` · DB `identity_db` · Bảng `users`
+
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | phone | varchar(12) | UNIQUE, NOT NULL | định danh chính (VN) | Min length: 10; Max length: 12; Regex: `^0[0-9]{9}$` hoặc `^\+84[0-9]{9}$` | `0901234567` |
@@ -26,6 +28,8 @@
 | locked_at | timestamptz | nullable | | | `NULL` |
 
 ### 2.2 FavoriteRoom (phòng đã lưu)
+> **Service:** `tenancy-service` · DB `tenancy_db` · Bảng `favorite_rooms`
+
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | tenant_id | uuid | FK→User, NOT NULL | tenant lưu phòng cần đăng nhập | | |
@@ -34,6 +38,8 @@
 **Index:** UNIQUE `(tenant_id, room_id)` WHERE `is_deleted = false`.
 
 ### 2.3 LandlordProfile
+> **Service:** `identity-service` · DB `identity_db` · Bảng `landlord_profiles`
+
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | user_id | uuid | FK→User, UNIQUE, NOT NULL | 1-1, chỉ tồn tại nếu user có role landlord | | |
@@ -45,6 +51,8 @@
 > Ngày thu dự kiến & nhắc nộp không lưu ở đây: dùng `BillingSetting` (§2.10), kế thừa `room → building`.
 
 ### 2.4 Building
+> **Service:** `tenancy-service` · DB `tenancy_db` · Bảng `buildings`
+
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | landlord_id | uuid | FK→User, NOT NULL | landlord sở hữu | | |
@@ -62,6 +70,8 @@
 > Ảnh tòa nhà (bìa + gallery) và giấy tờ sở hữu bắt buộc: `Media(owner_type='building', purpose='cover_photo'|'gallery_photo'|'ownership_proof')`.
 
 ### 2.5 Room
+> **Service:** `tenancy-service` · DB `tenancy_db` · Bảng `rooms`
+
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | landlord_id | uuid | FK→User, **NOT NULL** | **D25 — bắt buộc, 1 chủ/phòng** | | |
@@ -81,6 +91,8 @@
 > Ảnh phòng (bìa + gallery): `Media(owner_type='room', purpose='cover_photo'|'gallery_photo')`.
 
 ### 2.7 Contract
+> **Service:** `tenancy-service` · DB `tenancy_db` · Bảng `contracts`
+
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | room_id | uuid | FK→Room, NOT NULL | | | |
@@ -113,6 +125,8 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 **Index quan trọng:** partial unique index `(room_id) WHERE contract_status = 'active'` — chỉ 1 hợp đồng active/phòng.
 
 ### 2.8 ContractMember (thành viên ở ghép + CCCD)
+> **Service:** `tenancy-service` · DB `tenancy_db` · Bảng `contract_members`
+
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | contract_id | uuid | FK→Contract, NOT NULL | | | |
@@ -125,6 +139,7 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 > Ảnh CCCD mặt trước/sau: `Media(owner_type='contract_member', purpose='cccd_front'|'cccd_back')` — **D17**, chụp 1 lần. **`ContractMember` là nguồn đếm `head_count`** cho `rate_kind='per_head'` trong `RatePolicy.rates[]`; chỉ tính thành viên có `joined_at ≤ period_end` và (`left_at IS NULL` hoặc `left_at ≥ period_start`).
 
 ### 2.9 RatePolicy — bộ đơn giá & phí định kỳ (1 bộ / scope)
+> **Service:** `tenancy-service` · DB `tenancy_db` · Bảng `rate_policies`
 
 > **D39 — mỗi scope chỉ có MỘT bộ, chỉ UPDATE tại chỗ:** gộp UtilityRatePolicy + RecurringFee vào `rates` jsonb. Không tạo bản sao, không xoá mền, **không có `effective_from`/`effective_to`**.
 > Kế thừa: `room → building`; phòng không có bộ riêng thì dùng bộ của building. **Bật/tắt = `is_active`** (tắt → kế thừa cấp trên).
@@ -150,6 +165,7 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 | `billing_unit` | ✔ | `kwh`\|`m3`\|`room`\|`person`\|`m2`\|`vehicle`\|`day`\|`occurrence` — đơn vị tính để hiển thị |
 
 ### 2.10 BillingSetting (ngày thu dự kiến & nhắc nộp)
+> **Service:** `tenancy-service` · DB `tenancy_db` · Bảng `billing_settings`
 
 > **D39 — app KHÔNG cưỡng chế thu tiền.** `payment_due_day` chỉ là *gợi ý hiển thị* ("thường thu ngày 5"), **không** sinh trạng thái `overdue`, không chặn thao tác nào. Resolve `room → building`; thiếu ở cấp dưới thì kế thừa cấp trên (không có cấp `landlord` — giống `RatePolicy`).
 
@@ -165,6 +181,8 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 | is_active | boolean | NOT NULL default true | `false` = tắt → kế thừa cấp trên | | `true` |
 
 ### 2.11 MeterReading
+> **Service:** `tenancy-service` · DB `tenancy_db` · Bảng `meter_readings`
+
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | room_id | uuid | FK→Room, NOT NULL | | | |
@@ -180,6 +198,8 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 **Index:** UNIQUE `(room_id, type, period)`.
 
 ### 2.12 Invoice
+> **Service:** `tenancy-service` · DB `tenancy_db` · Bảng `invoices`
+
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | contract_id | uuid | FK→Contract, NOT NULL | | | |
@@ -197,6 +217,8 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 > **Cách tính toàn bộ (điện/nước/phí/prorate/làm tròn/block lỗi) → `utility-billing-calculations.md` §2–§11.** UNIQUE **partial** `(contract_id, period) WHERE invoice_status IN ('pending','issued') AND is_deleted = false` — cho phép tạo hóa đơn thay thế sau khi void bản sai (bản cũ giữ audit). **D33② — Invoice pending auto-sinh theo TỪNG PHÒNG** khi phòng đủ 2 MeterReading + policy OK (không batch toàn kỳ). **D39 — không lưu `due_date`:** app không cưỡng chế thu tiền nên không có mốc hạn/`overdue`; ngày thu dự kiến nằm ở `BillingSetting.payment_due_day`, chỉ để hiển thị.
 
 ### 2.13 Payment
+> **Service:** `payment-service` · DB `payment_db` · Bảng `payments`
+
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | invoice_id | uuid | FK→Invoice, **nullable** | nullable khi trả cọc hoặc hoàn tiền (không liên quan HĐ) | | |
@@ -212,6 +234,8 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 > **Trả cọc (checkout):** landlord tạo Payment với `invoice_id = NULL`, `contract_id = ?`, `method = 'cash'|'vnpay'`, `amount = số tiền trả lại`. `created_at` = thời điểm thanh lý. Không cần field riêng trên Contract. **D39 — không thêm `collected_at`: `Payment.created_at` đã là mốc thời gian ghi nhận khoản thu.**
 
 ### 2.14 IssueReport
+> **Service:** `community-service` · DB `community_db` · Bảng `issue_reports`
+
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | room_id | uuid | FK→Room, NOT NULL | | | |
@@ -225,6 +249,8 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 
 > Ảnh sự cố: `Media(owner_type='issue_report', purpose='issue_photo')`.
 ### 2.15 Conversation (Chat)
+> **Service:** `community-service` · DB `community_db` · Bảng `conversations`
+
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | type | enum (`room`,`building`,`direct`) | NOT NULL | | | `room` |
@@ -241,6 +267,8 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 - Chat cũ vẫn giữ history sau checkout, không archive/read-only
 
 ### 2.16 ConversationMember
+> **Service:** `community-service` · DB `community_db` · Bảng `conversation_members`
+
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | conversation_id | uuid | FK→Conversation, NOT NULL | | | |
@@ -251,6 +279,8 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 **Index:** UNIQUE `(conversation_id, user_id)`.
 
 ### 2.17 Message
+> **Service:** `community-service` · DB `community_db` · Bảng `messages`
+
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | conversation_id | uuid | FK→Conversation, NOT NULL | | | |
@@ -261,6 +291,8 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 > File/ảnh đính kèm (khi `type = image|file`): `Media(owner_type='message', purpose='chat_attachment')`.
 
 ### 2.18 MessageMention
+> **Service:** `community-service` · DB `community_db` · Bảng `message_mentions`
+
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | message_id | uuid | FK→Message, NOT NULL | | | |
@@ -269,6 +301,8 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 **Index:** UNIQUE `(message_id, user_id)`.
 
 ### 2.19 RoommateProfile
+> **Service:** `tenancy-service` · DB `tenancy_db` · Bảng `roommate_profiles`
+
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | tenant_id | uuid | FK→User, UNIQUE, NOT NULL | chỉ tenant có account | | |
@@ -283,6 +317,8 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 | id_verified | boolean | default false | badge xác minh tự nguyện (**D26**) | | `true` |
 
 ### 2.20 MatchRequest
+> **Service:** `tenancy-service` · DB `tenancy_db` · Bảng `match_requests`
+
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | requester_id | uuid | FK→User, NOT NULL | | | |
@@ -295,6 +331,8 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 **Index:** UNIQUE `(requester_id, target_id)` — cache mỗi cặp 1 lần (**D28**). Service chặn request đảo chiều trùng cặp.
 
 ### 2.21 Notification (MVP inbox + FCM)
+> **Service:** `community-service` · DB `community_db` · Bảng `notifications`
+
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | user_id | uuid | FK→User, NOT NULL | | | |
@@ -304,6 +342,8 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 | sent_at | timestamptz | nullable | thời điểm gửi FCM | | |
 
 ### 2.22 NotificationPreference
+> **Service:** `community-service` · DB `community_db` · Bảng `notification_preferences`
+
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | user_id | uuid | FK→User, NOT NULL | | | |
@@ -313,6 +353,8 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 **Index:** UNIQUE `(user_id, type)`.
 
 ### 2.23 PushDevice
+> **Service:** `identity-service` · DB `identity_db` · Bảng `push_devices`
+
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | user_id | uuid | FK→User, NOT NULL | một user có thể nhiều thiết bị | | |
@@ -321,6 +363,8 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 | last_seen_at | timestamptz | nullable | dùng dọn token hết hạn | | |
 
 ### 2.24 AuditLog
+> **Service:** `identity-service` · DB `identity_db` · Bảng `audit_logs`
+
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | actor_id | uuid | FK→User, nullable | null cho webhook/system | | |
@@ -334,6 +378,7 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 **Index:** `(entity_type, entity_id, created_at DESC)`, `(actor_id, created_at DESC)`.
 
 ### 2.25 Media (polymorphic — gom mọi file/ảnh của hệ thống)
+> **Service:** `identity-service` · DB `identity_db` · Bảng `media`
 
 **Thiết kế polymorphic** — 1 bảng `media` quản lý file/ảnh mọi entity (user, room, building, contract, contract_member, meter_reading, issue_report, message). `owner_type` enum cố định + `purpose` enum ràng buộc hợp lệ theo từng owner_type. Toàn vẹn tham chiếu kiểm tra ở service layer (không FK thật vì 1 cột `owner_id` reference nhiều bảng).
 

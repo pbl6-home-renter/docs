@@ -33,6 +33,9 @@ Deploy Staging & Checkpoint W9 (M3) Demo ✓
 | Artifact | Location |
 |----------|----------|
 | Phase 3 Discovery & Research | `pm/phase-3/discovery/` |
+| Microservice Architecture (P3-02) | `discovery/microservices-architecture.md` |
+| Data Boundary per Service (P3-03, D53) | `discovery/database-per-service.md` |
+| Free-tier DB/Storage research + POC + keepalive (P3-04) | `discovery/free-tier-db-storage.md`, `discovery/decisions.md` (D59+) |
 | Backend Scaffold & API | Repo `pbl6-backend` |
 | Web Scaffold & Console | Repo `pbl6-web` |
 | Mobile Scaffold & Tenant App | Repo `pbl6-mobile` |
