@@ -18,4 +18,10 @@
 | [P4-05](P4-05-be-identity-user-profile-and-guards.md) | Triển khai Guards, User Profile & Đổi mật khẩu | BE Lead / Dev | 🟡 Open | 2026-10-14 | `api-spec.md` §3 (API 7, 8, 9), D39 payoutAccount | `JwtAuthGuard`, `RolesGuard`, API `GET /me`, `PATCH /me`, `PUT /me/password` |
 | [P4-06](P4-06-be-identity-jwks-stateless-verification.md) | Cấu hình RS256 JWT & Expose JWKS Endpoint cho Microservices | BE Lead / Dev | 🟡 Open | 2026-10-15 | D55, D58, RFC 7517 | Endpoint `GET /.well-known/jwks.json`, RS256 signing, public key doc |
 
+## Issue list — Frontend Web (pbl6-web)
+
+| ID | Title | Owner | Status | Due Date | Input | Output |
+|----|-------|-------|--------|----------|-------|--------|
+| [P4-07](P4-07-fe-web-boilerplate-setup.md) | Setup Frontend Boilerplate (React + Vite + TypeScript) cho repo `pbl6-web` | FE Lead / Dev | 🟡 Open | 2026-10-13 | `api-conventions.md`, `Rentify_UI_Screen_Outline_v0.1.md`, D13 | Repo `pbl6-web` chuẩn Vite/React/Tailwind (UI tự build/custom template), Axios Interceptors, Auth & Dashboard layout |
+
 *(Các issue tiếp theo cho `tenancy-service` như Building, Room, Contract sẽ được mở nối tiếp sau khi hoàn thành Chặng 1)*
