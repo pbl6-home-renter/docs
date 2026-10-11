@@ -24,4 +24,16 @@
 |----|-------|-------|--------|----------|-------|--------|
 | [P4-07](P4-07-fe-web-boilerplate-setup.md) | Setup Frontend Boilerplate (React + Vite + TypeScript) cho repo `pbl6-web` | FE Lead / Dev | 🟡 Open | 2026-10-13 | `api-conventions.md`, `Rentify_UI_Screen_Outline_v0.1.md`, D13 | Repo `pbl6-web` chuẩn Vite/React/Tailwind (UI tự build/custom template), Axios Interceptors, Auth & Dashboard layout |
 
+## Issue list — Backend Boilerplate & Cloud Database (Supabase)
+
+| ID | Title | Owner | Status | Due Date | Input | Output |
+|----|-------|-------|--------|----------|-------|--------|
+| [P4-08](P4-08-be-boilerplate-supabase-setup-keepalive.md) | Setup kết nối Supabase PostgreSQL & Script Keepalive chống Pause cho Boilerplate | BE Dev / DevOps | 🟡 Open | 2026-10-14 | `boilerplate/backend/`, `free-tier-db-storage.md` §2/§4, D53/D56 | Cấu hình `DATABASE_URL` + SSL, script keepalive 1 WRITE / 1 READ + auto retention 100 rows, GitHub Actions cron 24h |
+
+## Issue list — DevOps & Infrastructure (AWS EC2 & Deployment)
+
+| ID | Title | Owner | Status | Due Date | Input | Output |
+|----|-------|-------|--------|----------|-------|--------|
+| [P4-09](P4-09-devops-aws-account-ec2-provisioning.md) | Chuẩn bị thẻ Credit, đăng ký AWS ($200 Credits), cấu hình Billing Alert & khởi tạo EC2 | DevOps / Infra | 🟡 Open | 2026-10-14 | Email `@dut.udn.vn`, D56 EC2, GitHub Pack | Tài khoản AWS nạp $100–$200 credit, Billing Alert qua email, EC2 Ubuntu chạy Docker & Swap RAM |
+
 *(Các issue tiếp theo cho `tenancy-service` như Building, Room, Contract sẽ được mở nối tiếp sau khi hoàn thành Chặng 1)*
