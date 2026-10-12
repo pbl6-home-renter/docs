@@ -1,6 +1,6 @@
 # P4-07 — Setup Frontend Boilerplate (React + Vite + TypeScript) cho repo `pbl6-web`
 
-**Status:** 🟡 Open  
+**Status:** 🟢 Done (Khung khởi tạo cơ bản — Xem tiếp [P4-10](P4-10-fe-web-boilerplate-refinement-and-mobile-alignment.md) để hoàn thiện chi tiết)  
 **Assignee:** FE Dev / FE Lead  
 **Stakeholders / Reviewers:** PM, BE Lead  
 **Created:** 2026-10-09  
