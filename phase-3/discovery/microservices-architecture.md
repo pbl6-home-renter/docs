@@ -565,6 +565,26 @@ sequenceDiagram
 | **Vì sao dùng Outbox?** | Nếu `tenancy` commit xong rồi chết trước khi publish, event mất vĩnh viễn → hoá đơn treo. Outbox ghi event **cùng transaction** với nghiệp vụ, một tiến trình riêng đọc và publish. Đây là mẫu chuẩn để đạt **at-least-once**. |
 | **Có trùng event không?** | Có — at-least-once nghĩa là có thể nhận trùng. Mọi consumer **phải** idempotent: dùng `eventId` làm khoá, hoặc kiểm tra trạng thái hiện tại trước khi chuyển (ví dụ đã `ACTIVE` thì bỏ qua). |
 
+#### 5.5.4 Quy ước Transactional Outbox của PBL6
+
+Mỗi service sở hữu database riêng phải sở hữu outbox riêng. Business data và event
+được ghi trong cùng local transaction; relay trong process service publish các row đã
+commit lên RabbitMQ. Không dùng distributed transaction hoặc 2PC giữa các service.
+
+Quy ước triển khai:
+
+- RabbitMQ dùng durable topic exchange và queue riêng cho từng consumer.
+- Publisher dùng publisher confirm; message có `messageId` ổn định.
+- Delivery là **at-least-once**, nên consumer ghi inbox/dedup với unique `messageId`.
+- Consumer ghi inbox và business side effect trong cùng local transaction.
+- Lỗi không recoverable đi vào dead-letter, không requeue vô hạn.
+- V1 giữ ordering theo aggregate; không cam kết global ordering.
+- Relay có thể chạy như scheduler trong service; scale-out dùng claim locking và có thể
+  partition theo aggregate sau này.
+
+Boilerplate triển khai mẫu tại
+[`boilerplate/docs/transactional-outbox-design.md`](../../../boilerplate/docs/transactional-outbox-design.md).
+
 #### 5.5.3 Provider timeout — retry và lũy đẳng
 
 ```mermaid
