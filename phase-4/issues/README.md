@@ -1,7 +1,7 @@
 # Phase 4 — Issues
 
 > Triển khai các dịch vụ cốt lõi (Core Services Implementation).  
-> **Chặng 1:** Hoàn thiện `identity-service` (P4-01 đến P4-06, P4-11 đến P4-13) theo kiến trúc Clean Architecture, CQRS, Database-per-service (`identity_db`).
+> P4-01 đến P4-06 và P4-11 đến P4-13 là các issue Identity hiện có. P4-15, P4-17 đến P4-19 và P4-21, P4-24 đến P4-25 là các task bổ sung cho Apidog, frontend foundation và `tenancy-service`.
 
 ## Status legend
 
@@ -40,4 +40,36 @@
 |----|-------|-------|--------|----------|-------|--------|
 | [P4-09](P4-09-devops-aws-account-ec2-provisioning.md) | Chuẩn bị thẻ Credit, đăng ký AWS ($200 Credits), cấu hình Billing Alert & khởi tạo EC2 | DevOps / Infra | 🟡 Open | 2026-10-14 | Email `@dut.udn.vn`, D56 EC2, GitHub Pack | Tài khoản AWS nạp $100–$200 credit, Billing Alert qua email, EC2 Ubuntu chạy Docker & Swap RAM |
 
-*(Các issue tiếp theo cho `tenancy-service` như Building, Room, Contract sẽ được mở nối tiếp sau khi hoàn thành Chặng 1)*
+## Issue list — Apidog & Authentication Integration
+
+| ID | Title | Owner | Status | Estimate | Output |
+|----|-------|-------|--------|----------|--------|
+| [P4-15](P4-15-apidog-environment-and-token-automation.md) | Cấu hình nền tảng Apidog và tự động hóa authentication flow | BE/API Lead + PM | 🟡 Open | 8 pts · 18–24h | Environment, token capture, Authorization và refresh flow trên Apidog |
+
+## Issue list — Frontend Foundation
+
+| ID | Title | Owner | Status | Estimate | Output |
+|----|-------|-------|--------|----------|--------|
+| [P4-17](P4-17-fe-google-stitch-research.md) | Google Stitch Research & Base UI Proposal | FE Dev | 🟡 Open | 5 pts · 8–12h | Member tự inspect Stitch và đề xuất phạm vi component cần code |
+| [P4-18](P4-18-fe-base-ui-components.md) | Implement Base UI Components từ kết quả Stitch | FE Dev / FE Lead | 🟡 Open | 13 pts · 24–48h | Design tokens và bộ base/feedback components dùng chung |
+| [P4-19](P4-19-fe-application-shell.md) | Implement Tenant, Landlord & Admin Application Shell | FE Dev / FE Lead | 🟡 Open | 8 pts · 18–24h | Layout, navigation, route guard và shell theo role |
+
+## Issue list — Tenancy Service
+
+| ID | Title | Owner | Status | Estimate | Output |
+|----|-------|-------|--------|----------|--------|
+| [P4-21](P4-21-tenancy-service-bootstrap.md) | Bootstrap `tenancy-service` theo Clean Architecture & DDD | BE Dev | 🟡 Open | 8 pts · 18–24h | Service skeleton, config, database và module boundaries |
+| [P4-24](P4-24-tenancy-building-vertical-slice.md) | Building Vertical Slice | BE Dev | 🟡 Open | 8 pts · 18–24h | Building aggregate, API, transaction và outbox flow chạy được |
+| [P4-25](P4-25-tenancy-room-vertical-slice.md) | Room Vertical Slice | BE Dev | 🟡 Open | 13 pts · 30–45h | Room aggregate, Building relationship, API và event flow |
+
+`boilerplate` là nền tảng reference đã có sẵn Transactional Outbox. `tenancy-service` được tạo bằng cách fork repository này; không tạo task port/approve/verify Outbox riêng trong Phase 4.
+
+## Planning notes
+
+- P4-01 đến P4-06 và P4-11 đến P4-13 không được tạo lại; P1 Identity tiếp tục theo implementation hiện tại.
+- P4-10 có phạm vi frontend cũ và có mobile alignment; phạm vi frontend mới cần theo P4-17 đến P4-19. Không giao thêm task Mobile trong batch này.
+- P4-14 bị loại khỏi batch vì các service hiện tại đã tuân thủ convention prefix/environment.
+- P4-16 được gộp vào P4-15; `api-docs` đã là nguồn contract hiện có, P4-15 chỉ cấu hình Apidog và token automation.
+- P4-20, P4-22, P4-23 và P4-26 được loại khỏi batch theo quyết định của PM.
+- P4-23 được thay thế bằng việc sử dụng `pm/phase-1/discovery/database-design.md` trong P4-21/P4-24/P4-25.
+- P4-08 và P4-09 không nằm trong batch task mới vì server/database đã được chuẩn bị. PM có thể đóng hoặc đánh dấu deferred các issue hạ tầng cũ theo trạng thái thực tế.

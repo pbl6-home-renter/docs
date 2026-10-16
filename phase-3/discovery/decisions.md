@@ -18,6 +18,7 @@
 | D56 | 2026-09-29 | Deploy everything on one EC2 with Docker Compose, replacing the Render + Neon + Vercel combination | 🟡 Proposed (needs budget) |
 | D57 | 2026-09-29 | Saga uses Orchestration, with `tenancy-service` as orchestrator for the invoice issuance flow | 🟡 Proposed |
 | D58 | 2026-09-29 | Each service is its own Git repo with no shared library; all peer URLs come from env vars | 🟡 Proposed |
+| D59 | 2026-10-15 | Each service uses a local transactional outbox, RabbitMQ publisher confirms, queue-per-consumer and inbox deduplication | 🟡 Proposed |
 
 ---
 
@@ -136,3 +137,28 @@
 - **Consequence:** Moving the landlord payment list to `tenancy-service` is a real change to `api-spec.md` line 208, and `GET /payments` as currently specified is impossible for a standalone service because it joins across three services. The OpenAPI spec in `api-docs/` must be split into 4 specs plus a gateway spec, and `api-docs/src/` has to be reorganised: it is currently split by artifact type — `paths/`, `requests/`, `responses/`, `schemas/`, `common/`, `parameters/` — with `paths/` and `requests/` divided by resource (`auth/`, `buildings/`, `contracts/`, `invoices/`, `payments/`, `rooms/`, `users/`) and `schemas/` divided by domain (`property/`, `billing/`, `contract/`, `matching/`, `chat/`, `notification/`, `user/`). Neither axis matches the service boundaries, because `buildings/`, `contracts/`, `invoices/` and `rooms/` all collapse into `tenancy`, so each service bundle has to be assembled by service rather than inherited from the existing folders. Apidog syncs 4 specs; mobile and web still point at the gateway, so the P3-01 Apidog Mock workflow is unaffected.
 - **Not decided / left to migration:** Whether the team can actually maintain 5 repositories (4 services plus the gateway) or whether the gateway should live in one of the service repos. Not settled.
 - **Cross-ref:** `api-docs/` structure; `api-spec.md` lines 207–211; `api-conventions.md` §1, §13; root `AGENTS.md` repo table; `P3-01-mobile-apidog-e2e-research.md`; `microservices-architecture.md` §8, §9, §12 question 6.
+
+## D59 - Local transactional outbox and inbox deduplication
+
+- **Date:** 2026-10-15
+- **Status:** Proposed
+- **Context:** RabbitMQ events cross independent service databases. Publishing directly
+  after a business write creates a dual-write failure window: the database can commit
+  while the process dies before publishing, or a published event can outlive a rolled
+  back business transaction.
+- **Decision:** Every service owns an `outbox_messages` table in its own database.
+  Business data and the outbox row are committed together. An in-process relay claims
+  committed rows with locking, publishes through RabbitMQ publisher confirms, retries
+  failures with backoff, and marks rows `PUBLISHED` only after confirmation.
+  Consumers use a durable queue, dead-letter failures instead of infinite requeue, and
+  an inbox/`processed_events` table with a unique `message_id` to make business effects
+  idempotent.
+- **Rules:** Delivery is at-least-once; ordering is guaranteed only per aggregate;
+  RabbitMQ uses a durable topic exchange and queue-per-consumer; no distributed
+  transaction or 2PC is introduced.
+- **Consequence:** Service implementations must carry their own outbox/inbox migrations
+  and event contracts. A future scale-out may partition relay work by aggregate. The
+  boilerplate reference implementation and teaching notes live in
+  `boilerplate/docs/transactional-outbox-design.md`.
+- **Cross-ref:** `microservices-architecture.md` §5.5.4; `boilerplate/README.md`;
+  `boilerplate/docs/transactional-outbox-design.md`.
