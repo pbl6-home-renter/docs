@@ -1,6 +1,6 @@
 # P4-05 — Triển khai Guards, User Profile & Đổi mật khẩu
 
-**Status:** 🟡 Open  
+**Status:** 🟢 Done
 **Assignee:** BE Dev  
 **Stakeholders / Reviewers:** BE Lead, Mobile Lead, FE Lead  
 **Created:** 2026-10-09  

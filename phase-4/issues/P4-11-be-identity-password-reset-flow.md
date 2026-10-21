@@ -1,6 +1,6 @@
 # P4-11 — Triển khai Luồng Quên mật khẩu & Đặt lại mật khẩu (Password Reset Flow)
 
-**Status:** 🟡 Open  
+**Status:** 🟢 Done
 **Assignee:** BE Dev  
 **Stakeholders / Reviewers:** BE Lead, PM, FE Lead, Mobile Lead  
 **Created:** 2026-10-11  

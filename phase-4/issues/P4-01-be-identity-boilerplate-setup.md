@@ -1,6 +1,6 @@
 # P4-01 — Setup boilerplate, Base Entity & Conventions cho Identity Service
 
-**Status:** 🟡 Open  
+**Status:** 🟢 Done
 **Assignee:** BE Dev  
 **Stakeholders / Reviewers:** BE Lead, PM  
 **Created:** 2026-10-09  

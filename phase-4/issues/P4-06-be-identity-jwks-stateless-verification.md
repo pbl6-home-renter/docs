@@ -1,6 +1,6 @@
 # P4-06 — Cấu hình RS256 JWT & Expose JWKS Endpoint cho Microservices
 
-**Status:** 🟡 Open  
+**Status:** 🟢 Done
 **Assignee:** BE Dev / BE Lead  
 **Stakeholders / Reviewers:** PM, Toàn bộ BE team  
 **Created:** 2026-10-09  

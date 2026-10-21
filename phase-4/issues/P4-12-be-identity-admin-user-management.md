@@ -1,6 +1,6 @@
 # P4-12 — Triển khai Phân hệ Quản trị Người dùng cho Admin (Admin User Management)
 
-**Status:** 🟡 Open  
+**Status:** 🟢 Done
 **Assignee:** BE Dev  
 **Stakeholders / Reviewers:** BE Lead, PM, FE Lead  
 **Created:** 2026-10-11  

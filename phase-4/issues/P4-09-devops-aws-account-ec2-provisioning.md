@@ -1,6 +1,6 @@
 # P4-09 — Chuẩn bị thẻ Credit, đăng ký AWS ($200 Credits), cấu hình Billing Alert & khởi tạo EC2
 
-**Status:** 🟡 Open  
+**Status:** 🟢 Done
 **Assignee:** DevOps / BE Dev (hoặc Thành viên phụ trách Hạ tầng)  
 **Stakeholders / Reviewers:** PM, BE Lead  
 **Created:** 2026-10-11  

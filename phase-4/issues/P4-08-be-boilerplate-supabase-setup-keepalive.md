@@ -1,6 +1,6 @@
 # P4-08 — Setup kết nối Supabase PostgreSQL & Script Keepalive chống Pause cho Boilerplate
 
-**Status:** 🟡 Open  
+**Status:** 🟢 Done
 **Assignee:** BE Dev  
 **Stakeholders / Reviewers:** BE Lead, PM  
 **Created:** 2026-10-11  

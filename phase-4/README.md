@@ -18,3 +18,21 @@ Phase 4 là giai đoạn chuyển đổi toàn bộ hệ thống từ khung sư�
 ## 2. Danh sách Task Phase 4
 
 Xem chi tiết bảng theo dõi, phân công và tiến độ tại: **[issues/README.md](issues/README.md)**.
+
+## 3. Phase 4 closure — 2026-10-21
+
+Phase 4 is closed for documentation and checkpoint reporting. Completed work is marked `Done` in the issue table; unfinished work remains visible and carries over instead of being treated as complete.
+
+### Completed and verified
+
+- Identity foundation, database migrations, registration/login, profile/guards, RS256/JWKS, password reset, admin management and admin seeder.
+- Web foundation and application shell/base UI work recorded in the corresponding frontend issues.
+- Supabase/keepalive setup and EC2 staging infrastructure.
+- Boilerplate integration now includes transactional Outbox/Inbox, Unit of Work and RabbitMQ publisher/relay infrastructure.
+
+### Carry-over to Phase 5
+
+- Identity refresh/logout end-to-end completion (`P4-04`).
+- Apidog/token automation and API contract governance (`P4-15`, `P4-27`).
+- Remaining frontend refinement and auth/API integration (`P4-10`, `P4-17`).
+- Tenancy service bootstrap and Building/Room vertical slices (`P4-21`, `P4-24`, `P4-25`).
