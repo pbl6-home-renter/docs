@@ -1,6 +1,6 @@
 # P4-04 — Triển khai Token Rotation & Logout (Quản lý phiên)
 
-**Status:** 🟡 Open  
+**Status:** 🔵 In progress
 **Assignee:** BE Dev  
 **Stakeholders / Reviewers:** BE Lead, Mobile Lead  
 **Created:** 2026-10-09  

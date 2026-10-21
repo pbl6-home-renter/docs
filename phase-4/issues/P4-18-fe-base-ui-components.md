@@ -1,6 +1,6 @@
 # P4-18 — Xây dựng base UI components từ kết quả Google Stitch
 
-**Trạng thái:** 🟡 Open  
+**Trạng thái:** 🟢 Done
 **Người phụ trách:** FE member / FE Lead  
 **Người review:** PM, FE team  
 **Ước lượng:** 13 points · 24–48 giờ  

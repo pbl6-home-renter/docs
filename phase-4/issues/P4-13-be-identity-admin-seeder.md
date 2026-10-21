@@ -1,6 +1,6 @@
 # P4-13 — Xây dựng Database Seeder & Khởi tạo Tài khoản Quản trị viên (Admin Initializer)
 
-**Status:** 🟡 Open  
+**Status:** 🟢 Done
 **Assignee:** BE Dev  
 **Stakeholders / Reviewers:** BE Lead, PM, DevOps / Infra  
 **Created:** 2026-10-11  

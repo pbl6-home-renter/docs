@@ -1,6 +1,6 @@
 # P4-19 — Xây dựng application shell cho Tenant, Landlord và Admin
 
-**Trạng thái:** 🟡 Open  
+**Trạng thái:** 🟢 Done
 **Người phụ trách:** FE member / FE Lead  
 **Người review:** PM, API owner  
 **Ước lượng:** 8 points · 18–24 giờ  

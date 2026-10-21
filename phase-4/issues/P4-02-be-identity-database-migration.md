@@ -1,6 +1,6 @@
 # P4-02 — Thiết kế TypeORM Entities & Migration CSDL `identity_db`
 
-**Status:** 🟡 Open  
+**Status:** 🟢 Done
 **Assignee:** BE Dev  
 **Stakeholders / Reviewers:** BE Lead, PM  
 **Created:** 2026-10-09  

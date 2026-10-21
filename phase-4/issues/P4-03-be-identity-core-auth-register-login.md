@@ -1,6 +1,6 @@
 # P4-03 — Triển khai Auth Use-cases: Register & Login (CQRS)
 
-**Status:** 🟡 Open  
+**Status:** 🟢 Done
 **Assignee:** BE Dev  
 **Stakeholders / Reviewers:** BE Lead, Mobile Lead  
 **Created:** 2026-10-09  
