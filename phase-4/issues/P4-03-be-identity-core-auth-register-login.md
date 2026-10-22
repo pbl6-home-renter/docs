@@ -86,7 +86,7 @@
 * **Xử lý:**
   - Tìm user theo `email` hoặc `phone` với điều kiện `is_deleted = false`.
   - Nếu không tìm thấy hoặc sai password: trả `401 INVALID_CREDENTIALS`.
-  - Nếu tài khoản có `status === 'locked'`: trả `403 ACCOUNT_LOCKED`.
+  - Tài khoản `status === 'locked'` **vẫn đăng nhập được** (không trả 403). Access token mang claim `status` để service khác tự chặn chức năng (xem `pm/phase-4/discovery/identity-sequence-diagrams.md`).
   - Sinh cặp `accessToken` và `refreshToken`, lưu hash của `refreshToken` vào DB.
   - Set Cookie `refreshToken`.
 * **Response:** Status `200 OK`.

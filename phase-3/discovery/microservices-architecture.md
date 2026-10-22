@@ -670,8 +670,15 @@ MQTT rất hợp với **thiết bị biên**: pin khẩu, băng thông thấp, 
 | `contract.signed` | `tenancy` | `community`, `identity` | `eventId`, `contractId`, `roomId` | at-least-once | khoá `eventId` |
 | `message.posted` | `community` | (chính nó, qua Socket.io) | `eventId`, `conversationId`, `senderId` | best-effort | khoá `messageId` |
 | `issue.created` | `community` | `tenancy`, `identity` | `eventId`, `issueId`, `roomId`, `reporterId` | at-least-once | khoá `issueId` |
-| `user.registered` | `identity` | `tenancy` | `eventId`, `userId`, `displayName` | at-least-once | `UPSERT` theo `userId` |
-| `user.updated` | `identity` | `tenancy` | `eventId`, `userId`, `displayName` | at-least-once | so sánh phiên bản |
+| `user.registered` | `identity` | `tenancy`, `community` | `eventId`, `userId`, `name`, `email`, `phone`, `role`, `status` | at-least-once | `UPSERT` theo `userId` |
+| `user.updated` | `identity` | `tenancy`, `community` | `eventId`, `userId`, `name`, `phone` | at-least-once | so sánh phiên bản |
+| `user.locked` | `identity` | `tenancy`, `community` | `eventId`, `userId`, `role`, `status`, `lockReason`, `lockedAt` | at-least-once | so sánh `occurredAt`, bỏ event cũ hơn lần xử lý gần nhất. Chỉ dùng để đổi dữ liệu của consumer (ẩn BĐS, tạm ngưng HĐ…); chặn thao tác của user dùng `x-user-status` (§6.2) |
+| `user.unlocked` | `identity` | `tenancy`, `community` | `eventId`, `userId`, `status` | at-least-once | idem |
+| `user.deleted` | `identity` | `tenancy`, `community` | `eventId`, `userId`, `role` | at-least-once | khoá `userId` (xoá mềm là trạng thái cuối) |
+| `user.password_reset_requested` | `identity` | `community` | `eventId`, `userId`, `email`, `name`, `token`, `expiresAt` | at-least-once | khoá `eventId`. **Payload chứa token thô:** không log payload, dọn outbox sau khi relay, DLQ không giữ lâu (token sống 15 phút, dùng 1 lần) |
+| `landlord.payout_account_updated` | `identity` | `payment` | `eventId`, `userId` (không gửi số tài khoản) | at-least-once | xoá cache, xử lý trùng vô hại |
+
+> Payload event dùng đúng tên field của entity/DTO (camelCase), không đặt tên mới. Thời điểm xảy ra lấy từ `occurredAt` của envelope. `identity` chỉ consume `contract.signed`, `issue.created` khi làm Audit log; module này đang hoãn.
 
 **Quy ước bắt buộc cho mọi event:** có `eventId` (UUID), `occurredAt`, `schemaVersion`, `correlationId` (nối từ HTTP request ban đầu).
 
@@ -728,13 +735,18 @@ flowchart TB
 
 | Dữ liệu | Chủ sở hữu | Người cần | Đi bằng | Lý do không nhân bản |
 |----------|-----------|----------|---------|---------------------|
-| Tên/role người dùng | `identity` | `tenancy`, `community` | Event `user.updated` | Cần luôn mới; sự kiện rẻ, đọc nhiều |
+| Tên/role người dùng | `identity` | `tenancy`, `community` | Event `user.registered` / `user.updated` | Cần luôn mới; sự kiện rẻ, đọc nhiều |
 | Cấu hình nhận tiền (D49) | `identity` (`landlord_profiles`) | `payment` | HTTP + cache Redis | Nhạy cảm, đọc không nhiều, cache 5 phút |
 | Thông tin phòng / hợp đồng | `tenancy` | `community` | HTTP | Cần luôn chính xác để kiểm tra quyền chat |
 | Số tiền hoá đơn | `tenancy` | `payment` | Event `invoice.issued` | Ghi 1 chiều, không cần ngược |
 | Media | `identity` | Tất cả | HTTP + presigned URL | Không nhân bản tệp |
 
 **Quy tắc:** chỉ nhân bản dữ liệu **hiển thị** (tên, ảnh) để tải nhanh; **không bao giờ** nhân bản dữ liệu **quyết định** (trạng thái, số dư, quyền) — cái đó luôn phải hỏi chủ sở hữu.
+
+**Trạng thái khóa tài khoản (`users.status`)** áp dụng quy tắc trên như sau:
+- **Chặn thao tác của chính user bị khóa:** `identity` đưa `status` vào access token (claim `{sub, role, status}`). Gateway verify JWT rồi gắn header `x-user-status`. Service nhận request đọc header này để chặn, **không lưu bản sao** `status`.
+  - Độ trễ: token cấp trước khi khóa/mở khóa vẫn mang `status` cũ tới khi hết hạn (tối đa 15 phút). Lần refresh tiếp theo sẽ lấy `status` mới.
+- **Tác động lên dữ liệu khác:** ví dụ ẩn BĐS của landlord bị khóa khỏi tìm kiếm công khai, tạm ngưng HĐ, mở lại khi unlock. `tenancy`/`community` xử lý khi nhận event `user.locked` / `user.unlocked` và chỉ đổi **dữ liệu của chính mình**, không giữ bản sao `status` để ra quyết định.
 
 ---
 
