@@ -298,7 +298,7 @@
 - **Quyền:** `public`
 - **Body:** `{ "identifier":"lan@example.com", "password":"...", "rememberMe":true }`
 - **Success:** `200` `{ "statusCode":200, "code":"LOGGED_IN", "data":{"accessToken":"<jwt>","expiresIn":900} }`; đặt refresh cookie
-- **Lỗi:** `401 INVALID TOKEN` · `403 ACCOUNT LOCKED` · `422 VALIDATION FAILED`
+- **Lỗi:** `401 INVALID TOKEN` · `422 VALIDATION FAILED` (tài khoản `locked` vẫn đăng nhập được, xem #13)
 - **UI:** `1._ng_nh_p_ch_nh_login/code.html` · `1._ng_nh_p_login/code.html` · `1._ng_nh_p_qu_n_tr_vi_n_admin_login/code.html`
 
 #### 3 · `POST /auth/refresh` — Xoay vòng phiên refresh
@@ -397,7 +397,7 @@
 - **Lỗi:** `404 NOT FOUND` · `409 USER ALREADY LOCKED` · `422 LOCK REASON REQUIRED`
 - **UI:** `9a._kh_a_t_i_kho_n_lock_account/code.html`
 
-> > Endpoint này thay thế route cũ `lock-user`. Tài khoản `locked` không đăng nhập được; phiên đang mở bị thu hồi.
+> > Endpoint này thay thế route cũ `lock-user`. Tài khoản `locked` **vẫn đăng nhập được**, phiên đang mở không bị thu hồi. `identity` phát event `user.locked`; `tenancy`/`community` tự chặn chức năng theo `shared_user_flow.md` §1.3. Chỉ tài khoản đã xoá mới không đăng nhập được.
 
 #### 14 · `POST /users/{userId}/unlock` — Mở khoá tài khoản
 

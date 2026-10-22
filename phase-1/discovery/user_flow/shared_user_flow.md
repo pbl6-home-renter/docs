@@ -14,8 +14,9 @@ Tài liệu này mô tả luồng điều hướng dùng chung, cơ chế phân 
    * Hệ thống chỉ có **DUY NHẤT 1 tài khoản Admin** quản trị toàn bộ nền tảng (không phân cấp Super Admin / Sub-Admin).
    * Thống nhất thành **Chủ trọ (Landlord)** quản lý bất động sản và phòng trọ (không phân tách chủ phòng hay chủ tòa nhà).
 3. **Cơ Chế Khi Tài Khoản Bị Khóa (Account Lock Rules):**
+   * **Nguyên tắc chung:** Tài khoản bị khóa **vẫn đăng nhập được** với JWT bình thường. JWT mang claim `status=locked`, Gateway chuyển thành header `x-user-status` để Tenancy/Community chặn chức năng bên dưới. Các tác động lên dữ liệu (ẩn BĐS, tạm ngưng HĐ) do Tenancy/Community xử lý khi nhận event `user.locked`. Chỉ tài khoản **đã xóa** mới không đăng nhập được.
    * **Khách thuê (Tenant) bị khóa:** Vẫn được phép đăng nhập để xem và thanh toán hóa đơn hợp đồng hiện tại nhằm đảm bảo trách nhiệm tài chính, nhưng bị khóa tính năng gia hạn hợp đồng, không thể tìm thuê phòng mới và không thể tạo hợp đồng mới.
-   * **Chủ trọ (Landlord) bị khóa:** Bị chặn truy cập cổng quản lý, toàn bộ thông tin dãy trọ/phòng bị ẩn khỏi tìm kiếm công khai, các hợp đồng hiện hành chuyển sang trạng thái tạm ngưng. Nếu qua thời gian Grace Period mà chủ trọ chưa được mở khóa, hợp đồng tự động bị hủy và hệ thống xử lý hoàn tiền cọc theo điều khoản. Khi mở khóa, chủ trọ tự bổ sung lại thông tin phát sinh.
+   * **Chủ trọ (Landlord) bị khóa:** Vẫn đăng nhập được nhưng bị chặn các thao tác quản lý, toàn bộ thông tin dãy trọ/phòng bị ẩn khỏi tìm kiếm công khai, các hợp đồng hiện hành chuyển sang trạng thái tạm ngưng. Nếu qua thời gian Grace Period mà chủ trọ chưa được mở khóa, hợp đồng tự động bị hủy và hệ thống xử lý hoàn tiền cọc theo điều khoản. Khi mở khóa, chủ trọ tự bổ sung lại thông tin phát sinh.
 4. **Quy Tắc Thuê Ngắn Hạn & Bỏ Khai Báo Tạm Trú:**
    * Thuê ngắn hạn tính theo ngày với mốc chuyển ngày 00:00 (trước 0h tính là 1 ngày, qua 0h tính sang ngày kế tiếp), không hỗ trợ tính theo giờ.
    * Ứng dụng không xử lý nghiệp vụ khai báo lưu trú/tạm trú của người dùng.
@@ -50,8 +51,8 @@ flowchart TD
     
     ValidateAuth -->|Thông tin đúng| CheckActive{Kiểm tra trạng thái tài khoản isActive?}
     
-    CheckActive -->|Chủ trọ bị khóa| BlockLL[Báo lỗi: Tài khoản Chủ trọ đang bị khóa - Toàn bộ BĐS tạm ẩn] --> EndBlocked([Dừng])
-    CheckActive -->|Khách thuê bị khóa| IssueRestrictedJWT[Cấp JWT quyền hạn chế: Chỉ xem & thanh toán HĐ hiện tại - Chặn gia hạn, thuê mới & tạo HĐ mới]
+    CheckActive -->|Chủ trọ bị khóa| IssueLockedLLJWT[Cấp JWT bình thường - status=locked: chặn thao tác quản lý, BĐS ẩn khỏi tìm kiếm, HĐ tạm ngưng] --> GoLandlordRestricted[Vào Landlord Console ở chế độ hạn chế]
+    CheckActive -->|Khách thuê bị khóa| IssueRestrictedJWT[Cấp JWT bình thường - status=locked: chỉ xem & thanh toán HĐ hiện tại, chặn gia hạn, thuê mới & tạo HĐ mới]
     CheckActive -->|Hoạt động bình thường| IssueNormalJWT[Cấp JWT đầy đủ quyền hạn theo vai trò]
     
     %% Điều hướng theo Role bất biến
@@ -67,6 +68,7 @@ flowchart TD
     GoLandlord --> DoLogout
     GoTenant --> DoLogout
     GoTenantRestricted --> DoLogout
+    GoLandlordRestricted --> DoLogout
     
     DoLogout --> ClearSession[Hủy Token / Xóa Storage / Ngắt Socket]
     ClearSession --> RedirectGuest[Đưa về Màn hình Đăng nhập hoặc Trang khám phá]
