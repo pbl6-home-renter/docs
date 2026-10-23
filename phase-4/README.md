@@ -35,4 +35,4 @@ Phase 4 is closed for documentation and checkpoint reporting. Completed work is 
 - Identity refresh/logout end-to-end completion (`P4-04`).
 - Apidog/token automation and API contract governance (`P4-15`, `P4-27`).
 - Remaining frontend refinement and auth/API integration (`P4-10`, `P4-17`).
-- Tenancy service bootstrap and Building/Room vertical slices (`P4-21`, `P4-24`, `P4-25`).
+- Tenancy service bootstrap and Building/Room vertical slices (`P4-21`; `P4-24`/`P4-25` moved to Phase 5 as `P5-08`/`P5-09`).
