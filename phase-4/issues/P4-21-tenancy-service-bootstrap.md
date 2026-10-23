@@ -90,7 +90,7 @@ Theo tài liệu hiện tại, các module chính gồm:
 - Các module/domain có boundary nhất quán.
 - Outbox/UoW/infrastructure nền tảng hoạt động từ boilerplate fork.
 - Có README ngắn mô tả module ownership và command chạy service.
-- P4-24/P4-25 có thể bắt đầu mà không phải di chuyển lại cấu trúc thư mục.
+- P5-08/P5-09 (trước đây P4-24/P4-25) có thể bắt đầu mà không phải di chuyển lại cấu trúc thư mục.
 
 ## Tiêu chí nghiệm thu
 

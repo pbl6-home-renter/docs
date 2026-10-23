@@ -1,6 +1,6 @@
-# Phase 5 — Nền tảng FE và tích hợp Auth
+# Phase 5 — Nền tảng FE, tích hợp Auth và Tenancy Building/Room
 
-Phase này chuẩn bị nền tảng dữ liệu/API cho Web và hoàn thiện vertical slice Auth. Phạm vi chỉ dừng ở Auth; chưa triển khai Building, Room, Contract, Billing hoặc Payment.
+Phase này chuẩn bị nền tảng dữ liệu/API cho Web và hoàn thiện vertical slice Auth. Phía BE triển khai vertical slice Building (`P5-08`, chuyển từ `P4-24`) và Room (`P5-09`, chuyển từ `P4-25`) trong `tenancy-service`. FE chỉ làm tới Auth; chưa triển khai Contract, Billing hoặc Payment.
 
 ## Nguyên tắc làm việc
 

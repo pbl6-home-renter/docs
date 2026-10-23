@@ -65,8 +65,8 @@
 | ID | Title | Owner | Status | Estimate | Output |
 |----|-------|-------|--------|----------|--------|
 | [P4-21](P4-21-tenancy-service-bootstrap.md) | Bootstrap `tenancy-service` theo Clean Architecture & DDD | BE Dev | 🟡 Open | 8 pts · 18–24h | Service skeleton, config, database và module boundaries |
-| [P4-24](P4-24-tenancy-building-vertical-slice.md) | Building Vertical Slice | BE Dev | 🟡 Open | 8 pts · 18–24h | Building aggregate, API, transaction và outbox flow chạy được |
-| [P4-25](P4-25-tenancy-room-vertical-slice.md) | Room Vertical Slice | BE Dev | 🟡 Open | 13 pts · 30–45h | Room aggregate, Building relationship, API và event flow |
+| P4-24 | Building Vertical Slice | BE Dev | ⏪ Deferred | 8 pts · 18–24h | Chuyển sang Phase 5 → [P5-08](../../phase-5/issues/P5-08-tenancy-building-vertical-slice.md) (tách sub-issue) |
+| P4-25 | Room Vertical Slice | BE Dev | ⏪ Deferred | 13 pts · 30–45h | Chuyển sang Phase 5 → [P5-09](../../phase-5/issues/P5-09-tenancy-room-vertical-slice.md) |
 
 `boilerplate` là nền tảng reference đã có sẵn Transactional Outbox. `tenancy-service` được tạo bằng cách fork repository này; không tạo task port/approve/verify Outbox riêng trong Phase 4.
 
@@ -79,4 +79,5 @@
 - P4-27 bổ sung nghiên cứu và POC cho việc tự động phát hiện, phân loại và ghi log thay đổi API contract; không phải runtime business audit log.
 - P4-20, P4-22, P4-23 và P4-26 được loại khỏi batch theo quyết định của PM.
 - P4-23 được thay thế bằng việc sử dụng `pm/phase-1/discovery/database-design.md` trong P4-21/P4-24/P4-25.
+- P4-24 và P4-25 được chuyển sang Phase 5 (`P5-08`, `P5-09`) theo quyết định của PM; P4-24 được tách thành sub-issue `P5-08a`–`P5-08e`.
 - P4-08 và P4-09 không nằm trong batch task mới vì server/database đã được chuẩn bị. PM có thể đóng hoặc đánh dấu deferred các issue hạ tầng cũ theo trạng thái thực tế.

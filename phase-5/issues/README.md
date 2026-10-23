@@ -22,6 +22,31 @@ Mỗi task phải được assign cho một FE member với link tới task này
 
 P5-03 và P5-04 có thể làm song song sau khi P5-02 được review. P5-07 chỉ bắt đầu khi foundation đã được FE Lead review.
 
+## Bảng task — Backend Tenancy (Building/Room)
+
+Chuyển từ Phase 4 (`P4-24`, `P4-25`). Building được tách thành sub-issue; issue cha `P5-08` chỉ đóng khi mọi sub-issue Done.
+
+| ID | Task | Assignee gợi ý | Trạng thái | Estimate | Phụ thuộc |
+|---|---|---|---|---|---|
+| [P5-08](P5-08-tenancy-building-vertical-slice.md) | Building vertical slice (Epic) | BE Dev | Open | 21 pts (tổng) | P4-21 |
+| ↳ [P5-08a](P5-08a-building-domain-persistence.md) | Building domain model và persistence | BE Dev | Open | 3 pts · 6–8h | P4-21 |
+| ↳ [P5-08b](P5-08b-building-create-command.md) | Create Building — slice mẫu UoW + Outbox | BE Dev | Open | 5 pts · 10–14h | P5-08a |
+| ↳ [P5-08c](P5-08c-building-landlord-management.md) | Landlord quản lý Building | BE Dev | Open | 5 pts · 10–14h | P5-08b |
+| ↳ [P5-08d](P5-08d-building-admin-approval.md) | Admin duyệt/từ chối Building | BE Dev | Open | 5 pts · 10–14h | P5-08b |
+| ↳ [P5-08e](P5-08e-building-public-search.md) | Tìm kiếm và xem Building public | BE Dev | Open | 3 pts · 6–8h | P5-08d |
+| [P5-09](P5-09-tenancy-room-vertical-slice.md) | Room vertical slice (Epic) | BE Dev | Open | 16 pts (tổng) | P5-08a, P5-08b, P5-08d |
+| ↳ [P5-09a](P5-09a-room-domain-persistence.md) | Room domain model và persistence | BE Dev | Open | 3 pts · 6–8h | P5-08a |
+| ↳ [P5-09b](P5-09b-room-create-command.md) | Create Room trong Building đã duyệt | BE Dev | Open | 5 pts · 10–14h | P5-09a, P5-08b, P5-08d |
+| ↳ [P5-09c](P5-09c-room-landlord-management.md) | Landlord quản lý Room | BE Dev | Open | 5 pts · 10–14h | P5-09b |
+| ↳ [P5-09d](P5-09d-room-public-search.md) | Tìm kiếm và xem chi tiết Room | BE Dev | Open | 3 pts · 6–8h | P5-09b, P5-08e |
+
+Thứ tự:
+
+- Building: `P5-08a → P5-08b → (P5-08c ∥ P5-08d) → P5-08e`.
+- Room: `P5-09a` (song song sau `P5-08a`) → `P5-09b` (sau `P5-08d`) → (`P5-09c` ∥ `P5-09d`).
+
+Quy định "FE member" và "Commit/PR" bên dưới áp dụng tương tự cho BE task: PR link tới file `api-docs` đã dùng, không tự thêm field/route/error code ngoài contract. Mọi BE task tạo API phải cập nhật sequence diagram và đổi tag `x-apidog-status` sang `released` khi xong.
+
 ## Quy định chung cho tất cả task
 
 - PR phải dẫn link tới file endpoint/schema trong `api-docs` đã sử dụng.
