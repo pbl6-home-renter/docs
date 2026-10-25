@@ -80,7 +80,7 @@
 | name | varchar | NOT NULL | | Min length: 1; Max length: 254 | `P.201` |
 | description | text | nullable | **D21** | Min length: 1; Max length: 500 | `Phòng trọ hiện đại, tiện nghi đầy đủ` |
 | area | decimal | nullable | Area in m²; used by `per_area_m2` fees | `>0` | `18.5` |
-| amenities | jsonb | NOT NULL | | {} | `{"aircon":true,"fridge":false,"wc_inside":true}` |
+| amenities | jsonb | NOT NULL | Chỉ chấp nhận các key: `aircon`, `fridge`, `wcInside`, `waterHeater`, `mezzanine`, `table`, `chair`; giá trị phải là boolean | {} | `{"aircon":true,"fridge":false,"wcInside":true,"waterHeater":true,"mezzanine":false,"table":true,"chair":true}` |
 | max_occupancy | int | nullable | **D21** hard filter ghép bạn | `> 0`| `3` |
 | gender_policy | enum (`any`,`male`,`female`) | default `any` | **D21** — `male` = male tenants only; `female` = female tenants only; `any` = no gender restriction | | `any` |
 | rent_price | decimal | NOT NULL | | `>=0`| `3500000` |
