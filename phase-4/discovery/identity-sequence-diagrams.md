@@ -456,10 +456,10 @@ Diagram vẽ theo thiết kế đã chốt. Những điểm dưới đây cần 
 
 | # | Chỗ lệch | Vị trí | Cần làm |
 |---|----------|--------|---------|
-| 1 | Chưa publish event nào lên RabbitMQ (outbox có sẵn nhưng chưa dùng) | Các command handler trong `Identity-Service/src/modules/{auth,users}` | Ghi outbox cùng transaction cho 7 event |
-| 2 | Lock đang revoke refresh token (`UserLockedEvent` → `AuthRevokeTokensOnUserEventsHandler`), trong khi user bị khóa vẫn được đăng nhập | `auth-revoke-tokens-on-user-events.event.handler.ts` | Bỏ revoke khi lock (giữ khi delete/đổi mật khẩu/reset mật khẩu) |
-| 3 | Yêu cầu reset mật khẩu đang chặn user bị khóa (`AuthLoginAccountLockedException`) | `request-password-reset.command.handler.ts` | Cho phép, vì user bị khóa vẫn đăng nhập được |
-| 4 | Gửi email reset còn là TODO | `request-password-reset.command.handler.ts` | Thay bằng event `user.password_reset_requested` |
+| 1 | ✅ Đã sửa: 7 event được ghi outbox cùng transaction (register, reset request, update me/admin, lock, unlock, delete). Tạm đặt `RABBITMQ_PUBLISH_MANDATORY=false` vì chưa có consumer bind `user.*`; bật lại khi Tenancy/Community subscribe | Các command handler trong `Identity-Service/src/modules/{auth,users}` | — |
+| 2 | ✅ Đã sửa: lock không còn revoke refresh token | `auth-revoke-tokens-on-user-events.event.handler.ts` | — |
+| 3 | ✅ Đã sửa: user bị khóa được yêu cầu reset mật khẩu | `password-reset-request.command.handler.ts` | — |
+| 4 | ✅ Đã sửa: thay TODO bằng event `user.password_reset_requested` | `password-reset-request.command.handler.ts` | Community cần consumer gửi email |
 | 5 | `buildingCount`, `activeContractCount` hard-code 0. Xóa user chưa kiểm tra HĐ hiệu lực | `user-get-detail-admin.query.handler.ts`, `user-delete.command.handler.ts` | Gọi `GET /internal/users/{userId}/stats` của Tenancy (Tenancy cần build endpoint này) |
 | 6 | Access token chỉ có `{sub, role}`, Gateway chưa gắn `x-user-status` | `Identity-Service/src/modules/auth` (ký token), `api-gateway` (forward header) | Thêm claim `status`, Gateway gắn header `x-user-status` |
 | 7 | Delete chưa có mã `409 USER_DELETE_HAS_ACTIVE_CONTRACT`, `503 SERVICE_UNAVAILABLE` | `user-delete.command.handler.ts`, `api-docs/src/paths/users/user-by-id.yaml` | Bổ sung mã lỗi vào code và api-docs |
