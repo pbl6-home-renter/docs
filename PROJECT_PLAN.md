@@ -126,6 +126,13 @@ See `issues/README.md` for the issue list and coverage map.
 - Sync API spec in Apidog; run end-to-end contract tests.
 - **Checkpoint W11 (M4):** feature-complete demo on staging.
 
+> **Re-plan 2026-10-26 (W11):** M4 "feature-complete" was not reached — Identity is done and Building/Room are in progress (`phase-5/`). The remaining schedule is replaced by [`phase-6/README.md`](phase-6/README.md):
+> - **MVP core:** Building/Room → Contract → Meter reading → Invoice → cash/mock payment, delivered across It5–It6 (02/11–15/11).
+> - **Hardening and demo:** It7 (16/11–22/11).
+> - **Stretch:** Chat/Issue, Roommate matching and VietQR reconciliation.
+> - **AI:** dropped in Phase 3 (`phase-3/discovery/microservices-architecture.md` §2.3) but still listed as MVP in §1. Status: **pending PM verification**.
+> - **Mobile:** planned separately.
+
 ### Phase 5 — Hardening, demo & submission (W12–14)
 - Bug-fix pass, seed realistic demo data, final deploy.
 - Demo script + rehearsal; record demo video.
