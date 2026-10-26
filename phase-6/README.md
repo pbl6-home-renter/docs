@@ -25,11 +25,13 @@ Demo được vòng đời **landlord-solo** (D29) trên staging:
 | Iteration | leminhkhai345 (BE) | huynhtiennhat0403 (BE) | ThaiBao11125 (FE) | baoduong17 (Lead) |
 |---|---|---|---|---|
 | **It4** 26/10–01/11 | P5-08b → P5-08c ∥ P5-08d → P5-08e | P5-09b → P5-09c ∥ P5-09d | Hoàn tất `fe#6` (P5-01…P5-07) | Review, route gateway cho tenancy, chốt OCR |
-| **It5** 02/11–08/11 | P6-01 Contract (a–d) | P6-02 Billing (rate policy, billing setting, meter reading) | P6-03 màn Building/Room + admin duyệt | P6-04 Media upload, deploy staging |
+| **It5** 02/11–08/11 | P6-01 Contract (a–d) | P6-02 Billing (rate policy, billing setting, meter reading) | P6-03 màn Building/Room + admin duyệt | P6-04 Media upload, P6-08 administrative geography, deploy staging |
 | **It6** 09/11–15/11 | P6-01 phần It6 (members, checkout) | P6-02 Invoice + OCR | P6-06 màn Contract/Invoice | P6-05 Payment mock/cash, P6-07 seed demo |
 | **It7** 16/11–22/11 | Bug fix | Bug fix | Bug fix + polish | Demo script, báo cáo, slide |
 
 Task It5 được viết đầy đủ step-by-step. Task It6 hiện ở mức outline, viết chi tiết trong tuần It5.
+
+P6-08 (administrative geography) is assigned to `baoduong17` in Iteration 5 and is intentionally kept separate from geocoding.
 
 ## Cách viết và giao task
 
