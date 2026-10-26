@@ -7,7 +7,7 @@
 **Ước lượng:** 5 points · 10–14 giờ  
 **Phụ thuộc:** P6-01a, P5-09b (đã tạo được Room)  
 **Repo / branch:** `Tenancy-Service` · `feature/p6-01b-contract-draft`  
-**Issue:** `docs#TBD`
+**Issue:** `docs#66`
 
 ## Mục tiêu
 
@@ -144,5 +144,5 @@ Landlord tạo được HĐ nháp cho phòng của mình (`201 CONTRACT_CREATED`
 
 - [ ] Bước 1–6 đã qua phần Kiểm tra bước.
 - [ ] `npm run build` + `npm run lint` pass.
-- [ ] PR ghi `Closes pbl6-home-renter/docs#TBD` + link file `api-doc`.
+- [ ] PR ghi `Closes pbl6-home-renter/docs#66` + link file `api-doc`.
 - [ ] baoduong17 approve; PR `api-doc` merge cùng lúc.

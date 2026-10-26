@@ -7,7 +7,7 @@
 **Ước lượng:** 5 points · 10–14 giờ  
 **Phụ thuộc:** P6-01b; P6-04 (Media: upload `contract_signed` + internal lookup)  
 **Repo / branch:** `Tenancy-Service` · `feature/p6-01d-contract-activate`  
-**Issue:** `docs#TBD`
+**Issue:** `docs#68`
 
 ## Mục tiêu
 
@@ -127,5 +127,5 @@ Sau khi hai bên ký tay, landlord upload bản ký (ảnh hoặc PDF) qua luồ
 
 - [ ] Bước 1–6 đã qua phần Kiểm tra bước, dùng media thật của P6-04.
 - [ ] `npm run build` + `npm run lint` pass.
-- [ ] PR ghi `Closes pbl6-home-renter/docs#TBD`; đính kèm kết quả query Bước 6.
+- [ ] PR ghi `Closes pbl6-home-renter/docs#68`; đính kèm kết quả query Bước 6.
 - [ ] baoduong17 approve.

@@ -7,7 +7,7 @@
 **Ước lượng:** 5 points · 10–14 giờ  
 **Phụ thuộc:** P6-02a, P5-09b (bảng `rooms` + Room tồn tại)  
 **Repo / branch:** `Tenancy-Service` · `feature/p6-02e-meter-reading`  
-**Issue:** `docs#TBD`
+**Issue:** `docs#75`
 
 ## Mục tiêu
 
@@ -108,5 +108,5 @@ Landlord chốt chỉ số điện/nước của một phòng cho một kỳ `YY
 
 - [ ] Bước 1–6 qua phần Kiểm tra bước.
 - [ ] `npm run build` + `npm run lint` pass.
-- [ ] PR vào `main` ghi `Closes pbl6-home-renter/docs#TBD` + link file `api-doc`.
+- [ ] PR vào `main` ghi `Closes pbl6-home-renter/docs#75` + link file `api-doc`.
 - [ ] baoduong17 approve.

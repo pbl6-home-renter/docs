@@ -8,7 +8,7 @@
 **Phụ thuộc:** P6-01d; phần quyết toán cọc phụ thuộc thêm Payment cash (lead, It6)  
 **Repo:** `Tenancy-Service`  
 **Iteration:** 6 (09/11)  
-**Issue:** `docs#TBD`
+**Issue:** `docs#69`
 
 ## Mục tiêu
 

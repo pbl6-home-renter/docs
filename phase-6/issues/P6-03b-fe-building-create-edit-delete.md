@@ -7,7 +7,7 @@
 **Ước lượng:** 5 points · 10–14 giờ  
 **Phụ thuộc:** P6-03a; BE P5-08b (`POST /buildings`), P5-08c (`PATCH`/`DELETE /buildings/{id}`); P6-04 (media presign/complete)  
 **Repo / branch:** `fe` · `feature/p6-03b-building-create-edit`  
-**Issue:** `docs#TBD`
+**Issue:** `docs#81`
 
 ## Mục tiêu
 
@@ -107,4 +107,4 @@ Landlord tạo Tòa nhà qua wizard 2 bước (LL-03 thông tin → LL-04 upload
 
 - [ ] Bước 1–7 qua phần Kiểm tra bước.
 - [ ] `npm run build` + `npm run lint` + `npm run i18n:check` pass.
-- [ ] PR có video/ảnh wizard và `Closes pbl6-home-renter/docs#TBD`.
+- [ ] PR có video/ảnh wizard và `Closes pbl6-home-renter/docs#81`.

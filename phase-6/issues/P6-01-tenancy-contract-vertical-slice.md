@@ -6,7 +6,7 @@
 **Ước lượng:** 18 points cho Iteration 5 (P6-01a → P6-01d) + 8 points cho Iteration 6 (P6-01e)  
 **Độ ưu tiên:** High  
 **Phụ thuộc:** P5-08 (Building), P5-09 (Room), P6-04 (Media upload)  
-**Issue:** `docs#TBD`
+**Issue:** `docs#64`
 
 ## Bối cảnh
 

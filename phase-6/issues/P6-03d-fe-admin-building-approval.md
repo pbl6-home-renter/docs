@@ -7,7 +7,7 @@
 **Ước lượng:** 3 points · 6–8 giờ  
 **Phụ thuộc:** P6-03a; BE P5-08d (`/admin/buildings`, `approve`, `reject`)  
 **Repo / branch:** `fe` · `feature/p6-03d-admin-building-approval`  
-**Issue:** `docs#TBD`
+**Issue:** `docs#83`
 
 ## Mục tiêu
 
@@ -84,4 +84,4 @@ Admin vào `/admin/approvals` thấy danh sách Tòa nhà chờ duyệt (AD-06),
 
 - [ ] Bước 1–5 qua phần Kiểm tra bước.
 - [ ] `npm run build` + `npm run lint` + `npm run i18n:check` pass.
-- [ ] PR có ảnh AD-06/07/08 và `Closes pbl6-home-renter/docs#TBD`.
+- [ ] PR có ảnh AD-06/07/08 và `Closes pbl6-home-renter/docs#83`.

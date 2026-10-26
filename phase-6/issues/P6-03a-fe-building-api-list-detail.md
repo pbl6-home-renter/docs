@@ -7,7 +7,7 @@
 **Ước lượng:** 5 points · 10–14 giờ  
 **Phụ thuộc:** `fe#6` merged; BE P5-08c (`GET /me/buildings`, `GET /me/buildings/{id}`) chạy trên staging  
 **Repo / branch:** `fe` · `feature/p6-03a-building-list-detail`  
-**Issue:** `docs#TBD`
+**Issue:** `docs#80`
 
 ## Mục tiêu
 
@@ -114,4 +114,4 @@ Landlord vào `/buildings` thấy danh sách Tòa nhà của mình (phân trang,
 
 - [ ] Bước 1–8 qua phần Kiểm tra bước.
 - [ ] `npm run build`, `npm run lint`, `npm run i18n:check` pass.
-- [ ] PR có ảnh 3 trạng thái (rỗng, có dữ liệu, rejected) + `Closes pbl6-home-renter/docs#TBD`.
+- [ ] PR có ảnh 3 trạng thái (rỗng, có dữ liệu, rejected) + `Closes pbl6-home-renter/docs#80`.

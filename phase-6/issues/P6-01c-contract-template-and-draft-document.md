@@ -7,7 +7,7 @@
 **Ước lượng:** 5 points · 10–14 giờ  
 **Phụ thuộc:** P6-01b; P6-04 (Media, phần lưu file do server sinh ra)  
 **Repo / branch:** `Tenancy-Service` · `feature/p6-01c-contract-template`  
-**Issue:** `docs#TBD`
+**Issue:** `docs#67`
 
 ## Mục tiêu
 
@@ -142,5 +142,5 @@ Landlord xem được danh sách mẫu HĐ có sẵn, áp một mẫu vào HĐ n
 
 - [ ] Bước 1–7 đã qua phần Kiểm tra bước; dùng adapter media thật (không phải `local`).
 - [ ] `npm run build` + `npm run lint` pass.
-- [ ] PR ghi `Closes pbl6-home-renter/docs#TBD`; đính kèm file PDF mẫu đã sinh.
+- [ ] PR ghi `Closes pbl6-home-renter/docs#67`; đính kèm file PDF mẫu đã sinh.
 - [ ] baoduong17 approve.

@@ -7,7 +7,7 @@
 **Ước lượng:** 3 points · 6–8 giờ  
 **Phụ thuộc:** P6-02a (contract đã chốt)  
 **Repo / branch:** `Tenancy-Service` · `feature/p6-02b-rate-policy-domain`  
-**Issue:** `docs#TBD`
+**Issue:** `docs#72`
 
 ## Mục tiêu
 
@@ -103,5 +103,5 @@ Có aggregate `RatePolicy` (1 bộ/scope, `rates` jsonb — D39) với đầy đ
 
 - [ ] Bước 1–5 qua phần Kiểm tra bước.
 - [ ] `npm run build` + `npm run lint` pass.
-- [ ] PR vào `main` ghi `Closes pbl6-home-renter/docs#TBD`, link `api-doc/src/schemas/billing/rate-policy.yaml`.
+- [ ] PR vào `main` ghi `Closes pbl6-home-renter/docs#72`, link `api-doc/src/schemas/billing/rate-policy.yaml`.
 - [ ] baoduong17 approve.
