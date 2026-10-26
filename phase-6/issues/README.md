@@ -35,6 +35,7 @@ Viết task mới theo [`_TEMPLATE.md`](_TEMPLATE.md). Task It5 đã viết step
 | ↳ [P6-03c](P6-03c-fe-room-list-create-edit.md) · [#82](https://github.com/pbl6-home-renter/docs/issues/82) | List, tạo, sửa, xóa Room | ThaiBao11125 | 5 | P6-03a, P5-09b/c |
 | ↳ [P6-03d](P6-03d-fe-admin-building-approval.md) · [#83](https://github.com/pbl6-home-renter/docs/issues/83) | Admin duyệt/từ chối Building | ThaiBao11125 | 3 | P6-03a, P5-08d |
 | [P6-04](P6-04-identity-media-presign-upload.md) · [#84](https://github.com/pbl6-home-renter/docs/issues/84) | Media upload 2 bước (Identity) | baoduong17 | 8 | — |
+| [P6-08](P6-08-tenancy-administrative-units.md) · [#89](https://github.com/pbl6-home-renter/docs/issues/89) | Local administrative geography API (Tenancy) | baoduong17 | 3 (~1 day) | P6-03b, P6-04 |
 
 ## Iteration 6 (09/11–15/11) — outline
 
