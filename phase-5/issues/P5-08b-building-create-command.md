@@ -63,9 +63,9 @@ Landlord gọi `POST /api/v1/buildings` tạo được Building ở trạng thá
   - `src/modules/building/application/commands/building-create/building-create.command.ts`: `BuildingCreateCommand(landlordId: Uuid, name, province, ward, address, totalFloors?, description?, amenities?)`.
   - `.../building-create/building-create.command.handler.ts`: copy nguyên khung `SampleCreateCommandHandler`.
 - **Cách làm:**
-  - Inject `BUILDING_DI_TOKEN.REPOSITORY`, `UNIT_OF_WORK_DI_TOKEN`, `OUTBOX_DI_TOKEN.REPOSITORY`.
-  - Trong `unitOfWork.run(ctx => …)`: `BuildingEntity.create({... , latitude: DEFAULT_BUILDING_COORDINATE.latitude, longitude: DEFAULT_BUILDING_COORDINATE.longitude })` → `buildingRepository.save(building, ctx)` → `outboxRepository.append(building.pullDomainEvents().map(OutboxMessage.fromDomainEvent), ctx)` → `return building`.
-  - Tạo `src/modules/building/domain/constants/building-default-coordinate.constant.ts` = `{ latitude: 0, longitude: 0 }` kèm `// TODO(geocoding): replace with real geocode`.
+  - Inject `BUILDING_DI_TOKEN.REPOSITORY`, `BUILDING_DI_TOKEN.GEOCODING` (`IGeocodingPort`, đã có từ P5-08f), `UNIT_OF_WORK_DI_TOKEN`, `OUTBOX_DI_TOKEN.REPOSITORY`.
+  - Trong `unitOfWork.run(ctx => …)`: `BuildingEntity.create({... , latitude, longitude })` → `buildingRepository.save(building, ctx)` → `outboxRepository.append(building.pullDomainEvents().map(OutboxMessage.fromDomainEvent), ctx)` → `return building`.
+  - **Trước** `unitOfWork.run()`: `const { latitude, longitude } = await this.geocoding.geocode({ address, ward, province })`. Port tự ném `422 GEOCODING_FAILED` / `503 GEOCODING_UNAVAILABLE`, handler không cần bắt. Không gọi geocode trong transaction.
 - **Kiểm tra bước:** `npm run build` pass.
 
 ### Bước 4 — Request/Response DTO và response code
@@ -94,7 +94,7 @@ Landlord gọi `POST /api/v1/buildings` tạo được Building ở trạng thá
 
 ## Quyết định tạm thời / Ngoài phạm vi
 
-- **Geocoding:** chưa làm; lat/long = constant mặc định (`0`) có `TODO`.
+- **Geocoding:** port + adapter TrackAsia đã làm ở **P5-08f** (`src/modules/building/application/ports/geocoding.port.ts`). Issue này chỉ gọi port; cần `TRACKASIA_API_KEY` trong `.env`.
 - **`ownershipCertificateMediaIds`:** nhận và validate format theo contract, **chưa lưu** liên kết media (media flow chưa có). Ghi `TODO(media)`.
 - **`district`:** PM đã xác nhận là lỗi contract (VN bỏ cấp Quận/Huyện). Không thêm cột; xóa khỏi `api-doc` (mục dưới).
 - `PATCH/DELETE`, admin approve, search: thuộc P5-08c/d/e.
@@ -107,7 +107,7 @@ Landlord gọi `POST /api/v1/buildings` tạo được Building ở trạng thá
 
 ## Manual verification (Apidog)
 
-1. Token landlord, body hợp lệ → `201 BUILDING_CREATED`, `status = pending`, header `Location` đúng, lat/long = 0.
+1. Token landlord, body hợp lệ → `201 BUILDING_CREATED`, `status = pending`, header `Location` đúng, có `latitude`/`longitude` đúng khu vực địa chỉ; địa chỉ rác → `422 GEOCODING_FAILED`, DB không có row mới.
 2. Thiếu `name` / `ownershipCertificateMediaIds = []` → `422 VALIDATION_FAILED`.
 3. Gửi thêm `landlordId` trong body → `422 UNEXPECTED_FIELD`.
 4. Token tenant → `403 FORBIDDEN`; không token → `401`.

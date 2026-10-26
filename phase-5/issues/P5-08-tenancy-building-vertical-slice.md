@@ -1,11 +1,11 @@
 # P5-08 — Building vertical slice (Epic)
 
-> Chuyển từ `P4-24` (Phase 4) sang Phase 5 và tách thành sub-issue `P5-08a` → `P5-08e`.
+> Chuyển từ `P4-24` (Phase 4) sang Phase 5 và tách thành sub-issue `P5-08a` → `P5-08f`.
 
 **Trạng thái:** 🟡 Open  
 **Người phụ trách:** BE member  
 **Người review:** BE Lead, API owner, PM  
-**Ước lượng:** 21 points (tổng sub-issue)  
+**Ước lượng:** 24 points (tổng sub-issue)  
 **Độ ưu tiên:** High  
 **Phụ thuộc:** P4-21
 
@@ -24,14 +24,16 @@ Issue này là issue cha. Công việc thực tế được giao qua các sub-is
 | [P5-08c](P5-08c-building-landlord-management.md) | Landlord quản lý Building | `GET /me/buildings`, `GET /me/buildings/{id}`, `PATCH /buildings/{id}`, `DELETE /buildings/{id}` | 5 pts | P5-08b |
 | [P5-08d](P5-08d-building-admin-approval.md) | Admin duyệt/từ chối Building | `GET /admin/buildings`, `GET /admin/buildings/{id}`, `POST /buildings/{id}/approve`, `POST /buildings/{id}/reject` | 5 pts | P5-08b |
 | [P5-08e](P5-08e-building-public-search.md) | Tìm kiếm và xem Building public | `GET /buildings`, `GET /buildings/{id}` | 3 pts | P5-08d |
+| P5-08f | Geocoding TrackAsia cho Building (create + đổi `address`) | `POST /buildings`, `PATCH /buildings/{id}` | 3 pts | P5-08b, P5-08c |
 
-Thứ tự: `P5-08a → P5-08b → (P5-08c ∥ P5-08d) → P5-08e`.
+Thứ tự: `P5-08a → P5-08b → (P5-08c ∥ P5-08d) → P5-08e`; `P5-08f` sau P5-08b + P5-08c.
+
+**Geocoding (P5-08f):** làm trong `Tenancy-Service` (port `GeocodingPort` + adapter TrackAsia), không tạo service riêng; `latitude`/`longitude` thuộc Building. Gọi geocode trước UoW transaction. Chưa làm autocomplete, reverse geocoding, map picker.
 
 ## Ngoài phạm vi epic này
 
 - `POST /buildings/{id}/rate-policies/batch` và `PUT /buildings/{id}/vietqr-config` — thuộc nhóm billing/payment, tạo issue riêng sau.
 - Media (`cover_photo`, `gallery_photo`, `ownership_proof`) — chưa có media flow; không validate `ownershipCertificateMediaIds`.
-- Geocoding thật cho `latitude`/`longitude` — tạm dùng giá trị mặc định (xem P5-08b).
 - Check `BUILDING_HAS_ACTIVE_CONTRACT` khi xóa — domain Contract chưa tồn tại (xem P5-08c).
 
 ## Tiêu chí nghiệm thu chung (áp dụng cho mọi sub-issue có write operation)
