@@ -7,7 +7,7 @@
 **Ước lượng:** ~13 points (sẽ tách sub-issue `P6-02g1…` khi viết chi tiết)  
 **Phụ thuộc:** P6-02c (RatePolicy), P6-02e (MeterReading), P6-01 Contract (`contracts`, `contract_members`, `vehicle_count`)  
 **Repo:** `Tenancy-Service`  
-**Issue:** `docs#TBD`
+**Issue:** `docs#77`
 
 ## Mục tiêu
 

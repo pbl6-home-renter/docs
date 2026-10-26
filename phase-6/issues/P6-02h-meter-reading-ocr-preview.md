@@ -7,7 +7,7 @@
 **Ước lượng:** ~5 points (ước lượng lại sau khi chốt OCR)  
 **Phụ thuộc:** P6-02e, Media presign upload (baoduong17, It5), quyết định OCR  
 **Repo:** `Tenancy-Service`  
-**Issue:** `docs#TBD`
+**Issue:** `docs#78`
 
 ## Mục tiêu
 

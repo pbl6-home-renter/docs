@@ -7,7 +7,7 @@
 **Ước lượng:** 5 points · 10–14 giờ  
 **Phụ thuộc:** P6-02b, P5-09b (Room tồn tại trong DB), P5-08b (pattern)  
 **Repo / branch:** `Tenancy-Service` · `feature/p6-02c-rate-policy-api`  
-**Issue:** `docs#TBD`
+**Issue:** `docs#73`
 
 ## Mục tiêu
 
@@ -116,5 +116,5 @@ Landlord cấu hình được bộ đơn giá cho tòa (wizard bước 3) và ch
 
 - [ ] Bước 1–7 qua phần Kiểm tra bước.
 - [ ] `npm run build` + `npm run lint` pass.
-- [ ] PR vào `main` ghi `Closes pbl6-home-renter/docs#TBD` + link các file `api-doc` ở mục Contract.
+- [ ] PR vào `main` ghi `Closes pbl6-home-renter/docs#73` + link các file `api-doc` ở mục Contract.
 - [ ] baoduong17 approve; export Apidog đính kèm PR.

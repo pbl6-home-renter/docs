@@ -37,4 +37,4 @@ Landlord đánh dấu hóa đơn đã thu tiền mặt (`POST /payments/record-c
 ## Definition of Done
 
 - Cash payment chuyển invoice sang trạng thái đã thanh toán; gọi lại với cùng `Idempotency-Key` không tạo payment thứ hai.
-- PR ghi `Closes pbl6-home-renter/docs#TBD`.
+- PR ghi `Closes pbl6-home-renter/docs#85`.

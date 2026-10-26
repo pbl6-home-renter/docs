@@ -6,7 +6,7 @@
 **Ước lượng:** 18 points tổng (P6-03a 5 · P6-03b 5 · P6-03c 5 · P6-03d 3)  
 **Phụ thuộc:** `fe#6` (P5-01…P5-07) đã merge vào `main`; BE P5-08 (Building) và P5-09 (Room) đã deploy staging; P6-04 (media upload) cho P6-03b  
 **Repo / branch:** `fe` · mỗi sub-issue một branch `feature/p6-03x-<slug>`  
-**Issue:** `docs#TBD`
+**Issue:** `docs#79`
 
 ## Mục tiêu
 

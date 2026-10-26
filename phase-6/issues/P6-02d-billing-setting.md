@@ -7,7 +7,7 @@
 **Ước lượng:** 3 points · 6–8 giờ  
 **Phụ thuộc:** P6-02a, P6-02c (copy pattern scope building/room)  
 **Repo / branch:** `Tenancy-Service` · `feature/p6-02d-billing-setting`  
-**Issue:** `docs#TBD`
+**Issue:** `docs#74`
 
 ## Mục tiêu
 
@@ -87,5 +87,5 @@ Landlord đặt "ngày thu dự kiến" (`paymentDueDay`) và ngày gợi ý nh�
 
 - [ ] Bước 1–4 qua phần Kiểm tra bước.
 - [ ] `npm run build` + `npm run lint` pass.
-- [ ] PR vào `main` ghi `Closes pbl6-home-renter/docs#TBD` + link file `api-doc`.
+- [ ] PR vào `main` ghi `Closes pbl6-home-renter/docs#74` + link file `api-doc`.
 - [ ] baoduong17 approve.

@@ -8,7 +8,7 @@
 **Ước lượng:** 20 points cho It5 (P6-02a → P6-02f); It6 ước lượng lại khi viết chi tiết P6-02g/h  
 **Độ ưu tiên:** High  
 **Phụ thuộc:** P5-09 (bảng `rooms` + Room API), P5-08b (pattern UoW + Outbox)  
-**Issue:** `docs#TBD`
+**Issue:** `docs#70`
 
 ## Bối cảnh
 

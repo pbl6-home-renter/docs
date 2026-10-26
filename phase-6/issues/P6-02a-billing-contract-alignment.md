@@ -7,7 +7,7 @@
 **Ước lượng:** 2 points · 4–6 giờ  
 **Phụ thuộc:** —  
 **Repo / branch:** `api-doc` · `docs/p6-02a-billing-contract`  
-**Issue:** `docs#TBD`
+**Issue:** `docs#71`
 
 ## Mục tiêu
 
@@ -81,4 +81,4 @@ Contract RatePolicy / BillingSetting / MeterReading trong `api-doc` nhất quán
 
 - [ ] 9 điểm trong bảng đã có quyết định ghi trong issue và phản ánh vào `api-doc`.
 - [ ] Bundle/lint `api-doc` pass; Apidog đã sync.
-- [ ] PR `api-doc` merge, ghi `Closes pbl6-home-renter/docs#TBD`.
+- [ ] PR `api-doc` merge, ghi `Closes pbl6-home-renter/docs#71`.

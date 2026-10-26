@@ -7,7 +7,7 @@
 **Ước lượng:** 3 points · 6–8 giờ  
 **Phụ thuộc:** P5-09a (bảng `rooms` phải có migration)  
 **Repo / branch:** `Tenancy-Service` · `feature/p6-01a-contract-domain`  
-**Issue:** `docs#TBD`
+**Issue:** `docs#65`
 
 ## Mục tiêu
 
@@ -134,5 +134,5 @@ Có aggregate `ContractEntity` với đầy đủ state machine (`draft → sign
 
 - [ ] Bước 1–5 đã qua phần Kiểm tra bước.
 - [ ] `npm run build` + `npm run lint` pass.
-- [ ] PR ghi `Closes pbl6-home-renter/docs#TBD`; đính kèm output `\d contracts`.
+- [ ] PR ghi `Closes pbl6-home-renter/docs#65`; đính kèm output `\d contracts`.
 - [ ] baoduong17 approve.

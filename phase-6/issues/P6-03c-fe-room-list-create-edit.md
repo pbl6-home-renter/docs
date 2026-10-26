@@ -7,7 +7,7 @@
 **Ước lượng:** 5 points · 10–14 giờ  
 **Phụ thuộc:** P6-03a; BE P5-09b (`POST /rooms`), P5-09c (`GET /me/rooms`, `PATCH`/`DELETE /rooms/{id}`, `mark-ready`)  
 **Repo / branch:** `fe` · `feature/p6-03c-room-management`  
-**Issue:** `docs#TBD`
+**Issue:** `docs#82`
 
 ## Mục tiêu
 
@@ -108,4 +108,4 @@ Trong trang chi tiết Tòa nhà **đã duyệt**, landlord thấy danh sách ph
 
 - [ ] Bước 1–6 qua phần Kiểm tra bước.
 - [ ] `npm run build` + `npm run lint` + `npm run i18n:check` pass.
-- [ ] PR có ảnh LL-07/08/09 và `Closes pbl6-home-renter/docs#TBD`.
+- [ ] PR có ảnh LL-07/08/09 và `Closes pbl6-home-renter/docs#82`.

@@ -6,7 +6,7 @@
 **Ước lượng:** 8 points · 18–24 giờ  
 **Phụ thuộc:** — (chặn P6-03b, P6-03d, và upload file HĐ ký trong Contract)  
 **Repo / branch:** `Identity-Service` · `feature/p6-04-media-upload`; `infra` (env R2); `api-doc` (sửa contract nếu chốt mục dưới)  
-**Issue:** `docs#TBD`
+**Issue:** `docs#84`
 
 ## Mục tiêu
 
@@ -141,4 +141,4 @@ Client xin presigned URL (`201 MEDIA_UPLOAD_TICKET_ISSUED`), PUT file thẳng l�
 - [ ] Bước 1–8 qua phần Kiểm tra bước; Điểm cần chốt 1–3 có quyết định ghi trong issue.
 - [ ] `npm run build` + `npm run lint` pass; migration chạy từ DB trống.
 - [ ] Env R2 có trên EC2 staging (không commit secret).
-- [ ] PR ghi `Closes pbl6-home-renter/docs#TBD`, kèm PR `api-doc`/`api-gateway`/`infra` liên quan.
+- [ ] PR ghi `Closes pbl6-home-renter/docs#84`, kèm PR `api-doc`/`api-gateway`/`infra` liên quan.

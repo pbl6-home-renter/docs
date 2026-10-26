@@ -7,7 +7,7 @@
 **Ước lượng:** 2 points · 4–6 giờ  
 **Phụ thuộc:** P6-02e  
 **Repo / branch:** `Tenancy-Service` · `feature/p6-02f-meter-reading-bulk`  
-**Issue:** `docs#TBD`
+**Issue:** `docs#76`
 
 ## Mục tiêu
 
@@ -76,5 +76,5 @@ Cuối tháng landlord nhập chỉ số điện/nước cho nhiều phòng củ
 
 - [ ] Bước 1–4 qua phần Kiểm tra bước; P6-02e vẫn pass sau refactor.
 - [ ] `npm run build` + `npm run lint` pass.
-- [ ] PR vào `main` ghi `Closes pbl6-home-renter/docs#TBD` + link file `api-doc`.
+- [ ] PR vào `main` ghi `Closes pbl6-home-renter/docs#76` + link file `api-doc`.
 - [ ] baoduong17 approve.
