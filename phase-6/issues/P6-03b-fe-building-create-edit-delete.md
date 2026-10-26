@@ -5,7 +5,7 @@
 **Người phụ trách:** ThaiBao11125  
 **Người review:** baoduong17  
 **Ước lượng:** 5 points · 10–14 giờ  
-**Phụ thuộc:** P6-03a; BE P5-08b (`POST /buildings`), P5-08c (`PATCH`/`DELETE /buildings/{id}`); P6-04 (media presign/complete)  
+**Phụ thuộc:** P6-03a; BE P5-08b (`POST /buildings`), P5-08c (`PATCH`/`DELETE /buildings/{id}`), P5-08f (geocoding TrackAsia); P6-04 (media presign/complete)  
 **Repo / branch:** `fe` · `feature/p6-03b-building-create-edit`  
 **Issue:** `docs#81`
 
@@ -18,6 +18,8 @@ Landlord tạo Tòa nhà qua wizard 2 bước (LL-03 thông tin → LL-04 upload
 - `api-doc/src/paths/buildings/buildings.yaml` → `postBuildings`: body `BuildingCreateRequestDto` (`api-doc/src/requests/buildings/building-create-request-dto.yaml`), `201 BUILDING_CREATED`.
   - **`district` đã bị PM loại** (xem P5-08b), không đưa vào form dù file contract còn field này.
   - `ownershipCertificateMediaIds`: mảng uuid, `minItems: 1`.
+  - FE **không** gửi `latitude`/`longitude`; BE tự geocode từ `address + ward + province` (P5-08f). Response `201` luôn có `latitude`/`longitude`.
+  - Lỗi geocoding: `422 GEOCODING_FAILED` (địa chỉ không xác định được) · `503 GEOCODING_UNAVAILABLE` (TrackAsia lỗi/timeout, thử lại được). `PATCH` đổi `address` cũng có thể trả 2 lỗi này.
 - `api-doc/src/paths/buildings/buildings-buildingId.yaml`:
   - `patchBuildingsBuildingid`: `BuildingUpdateRequestDto`, `200 BUILDING_UPDATED`, `409 APPROVED_BUILDING_LOCKED`.
   - `deleteBuildingsBuildingid`: `204`, `409` (đọc code cụ thể trong file).
@@ -64,6 +66,8 @@ Landlord tạo Tòa nhà qua wizard 2 bước (LL-03 thông tin → LL-04 upload
   - Mỗi file: hiện tiến trình; lỗi `MEDIA_TYPE_NOT_ALLOWED`/`TICKET_EXPIRED` → toast i18n và cho thử lại.
   - Khi ≥ 1 file `complete` thì bật nút "Gửi duyệt" → gọi `createBuilding({...info, ownershipCertificateMediaIds})`.
   - `201` → toast `BUILDING_CREATED`, invalidate `queryKeys.buildings.all`, điều hướng `/buildings/:id`.
+  - `422 GEOCODING_FAILED` → quay lại bước 1, hiện lỗi i18n dưới field Địa chỉ chi tiết; **giữ nguyên** media đã upload để gửi lại.
+  - `503 GEOCODING_UNAVAILABLE` → toast i18n "thử lại", ở nguyên bước 2, giữ state.
 - **Kiểm tra bước:** tạo thành công → chi tiết hiện badge "Chờ duyệt"; `422` → lỗi về đúng field ở bước 1 (quay lại bước 1 nếu lỗi thuộc field ở đó).
 
 ### Bước 5 — Sửa Building
@@ -73,6 +77,7 @@ Landlord tạo Tòa nhà qua wizard 2 bước (LL-03 thông tin → LL-04 upload
   - Chỉ gửi field thay đổi (`form.formState.dirtyFields`).
   - Với Building `approved`: disable các field bị khóa theo mô tả trong `buildings-buildingId.yaml`; nếu BE vẫn trả `409 APPROVED_BUILDING_LOCKED` thì hiện toast i18n.
   - Thành công → toast `BUILDING_UPDATED`, invalidate list + detail.
+  - Đổi `address` mà nhận `422 GEOCODING_FAILED` → lỗi dưới field địa chỉ; `503 GEOCODING_UNAVAILABLE` → toast thử lại.
 - **Kiểm tra bước:** sửa tên Building `pending` → cập nhật; sửa field khóa của Building `approved` → nhận 409 và toast đúng.
 
 ### Bước 6 — Xóa Building
@@ -86,22 +91,23 @@ Landlord tạo Tòa nhà qua wizard 2 bước (LL-03 thông tin → LL-04 upload
 - **File sửa:**
   - `src/app/routes/roles/landlord.routes.tsx`: thêm `/buildings/new`, `/buildings/:id/edit`.
   - `building-detail-page.tsx`, `building-list-page.tsx`: bật nút Thêm/Sửa/Xóa.
-  - `src/i18n/locales/{vi,en}/buildings.json` + `common.json` (`apiSuccess.BUILDING_CREATED`, `BUILDING_UPDATED`, `apiErrors.APPROVED_BUILDING_LOCKED`…).
+  - `src/i18n/locales/{vi,en}/buildings.json` + `common.json` (`apiSuccess.BUILDING_CREATED`, `BUILDING_UPDATED`, `apiErrors.APPROVED_BUILDING_LOCKED`, `GEOCODING_FAILED`, `GEOCODING_UNAVAILABLE`…).
 - **Kiểm tra bước:** `npm run build`, `npm run lint`, `npm run i18n:check` pass.
 
 ## Quyết định tạm thời / Ngoài phạm vi
 
 - Không có bước 3/3 (LL-05 đơn giá điện nước), phần này thuộc Billing (Phase 6 It5 BE `rate-policies`).
 - Không chụp camera trên web; chỉ chọn file từ máy.
-- Không có geocoding/map picker (BE đang để lat/long mặc định).
+- Không làm map picker, autocomplete địa chỉ hay reverse geocoding. Geocoding là việc của BE (P5-08f); FE chỉ xử lý lỗi và có thể dùng tọa độ trong response.
 
 ## Manual verification
 
-1. Tạo Building đủ thông tin + 2 ảnh giấy tờ → `201`, trạng thái Chờ duyệt.
+1. Tạo Building đủ thông tin + 2 ảnh giấy tờ → `201`, trạng thái Chờ duyệt, response có `latitude`/`longitude` hợp lệ (khác `0`, đúng khu vực).
 2. Bỏ qua upload → nút "Gửi duyệt" bị khóa.
 3. Upload file `.svg` → bị chặn ở client; ép gửi → BE `422 MEDIA_TYPE_NOT_ALLOWED` hiển thị đúng.
 4. Sửa Building `approved` ở field bị khóa → 409 + toast.
 5. Xóa Building → biến mất khỏi danh sách.
+6. Địa chỉ không tồn tại (ví dụ `asdfgh`) → `422 GEOCODING_FAILED`, quay về bước 1, lỗi dưới field địa chỉ, media vẫn còn.
 
 ## Definition of Done
 

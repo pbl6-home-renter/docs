@@ -25,7 +25,8 @@ Landlord xem danh sách và chi tiết Building **của chính mình**, sửa Bu
 - DTO: `src/responses/dtos/buildings/my-building-list-response-dto.yaml`, `my-building-detail-response-dto.yaml`, `building-update-response-dto.yaml`; request `src/requests/buildings/building-update-request-dto.yaml` (chỉ `name`, `address`).
 - List: `filter[status]`, `sort` (mặc định `createdAt`), `order` (mặc định `desc`), `pageNo`, `pageSize` (1–100).
 - Rule: Building của landlord khác → `404 RESOURCE_NOT_FOUND` (không lộ sự tồn tại). Building `approved` → `PATCH` trả `409 APPROVED_BUILDING_LOCKED`.
-- Lỗi: `401`, `403 FORBIDDEN`, `404 RESOURCE_NOT_FOUND`, `409`, `422 VALIDATION_FAILED`.
+- Lỗi: `401`, `403 FORBIDDEN`, `404 RESOURCE_NOT_FOUND`, `409`, `422 VALIDATION_FAILED`; `PATCH` thêm `422 GEOCODING_FAILED`, `503 GEOCODING_UNAVAILABLE` (do P5-08f bổ sung).
+- Rule: `PATCH` đổi `address` thì phải geocode lại `latitude`/`longitude` — dùng `BUILDING_DI_TOKEN.GEOCODING` (`IGeocodingPort`, P5-08f). Khi có `address`: đọc Building **ngoài** transaction (check owner) để lấy `ward`/`province` → `geocode({ address, ward, province })` → trong UoW truyền `latitude`/`longitude` vào `building.update({ name, address, latitude, longitude })` (domain đã hỗ trợ).
 
 ## Tham chiếu code (đã có trong repo)
 

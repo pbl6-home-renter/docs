@@ -28,7 +28,7 @@ Chuyển từ Phase 4 (`P4-24`, `P4-25`). Building được tách thành sub-iss
 
 | ID | Task | Assignee gợi ý | Trạng thái | Estimate | Phụ thuộc |
 |---|---|---|---|---|---|
-| [P5-08](P5-08-tenancy-building-vertical-slice.md) | Building vertical slice (Epic) | BE Dev | In progress | 21 pts (tổng) | P4-21 |
+| [P5-08](P5-08-tenancy-building-vertical-slice.md) | Building vertical slice (Epic) | BE Dev | In progress | 24 pts (tổng, gồm P5-08f) | P4-21 |
 | ↳ [P5-08a](P5-08a-building-domain-persistence.md) | Building domain model và persistence | BE Dev | Done (migration lỗi chạy lại — sửa ở P5-08b) | 3 pts · 6–8h | P4-21 |
 | ↳ [P5-08b](P5-08b-building-create-command.md) | Create Building — slice mẫu UoW + Outbox | BE Dev | Open | 5 pts · 10–14h | P5-08a |
 | ↳ [P5-08c](P5-08c-building-landlord-management.md) | Landlord quản lý Building | BE Dev | Open | 5 pts · 10–14h | P5-08b |

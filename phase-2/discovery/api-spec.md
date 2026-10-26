@@ -64,10 +64,10 @@
 | 22 | `GET /buildings` | `public` | Sàn tìm kiếm tòa nhà đã duyệt | Chỉ trả tòa nhà `status = approved`. Bộ lọc: `filter[province]`, `filter[ward]`, `filter[q]`; `sort`, `order`; hỗ trợ `format`. DTO chỉ gồm trường công khai. |
 | 23 | `GET /buildings/landlord` | `landlord` | Danh sách tòa nhà chủ nhà sở hữu | Tự lọc theo `landlordId` của người gọi; client không gửi `landlordId`. Bộ lọc: `filter[status]`; `sort`, `order`; hỗ trợ `format`. DTO có thêm tổng số phòng và tỷ lệ lấp đầy. **Không có trường cấu hình VietQR** (D39 — cấu hình QR thuộc hồ sơ chủ nhà, xem `GET /me`). |
 | 24 | `GET /buildings/admin` | `admin` | Xem và quản lý mọi tòa nhà trong hệ thống | Bộ lọc: `filter[status]`, `filter[landlordId]`, `filter[province]`, `filter[ward]`, `filter[q]`; `sort`, `order`; hỗ trợ `format`. Mặc định `filter[status]=pending` để lấy hàng đợi duyệt. |
-| 25 | `POST /buildings` | `landlord` | Gửi tòa nhà để duyệt | Body: `name`, `province`, `ward`, `address`; server tự geocode `latitude`/`longitude`; status là `pending`. |
+| 25 | `POST /buildings` | `landlord` | Gửi tòa nhà để duyệt | Body: `name`, `province`, `ward`, `address`; server tự geocode `latitude`/`longitude` (TrackAsia, trong Tenancy-Service); geocode lỗi thì không tạo; status là `pending`. |
 | 26 | `GET /buildings/{buildingId}` | `public` | Chi tiết công khai của một tòa nhà đã duyệt | Chỉ trả trường công khai. Tòa nhà `pending` hoặc `rejected` trả `404` để không lộ trạng thái duyệt. |
 | 27 | `GET /buildings/{buildingId}` | `landlord`. `admin` | Chi tiết quản trị của tòa nhà chủ nhà sở hữu | Chỉ trả về khi `building.landlordId` khớp người gọi, nếu không `404` hoặc `admin`. |
-| 28 | `PATCH /buildings/{buildingId}` | `landlord` | Chủ nhà sửa thông tin tòa nhà của mình | Chỉ sửa `name`, `description`. |
+| 28 | `PATCH /buildings/{buildingId}` | `landlord` | Chủ nhà sửa thông tin tòa nhà của mình | Chỉ sửa `name`, `address`. Đổi `address` thì server geocode lại `latitude`/`longitude`. |
 | 29 | `PATCH /buildings/{buildingId}/status` | `admin` | Admin duyệt/từ chối tòa nhà đang chờ | **Giữ dạng action, không nhét vào PATCH.** Chuyển `status` từ `pending` sang `approved` hoặc `rejected` và ghi audit log. Body: `note` tuỳ chọn. |
 | 30 | `DELETE /buildings/{buildingId}` | `landlord` | Xóa mềm một tòa nhà | Đặt `is_deleted = true` và cascade mềm sang phòng, chính sách giá và cài đặt hóa đơn. Hợp đồng, hóa đơn, thanh toán và kiểm toán được giữ nguyên. Xem mục 28.4. |
 
@@ -511,7 +511,7 @@
 - **Quyền:** `landlord`
 - **Body:** `{ "name":"Nhà trọ Thanh Xuân", "province":"Thành phố Hồ Chí Minh", "ward":"Phường Bến Nghé", "address":"12 Nguyễn Trãi" }`
 - **Success:** `201` `{ "statusCode":201, "code":"BUILDING_CREATED", "data":{"id":"<uuid>","status":"pending","latitude":"20.995100","longitude":"105.816649"} }`; `Location: /api/v1/buildings/{buildingId}`
-- **Lỗi:** `422 VALIDATION FAILED` · `403 FORBIDDEN`
+- **Lỗi:** `422 VALIDATION FAILED` · `422 GEOCODING_FAILED` · `503 GEOCODING_UNAVAILABLE` · `403 FORBIDDEN`
 - **UI:** `10._th_m_t_a_nh_b_c_1_3_add_building_step_1_3/code.html` · `11._t_i_gi_y_t_s_h_u_b_c_2_3_upload_documents_step_2_3/code.html`
 
 #### 26 · `GET /buildings/{buildingId}` — Đọc tòa nhà (chế độ công khai)

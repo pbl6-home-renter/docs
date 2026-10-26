@@ -17,7 +17,7 @@ Landlord quản lý được Tòa nhà và Phòng trên web console (list, tạo
 | ID | Nội dung | Màn hình (UI outline) | Ước lượng | Phụ thuộc |
 |---|---|---|---|---|
 | [P6-03a](P6-03a-fe-building-api-list-detail.md) | Building API layer, danh sách và chi tiết Building của tôi | LL-02, LL-06 | 5 pts · 10–14h | `fe#6`, P5-08c |
-| [P6-03b](P6-03b-fe-building-create-edit-delete.md) | Wizard tạo Building (bước 1–2), sửa, xóa | LL-03, LL-04 | 5 pts · 10–14h | P6-03a, P5-08b, P6-04 |
+| [P6-03b](P6-03b-fe-building-create-edit-delete.md) | Wizard tạo Building (bước 1–2), sửa, xóa | LL-03, LL-04 | 5 pts · 10–14h | P6-03a, P5-08b, P5-08f, P6-04 |
 | [P6-03c](P6-03c-fe-room-list-create-edit.md) | Danh sách, tạo, sửa, xóa, mark-ready Room trong 1 Building | LL-07, LL-08, LL-09 | 5 pts · 10–14h | P6-03a, P5-09b, P5-09c |
 | [P6-03d](P6-03d-fe-admin-building-approval.md) | Admin: danh sách chờ duyệt, chi tiết, duyệt/từ chối | AD-06, AD-07, AD-08 | 3 pts · 6–8h | P6-03a, P5-08d |
 
@@ -48,9 +48,10 @@ Thứ tự: `P6-03a → (P6-03b ∥ P6-03c ∥ P6-03d)`. P6-03a dựng API layer
 ## Điểm cần chốt trước khi bắt đầu
 
 1. **Menu và route lệch nhau:** `LANDLORD_NAVIGATION` có `/rooms`, còn route thật là `/buildings` và `/buildings/:id`. Đề xuất: đổi menu item `landlord-rooms` sang `path: '/buildings'` (giữ nhãn "Quản lý Phòng & BĐS"); Room nằm dưới `/buildings/:id/rooms/...`. Làm trong P6-03a.
-2. **Media cho giấy tờ sở hữu:** `BuildingCreateRequestDto.ownershipCertificateMediaIds` yêu cầu ≥ 1 media id, nhưng `POST /media/presign-upload` lại đòi `ownerId` của Building, mà Building chưa tồn tại lúc này. Vướng ở P6-03b và P6-04; API owner phải chốt cách làm trước It5 (xem P6-04 §Điểm cần chốt).
+2. **Geocoding:** BE tự geocode `latitude`/`longitude` bằng TrackAsia trong Tenancy-Service (P5-08f), khi tạo và khi đổi `address`. FE không gửi tọa độ, không làm map picker/autocomplete; chỉ xử lý `422 GEOCODING_FAILED` / `503 GEOCODING_UNAVAILABLE` và dùng tọa độ trong response nếu cần.
+3. **Media cho giấy tờ sở hữu:** `BuildingCreateRequestDto.ownershipCertificateMediaIds` yêu cầu ≥ 1 media id, nhưng `POST /media/presign-upload` lại đòi `ownerId` của Building, mà Building chưa tồn tại lúc này. Vướng ở P6-03b và P6-04; API owner phải chốt cách làm trước It5 (xem P6-04 §Điểm cần chốt).
 
 ## Definition of Done (epic)
 
 - [ ] 4 sub-issue Done; route `/buildings`, `/buildings/:id`, `/buildings/:id/rooms/*`, `/admin/approvals` không còn dùng `DashboardOverview` placeholder.
-- [ ] Demo trên staging: landlord tạo Building → admin duyệt → landlord tạo Room → mark ready.
+- [ ] Demo trên staging: landlord tạo Building (tọa độ được geocode thật, không phải `0`) → admin duyệt → landlord tạo Room → mark ready.
