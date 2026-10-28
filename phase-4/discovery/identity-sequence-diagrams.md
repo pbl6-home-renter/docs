@@ -460,6 +460,6 @@ Diagram vẽ theo thiết kế đã chốt. Những điểm dưới đây cần 
 | 2 | ✅ Đã sửa: lock không còn revoke refresh token | `auth-revoke-tokens-on-user-events.event.handler.ts` | — |
 | 3 | ✅ Đã sửa: user bị khóa được yêu cầu reset mật khẩu | `password-reset-request.command.handler.ts` | — |
 | 4 | ✅ Đã sửa: thay TODO bằng event `user.password_reset_requested` | `password-reset-request.command.handler.ts` | Community cần consumer gửi email |
-| 5 | `buildingCount`, `activeContractCount` hard-code 0. Xóa user chưa kiểm tra HĐ hiệu lực | `user-get-detail-admin.query.handler.ts`, `user-delete.command.handler.ts` | Gọi `GET /internal/users/{userId}/stats` của Tenancy (Tenancy cần build endpoint này) |
+| 5 | ✅ Đã sửa phía Identity: gọi `GET /internal/users/{userId}/stats` của Tenancy (timeout 3s, không retry). Detail trả `null` khi Tenancy lỗi; delete fail-closed `503` | `user-get-detail-admin.query.handler.ts`, `user-delete.command.handler.ts` | Tenancy cần build endpoint `/stats`; tới lúc đó mọi lệnh xóa user trả `503` |
 | 6 | Access token chỉ có `{sub, role}`, Gateway chưa gắn `x-user-status` | `Identity-Service/src/modules/auth` (ký token), `api-gateway` (forward header) | Thêm claim `status`, Gateway gắn header `x-user-status` |
-| 7 | Delete chưa có mã `409 USER_DELETE_HAS_ACTIVE_CONTRACT`, `503 SERVICE_UNAVAILABLE` | `user-delete.command.handler.ts`, `api-docs/src/paths/users/user-by-id.yaml` | Bổ sung mã lỗi vào code và api-docs |
+| 7 | ✅ Đã sửa: thêm `409 USER_DELETE_HAS_ACTIVE_CONTRACT`, `503 SERVICE_UNAVAILABLE` vào code và api-docs | `user-delete.command.handler.ts`, `api-docs/src/paths/users/user-by-id.yaml` | — |
