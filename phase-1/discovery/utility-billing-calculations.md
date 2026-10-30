@@ -100,17 +100,18 @@ function calcElectricity(rate, consumption):
 - VD: 180 kWh × 4.000đ = **720.000đ**.
 
 ### 5.2 E2 `tiered` — EVN bậc thang 6 bậc
-`steps = [{from, to, price}]`, `to` nullable = mở ∞. Khoảng đóng-đóng bậc dưới, bậc sau bắt đầu `from = bậc trước.to + 1`.
+`steps = [{from, to, price}]`, `to` nullable = mở ∞. `to` là ngưỡng tiêu thụ cộng dồn; `from` là nhãn của đơn vị nguyên đầu tiên trong bậc (`from = bậc trước.to + 1`). Với lượng tiêu thụ thập phân, phần lẻ vượt ngưỡng `to` thuộc bậc kế tiếp: 50,5 kWh = 50 kWh bậc 1 + 0,5 kWh bậc 2.
 
 ```
 function calcTiered(steps, consumption):
-  remaining = consumption; total = 0
+  remaining = consumption; total = 0; previousTo = 0
   for step in steps (order by from):
     if remaining <= 0: break
     qtyInStep = (step.to == null) ? remaining
-              : min(remaining, step.to - step.from + 1)
+              : min(remaining, step.to - previousTo)
     total += qtyInStep * step.price
     remaining -= qtyInStep
+    if step.to != null: previousTo = step.to
   if remaining > 0 and last step has to != null: throw "không đủ bậc"   // cấu hình sai
   return total
 ```
