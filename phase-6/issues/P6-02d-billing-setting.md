@@ -11,19 +11,21 @@
 
 ## Mục tiêu
 
-Landlord đặt "ngày thu dự kiến" (`paymentDueDay`) và ngày gợi ý nhắc (`remindDay`) cho tòa hoặc phòng. Theo D39 đây **chỉ là thông tin hiển thị** — không sinh `overdue`, không chặn thao tác.
+Landlord đặt "ngày thu dự kiến" (`paymentDueDay`) và ngày gợi ý nhắc (`remindDay`) cho tòa hoặc phòng. Theo D39 đây **chỉ là thông tin hiển thị** — không sinh `overdue`, không chặn thao tác. Hai ngày được chọn độc lập trong khoảng 1–28; `remindDay` có thể sau `paymentDueDay`.
 
 ## Contract (sau P6-02a)
 
 | Endpoint | operationId | Success | Lỗi riêng |
 |---|---|---|---|
-| `POST /billing-settings` | `postBillingSettings` | `201 BILLING_SETTING_CREATED` + `Location` | `409 ACTIVE_SETTING_EXISTS`, `422 DUE_DAYS_INVALID` (nếu giữ), `VALIDATION_FAILED` |
+| `POST /billing-settings` | `postBillingSettings` | `201 BILLING_SETTING_CREATED` + `Location: /api/v1/billing-settings/{billingSettingId}` | `409 ACTIVE_SETTING_EXISTS`, `422 VALIDATION_FAILED` |
 | `PATCH /billing-settings/{billingSettingId}` | `patchBillingSettingsBillingsettingid` | `200 BILLING_SETTING_UPDATED` | `404`, `422` |
 | `GET /billing-settings` | `getBillingSettings` | `200 BILLING_SETTINGS_FETCHED` + `pagination` | `422` |
 
 - File: `api-doc/src/paths/billing/billing-settings.yaml`, `billing-settings-billingSettingId.yaml`; request/response `api-doc/src/requests/rooms/billing-setting-*.yaml`, `api-doc/src/responses/dtos/rooms/billing-setting-*.yaml`.
 - Bảng: `database-design.md` §2.10 (`landlord_id`, `scope`, `building_id`, `room_id`, `payment_due_day smallint default 5`, `remind_day smallint null`, `bot_enabled default true`, `is_active default true`).
 - Role: `landlord`.
+- Create cấp `building`: client gửi `scope` + `buildingId`, không gửi `roomId`. Create cấp `room`: client gửi `scope` + `roomId`, không gửi `buildingId`; server kiểm tra quyền sở hữu Room, lấy `buildingId` từ Room và lưu/trả cả hai ID. `id` của BillingSetting do server tạo và luôn có trong response; PATCH chỉ dùng `billingSettingId` trên path, không nhận scope/target trong body.
+- Mỗi building/room chỉ có một setting chưa xóa mềm, kể cả khi `isActive=false`. POST trùng trả `409 ACTIVE_SETTING_EXISTS`; chủ trọ PATCH bản cũ để sửa hoặc bật lại. Chưa thêm `GET /billing-settings/{billingSettingId}` trong task này.
 
 ## Tham chiếu code
 
@@ -43,14 +45,14 @@ Landlord đặt "ngày thu dự kiến" (`paymentDueDay`) và ngày gợi ý nh�
   - `enums/billing-setting-scope.enum.ts` (hoặc import `RatePolicyScope` nếu team đồng ý dùng chung — ghi rõ trong PR).
   - `entities/billing-setting.props.ts`, `entities/billing-setting.entity.ts`: `create`, `reconstitute`, `update({ paymentDueDay?, remindDay?, botEnabled?, isActive? })`.
   - `constants/billing-setting-event.constants.ts` (`billing_setting.created|updated`), `events/billing-setting-created.event.ts`, `billing-setting-updated.event.ts`.
-  - `exceptions/billing-setting-not-found.exception.ts` (`404 RESOURCE_NOT_FOUND`), `active-setting-exists.exception.ts` (`409 ACTIVE_SETTING_EXISTS`), `due-days-invalid.exception.ts` (`422 DUE_DAYS_INVALID`, nếu P6-02a giữ rule `remindDay ≤ paymentDueDay`).
+  - `exceptions/billing-setting-not-found.exception.ts` (`404 RESOURCE_NOT_FOUND`), `active-setting-exists.exception.ts` (`409 ACTIVE_SETTING_EXISTS`). Không tạo `DUE_DAYS_INVALID` cho quan hệ giữa hai ngày; từng ngày ngoài 1–28 trả `422 VALIDATION_FAILED`.
   - `repositories/billing-setting.repository.ts`.
-- **Cách làm:** `paymentDueDay`, `remindDay` ∈ [1, 28]; scope/target giống RatePolicy (`building` ⇒ `buildingId`; `room` ⇒ `roomId` + `buildingId` của phòng).
+- **Cách làm:** `paymentDueDay`, `remindDay` ∈ [1, 28] và không so sánh thứ tự; scope/target giống RatePolicy (`building` ⇒ `buildingId`; `room` ⇒ `roomId` + `buildingId` do server tra từ Room).
 - **Kiểm tra bước:** `npm run build` pass.
 
 ### Bước 3 — Persistence + migration
 
-- **File tạo:** `src/modules/billing-setting/infrastructure/persistence/billing-setting.typeorm-entity.ts` (`@Entity('billing_settings')`, `@Check` 1–28 cho 2 cột ngày, check scope/target như `rate_policies`, 2 unique partial index theo `building_id`/`room_id`), `mappers/billing-setting.mapper.ts`, `billing-setting.repository.ts`.
+- **File tạo:** `src/modules/billing-setting/infrastructure/persistence/billing-setting.typeorm-entity.ts` (`@Entity('billing_settings')`, `@Check` 1–28 cho 2 cột ngày, check scope/target như `rate_policies`, 2 unique partial index theo `building_id`/`room_id` cho bản ghi chưa xóa mềm, không phụ thuộc `is_active`), `mappers/billing-setting.mapper.ts`, `billing-setting.repository.ts`.
 - **Cách làm:** `npm run migration:generate -- src/database/migrations/CreateBillingSettingsTable` → mở file, **chỉ giữ** phần của `billing_settings`.
 - **Kiểm tra bước:** `migration:run` → `migration:revert` → `migration:run` pass.
 
@@ -69,7 +71,7 @@ Landlord đặt "ngày thu dự kiến" (`paymentDueDay`) và ngày gợi ý nh�
 ## Quyết định tạm thời / Ngoài phạm vi
 
 - Không có job nhắc/bot gửi card (`botEnabled` chỉ lưu cờ; bot thuộc community-service — Stretch).
-- Resolve `room → building` cho hiển thị: làm khi FE/Invoice cần (P6-02g).
+- Resolve setting có hiệu lực theo `room → building` cho hiển thị: làm khi FE/Invoice cần (P6-02g). Việc tra `buildingId` của Room khi tạo setting cấp phòng vẫn phải làm trong P6-02d.
 
 ## Cập nhật `api-doc` (bắt buộc trước khi đóng issue)
 
@@ -78,10 +80,11 @@ Landlord đặt "ngày thu dự kiến" (`paymentDueDay`) và ngày gợi ý nh�
 
 ## Manual verification (Apidog)
 
-1. Tạo setting tòa `paymentDueDay=5`, `remindDay=3` → `201`; tạo lại cùng tòa → `409 ACTIVE_SETTING_EXISTS`.
-2. `paymentDueDay=31` → `422 VALIDATION_FAILED`; (nếu có rule) `remindDay=10, paymentDueDay=5` → `422 DUE_DAYS_INVALID`.
-3. PATCH setting của landlord khác → `403`; id không tồn tại → `404`.
-4. GET với `filter[scope]=room` chỉ trả setting phòng của mình.
+1. Tạo setting tòa `paymentDueDay=5`, `remindDay=3` → `201` với `data.id` và `Location` trỏ tới ID đó; tạo lại cùng tòa → `409 ACTIVE_SETTING_EXISTS`.
+2. `paymentDueDay=31` → `422 VALIDATION_FAILED`; `remindDay=10`, `paymentDueDay=5` → hợp lệ. Tắt setting rồi POST lại cùng tòa/phòng → `409`; PATCH bản cũ để sửa và bật lại.
+3. Tạo setting phòng chỉ với `roomId` → response có `roomId` và `buildingId` thực tế của phòng.
+4. PATCH setting của landlord khác → `403`; id không tồn tại → `404`.
+5. GET với `filter[scope]=room` chỉ trả setting phòng của mình.
 
 ## Definition of Done
 
