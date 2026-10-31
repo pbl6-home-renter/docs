@@ -212,7 +212,7 @@ flowchart TD
 
     BuildingConfig --> SetDueDay[Đặt ngày thu dự kiến trong tháng]
     RoomConfig --> SetDueDay
-    SetDueDay --> SetReminder[Đặt ngày nhắc: nhắc trước ngày thu vài ngày]
+    SetDueDay --> SetReminder[Chọn ngày nhắc trong tháng]
     SetReminder --> SaveSettings[Lưu cấu hình]
 
     SaveSettings --> RunCron[Hệ thống nền quét mỗi ngày]
@@ -225,7 +225,7 @@ flowchart TD
 ```
 
 * **Cấu hình chỉ ở 2 cấp:** tòa nhà và phòng. Không có cấp profile/landlord — chủ trọ có nhiều tòa thì cấu hình từng tòa (UI hỗ trợ nhân bản). Thiếu ở cấp phòng → kế thừa cấp tòa.
-* **`payment_due_day` / `remind_day`** = số ngày trong tháng (1–31), chỉ dùng để nhắc. Không sinh `overdue`, không chặn phát hành/đối soát.
+* **`payment_due_day` / `remind_day`** = số ngày trong tháng (1–28), chủ trọ chọn độc lập; ngày nhắc có thể sau ngày thu dự kiến. Không sinh `overdue`, không chặn phát hành/đối soát.
 * **Không có "quét nợ tự động":** bot chỉ nhắc, không đánh dấu trạng thái. Trạng thái thu luôn suy ra từ Σ `Payment` success.
 
 ---

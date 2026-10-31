@@ -169,11 +169,13 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 
 > **D39 — app KHÔNG cưỡng chế thu tiền.** `payment_due_day` chỉ là *gợi ý hiển thị* ("thường thu ngày 5"), **không** sinh trạng thái `overdue`, không chặn thao tác nào. Resolve `room → building`; thiếu ở cấp dưới thì kế thừa cấp trên (không có cấp `landlord` — giống `RatePolicy`).
 
+`payment_due_day` và `remind_day` được chủ trọ chọn độc lập trong khoảng 1–28; `remind_day` có thể sau `payment_due_day`. Mỗi building/room có tối đa một setting chưa xóa mềm, kể cả khi `is_active=false`; sửa hoặc bật lại bằng PATCH. Khi tạo setting cấp phòng, client chỉ gửi `room_id`; server tra Room để lưu cả `room_id` và `building_id` của phòng.
+
 | Field | Type | Ràng buộc | Ghi chú | Validation | Ví dụ |
 |---|---|---|---|---|---|
 | landlord_id | uuid | FK→User, NOT NULL | landlord sở hữu cấu hình | | |
 | scope | enum (`building`,`room`) | NOT NULL | | | `room` |
-| building_id | uuid | FK→Building, nullable | bắt buộc khi `scope='building'` | | |
+| building_id | uuid | FK→Building, NOT NULL | client gửi khi `scope='building'`; server lấy từ Room khi `scope='room'` | | |
 | room_id | uuid | FK→Room, nullable | bắt buộc khi `scope='room'` | | |
 | payment_due_day | smallint | NOT NULL default 5 | ngày trong tháng **dự kiến thu tiền** (chỉ để hiển thị) | `>= 1; <= 28` | `5` |
 | remind_day | smallint | nullable | ngày trong tháng gợi ý nhắc nộp (bỏ trống = không nhắc) | `>= 1; <= 28` | `3` |

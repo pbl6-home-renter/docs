@@ -129,13 +129,13 @@
 
 ---
 
-## 12. BillingSetting (Đang thiếu API get by ID, coi thử ở phần UI ra răng, cần thì thêm vô)
+## 12. BillingSetting
 
 | Mã | Method & path | Quyền | Mục đích | Lưu ý |
 |---|---|---|---|---|
-| 54 | `GET /billing-settings` | `landlord` | Liệt kê cài đặt thanh toán và nhắc hóa đơn | Bộ lọc: `filter[scope]`, `filter[buildingId]`, `filter[roomId]`, `filter[isActive]`. Không có quyền admin, đồng bộ với RatePolicy. |
-| 55 | `POST /billing-settings` | `landlord` | Tạo một cài đặt hóa đơn | Body: `scope`, `buildingId`, `roomId`, `dueDays`, `remindDays`, `botEnabled`; ngày thanh toán không lưu trên Contract. |
-| 56 | `PATCH /billing-settings/{billingSettingId}` | `landlord` | Cập nhật cài đặt hóa đơn | Body gồm các field sửa được `dueDays`, `remindDays`, `botEnabled`; ngày phải nằm trong khoảng cho phép của database. |
+| 54 | `GET /billing-settings` | `landlord` | Liệt kê cài đặt thanh toán và nhắc hóa đơn | Bộ lọc: `filter[scope]`, `filter[buildingId]`, `filter[roomId]`. Không có quyền admin. |
+| 55 | `POST /billing-settings` | `landlord` | Tạo một cài đặt hóa đơn | Cấp tòa gửi `scope=building`, `buildingId`; cấp phòng gửi `scope=room`, `roomId`, server tự lấy `buildingId` từ Room. `paymentDueDay`/`remindDay` độc lập trong 1–28. Một setting chưa xóa mềm cho mỗi tòa/phòng, kể cả khi tắt. |
+| 56 | `PATCH /billing-settings/{billingSettingId}` | `landlord` | Cập nhật cài đặt hóa đơn | Body gồm `paymentDueDay`, `remindDay`, `botEnabled`, `isActive` (ít nhất một field); dùng để sửa/bật lại bản cũ, không gửi lại scope/target. |
 
 ---
 
@@ -793,24 +793,24 @@
 
 - **Quyền:** `landlord`
 - **Query:** `filter[scope]=room` · `filter[roomId]=<uuid>`
-- **Success:** `200` `{ "statusCode":200, "code":"BILLING_SETTINGS_FETCHED", "data":[{"id":"<uuid>","scope":"room","roomId":"<uuid>","dueDays":5,"remindDays":3,"botEnabled":true,"isActive":true}], "pagination":{"type":"offset","pageNo":1,"pageSize":20,"totalItems":1,"totalPages":1,"hasNextPage":false,"hasPreviousPage":false} }`
+- **Success:** `200` `{ "statusCode":200, "code":"BILLING_SETTINGS_FETCHED", "data":[{"id":"<billingSettingId>","scope":"room","buildingId":"<buildingId>","roomId":"<roomId>","paymentDueDay":5,"remindDay":10,"botEnabled":true,"isActive":true}], "pagination":{"type":"offset","pageNo":1,"pageSize":20,"totalItems":1,"totalPages":1,"hasNextPage":false,"hasPreviousPage":false} }`
 - **Lỗi:** `403 FORBIDDEN` · `422 VALIDATION FAILED`
 - **UI:** `37._c_i_t_chu_k_thanh_to_n_qu_t_n_billing_cycle_debt_scan_settings/code.html` · `38._thi_t_l_p_ng_y_ch_t_h_n_thanh_to_n_due_date_settings/code.html`
 
 #### 55 · `POST /billing-settings` — Tạo một cài đặt hóa đơn
 
 - **Quyền:** `landlord`
-- **Body:** `{ "scope":"room", "roomId":"<uuid>", "dueDays":5, "remindDays":3, "botEnabled":true }`
-- **Success:** `201` `{ "statusCode":201, "code":"BILLING_SETTING_CREATED", "data":{"id":"<uuid>","dueDays":5,"remindDays":3,"botEnabled":true} }`; `Location: /api/v1/billing-settings`
-- **Lỗi:** `409 ACTIVE SETTING EXISTS` · `422 DUE DAYS INVALID` · `403 FORBIDDEN`
+- **Body:** `{ "scope":"room", "roomId":"<roomId>", "paymentDueDay":5, "remindDay":10, "botEnabled":true }` — server lấy `buildingId` từ Room. Hai ngày độc lập trong 1–28.
+- **Success:** `201` `{ "statusCode":201, "code":"BILLING_SETTING_CREATED", "data":{"id":"<billingSettingId>","scope":"room","buildingId":"<buildingId>","roomId":"<roomId>","paymentDueDay":5,"remindDay":10,"botEnabled":true,"isActive":true} }`; `Location: /api/v1/billing-settings/<billingSettingId>`
+- **Lỗi:** `409 ACTIVE_SETTING_EXISTS` khi cùng tòa/phòng đã có setting chưa xóa mềm (kể cả đang tắt) · `422 VALIDATION_FAILED` · `403 FORBIDDEN`
 - **UI:** `37._c_i_t_chu_k_thanh_to_n_qu_t_n_billing_cycle_debt_scan_settings/code.html`
 
 #### 56 · `PATCH /billing-settings/{billingSettingId}` — Cập nhật cài đặt hóa đơn
 
 - **Quyền:** `landlord`
-- **Body:** `{ "dueDays":7, "remindDays":3, "botEnabled":false }`
-- **Success:** `200` `{ "statusCode":200, "code":"BILLING_SETTING_UPDATED", "data":{"id":"<uuid>","dueDays":7,"remindDays":3,"botEnabled":false} }`
-- **Lỗi:** `403 FORBIDDEN` · `422 DUE DAYS INVALID`
+- **Body:** `{ "paymentDueDay":7, "remindDay":10, "botEnabled":false, "isActive":true }` — không gửi lại `buildingId`/`roomId`; có thể bật lại setting đã tắt.
+- **Success:** `200` `{ "statusCode":200, "code":"BILLING_SETTING_UPDATED", "data":{"id":"<billingSettingId>","buildingId":"<buildingId>","roomId":"<roomId>","paymentDueDay":7,"remindDay":10,"botEnabled":false,"isActive":true} }`
+- **Lỗi:** `403 FORBIDDEN` · `404 RESOURCE_NOT_FOUND` · `422 VALIDATION_FAILED`
 - **UI:** `38._thi_t_l_p_ng_y_ch_t_h_n_thanh_to_n_due_date_settings/code.html`
 
 ### 27.12 ContractTemplate
@@ -1292,7 +1292,7 @@
 
 ## 28. Ghi chú đối chiếu database
 
-1. `RatePolicy` và `BillingSetting` dùng phạm vi database `building` và `room`. Mặc định của chủ nhà được kế thừa khi cả hai định danh cha đều null. Nếu UI cần phạm vi tường minh `scope=landlord`, phải thêm giá trị enum bằng migration database trước. **Trạng thái: pending, chưa chốt.**
+1. `RatePolicy` và `BillingSetting` chỉ có phạm vi `building` và `room` (D39); không có `scope=landlord`. Ở cấp phòng, server lấy `buildingId` từ Room và lưu cùng `roomId`; setting cấp phòng tắt hoặc không tồn tại thì kế thừa cấp tòa. Không thêm `GET /billing-settings/{billingSettingId}` trong P6-02d; `Location` của POST vẫn chứa ID để client dùng cho PATCH.
 2. **Tài khoản nhận tiền đã chuyển sang hồ sơ chủ nhà (D39, 2026-09-26).** Bảng `VietQrReceiverConfig` và hai endpoint `PUT`/`GET /vietqr-configs` (mã cũ 32–33) **đã bị gỡ khỏi hợp đồng**. Ba cột `bank_code`, `account_number`, `account_name` nằm trên `LandlordProfile`, phục vụ ở cấp **chủ nhà**, không cấp tòa nhà: đọc qua `GET /me` và sửa qua `PATCH /me` (mục 27.2). Hệ quả bắt buộc:
    - `GET /me/buildings` và `GET /me/buildings/{buildingId}` **không** còn trường `vietQrConfigured`; trạng thái cấu hình QR không còn là thuộc tính của tòa nhà.
    - `DELETE /buildings/{buildingId}` **không** cascade sang cấu hình QR nữa. Khi chủ nhà đổi ngân hàng hoặc số tài khoản, mọi tòa nhà của chủ nhà đó dùng chung tài khoản mới.
