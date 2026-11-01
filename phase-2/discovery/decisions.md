@@ -16,7 +16,7 @@
 | D44 | 2026-09-25 | Soft delete uses the existing `is_deleted` Base Entity flag, with an explicit cascade boundary that never touches financial/legal/audit records | ✅ Accepted |
 | D45 | 2026-09-25 | Export is `format` on a collection `GET` only; no `*/export` and no single-document download route | ✅ Accepted |
 | D46 | 2026-09-25 | Removed `GET /invoices/{invoiceId}/document` (superseded by collection export) | ✅ Accepted |
-| D47 | 2026-09-25 | Bulk meter-reading deferred and out of API v1: no `MeterReadingBatch` route, only per-room `POST /meter-readings` | ⏸ Pending (PM giữ nguyên pending) |
+| D47 | 2026-09-25 | Bulk meter-reading deferred and out of API v1: no `MeterReadingBatch` route, only per-room `POST /meter-readings` | Superseded by D60 (`POST /meter-readings/bulk`; no `MeterReadingBatch`) |
 | D48 | 2026-09-25 | Overloaded endpoints split by role and by business action → 108 endpoints in 25 groups; renumbered throughout | ✅ Accepted (số liệu 108/25 đã lỗi thời, xem D49) |
 | D49 | 2026-09-26 | Payout account moved onto `LandlordProfile` (implements Phase 1 D39): `VietQrReceiverConfig` + `PUT/GET /vietqr-configs` removed → 106 endpoints in 24 groups | ✅ Accepted |
 
@@ -127,6 +127,8 @@
 ---
 
 ## D47 — Bulk meter-reading deferred, out of API v1
+
+> **Later decision:** [D60](../../phase-6/discovery/decisions.md) approves an atomic `POST /meter-readings/bulk` for a subset of rooms. The proposed `MeterReadingBatch` resource and three-step workflow below were not adopted.
 
 - **Context:** Baseline (UI prototype `f96888b`) có `POST /buildings/{buildingId}/meter-reading-batches` cùng 3 màn hình draft đánh dấu `[MỚI]` (bulk-reading entry, bulk-reading flow, bulk-reading summary). Chưa rõ đây là scope đã được duyệt hay ý tưởng chưa chốt.
 - **Decision:** **Giữ pending, chưa chốt.** Không thêm vào v1. Khi quyết định này được chốt, hợp đồng có 94 endpoint và chỉ có `POST /meter-readings` nhập từng phòng. Ba citation baseline cũ được giữ ở trạng thái pending, không xoá. *(Số 94 ở đây là số endpoint tại thời điểm chốt; hợp đồng sau đó đã lên 108 endpoint theo D48. Quyết định "không đưa bulk meter-reading vào v1" không thay đổi.)*

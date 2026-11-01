@@ -267,7 +267,7 @@ def generateInvoice(contractId, period):
 
 | # | Tình huống | Hành vi | Mã lỗi gợi ý |
 |---|---|---|---|
-| EC1 | `current_reading < previous_reading` (đồng hồ reset/thay) | **Block**, bắt sửa. Nếu thay đồng hồ thật → tạo `MeterReading` baseline mới (`is_baseline=true`, `previous_reading=0`) đọc lại qua **OCR; OCR sai/mờ → hiệu chỉnh tay số thực tế (D35)** rồi tính từ đó | `METER_REVERSED` |
+| EC1 | `current_reading < previous_reading` (đồng hồ reset/thay) | **Block**, bắt sửa. Nếu thay đồng hồ thật → tạo `MeterReading` baseline mới (`is_baseline=true`, `previous_reading` do landlord nhập, có thể là 0 theo D60), đọc lại qua **OCR; OCR sai/mờ → hiệu chỉnh tay số thực tế (D35)** rồi tính từ đó | `METER_REVERSED` |
 | EC2 | Thiếu `MeterReading` điện HOẶC nước của kỳ | Block hóa đơn | `READING_MISSING` |
 | EC3 | Không resolve được bộ rate (phòng + tòa đều null/tắt) | Block, hiển thị "thiếu cấu hình đơn giá" | `RATE_MISSING` |
 | EC4 | Landlord đổi giá giữa kỳ (UPDATE bộ đang chạy) | Hóa đơn **chưa phát hành** của kỳ đó dùng giá mới; hóa đơn **đã phát hành** giữ nguyên snapshot cũ (D39) | — |

@@ -23,7 +23,7 @@ Landlord chốt chỉ số điện/nước của một phòng cho một kỳ `YY
 - File: `api-doc/src/paths/billing/meter-readings.yaml`; request `api-doc/src/requests/rooms/meter-reading-create-request-dto.yaml`; response `api-doc/src/responses/dtos/rooms/meter-reading-create-response-dto.yaml`, `meter-reading-list-response-dto.yaml`.
 - Filter list: `roomId`, `type`, `period`.
 - Bảng: `database-design.md` §2.11 — `room_id`, `type` (`electricity|water`), `period varchar(7)`, `previous_reading numeric`, `current_reading numeric`, `reading_date date null`, `is_baseline bool`; **UNIQUE `(room_id, type, period)`**.
-- Rule: `current ≥ previous` (EC1 — sai → `CURRENT_READING_INVALID`); kỳ đầu/thay đồng hồ dùng `isBaseline=true`; consumption lẻ giữ decimal (EC5); số dạng string trong API, `numeric` trong DB, **không dùng float**.
+- Rule: `current ≥ previous` (EC1 — sai → `CURRENT_READING_INVALID`); mọi baseline cho phép landlord nhập `previousReading=0` hoặc chỉ số thực tế (baseline đầu tiên bỏ trống thì server dùng 0; baseline về sau bắt buộc nhập); kỳ thường lấy `currentReading` bản ghi trước làm `previousReading` (D60). Consumption lẻ giữ decimal (EC5); số dạng string trong API, `numeric` trong DB, **không dùng float**.
 - Role: `landlord`; phòng của landlord khác → `403`.
 
 ## Tham chiếu code
@@ -64,15 +64,15 @@ Landlord chốt chỉ số điện/nước của một phòng cho một kỳ `YY
 
 ### Bước 4 — `POST /meter-readings`
 
-- **File tạo:** `application/commands/meter-reading-create/meter-reading-create.command.ts` + `.handler.ts`; `presentation/http/requests/create-meter-reading.request.ts` (`@IsUUID roomId`, `@IsEnum type`, `@Matches period`, `@IsNumberString previousReading/currentReading`, `@IsOptional @IsDateString readingDate`, `@IsBoolean isBaseline`, `@IsOptional() @IsUUID evidenceMediaId` — để optional ở DTO để handler trả đúng `EVIDENCE_REQUIRED` thay vì `VALIDATION_FAILED`); `responses/meter-reading.response.dto.ts`; `constants/meter-reading-response-code.constant.ts`.
+- **File tạo:** `application/commands/meter-reading-create/meter-reading-create.command.ts` + `.handler.ts`; `presentation/http/requests/create-meter-reading.request.ts` (`@IsUUID roomId`, `@IsEnum type`, `@Matches period`, `@IsNumberString currentReading`, `previousReading` chỉ nhận cho baseline về sau, `@IsOptional @IsDateString readingDate`, `@IsBoolean isBaseline`, `@IsOptional() @IsUUID evidenceMediaId` — để optional ở DTO để handler trả đúng `EVIDENCE_REQUIRED` thay vì `VALIDATION_FAILED`); `responses/meter-reading.response.dto.ts`; `constants/meter-reading-response-code.constant.ts`.
 - **Cách làm (handler trong `unitOfWork.run`):**
   1. `roomRepository.findById(roomId)` → `404`; `room.landlordId !== user.id` → `403`.
   2. `existsFor(roomId, type, period, ctx)` → `409 DUPLICATE_METER_READING`.
-  3. `isBaseline=false`: `prev = findLatestBefore(...)`; không có kỳ trước → `422 VALIDATION_FAILED` ("cần chỉ số baseline trước"); dùng `prev.currentReading` làm `previousReading` (xử lý giá trị client gửi theo quyết định P6-02a #8).
-  4. `isBaseline=true`: dùng `previousReading` client gửi.
+  3. `isBaseline=false`: `prev = findLatestBefore(...)`; không có baseline trước đó → lỗi baseline bắt buộc (mã lỗi cần API owner chốt); dùng `prev.currentReading` làm `previousReading`, không nhận số cũ từ client.
+  4. `isBaseline=true`: lần đầu server đặt `previousReading=0`; baseline về sau dùng `previousReading` landlord gửi. Không tự đặt `previousReading=currentReading`.
   5. `evidenceMediaId` thiếu → `EvidenceRequiredException`; có thì chỉ nhận, `TODO(media)` link `Media(owner_type='meter_reading')`.
   6. `MeterReadingEntity.record(...)` → save → append outbox → return. Bắt lỗi unique Postgres → `409` (race).
-- **Kiểm tra bước:** baseline `2026-10` = 1200/1200 → `201`; kỳ `2026-11` current 1380 → `201`, `previousReading=1200`; gửi lại `2026-11` → `409`; current 1100 → `422 CURRENT_READING_INVALID`.
+- **Kiểm tra bước:** baseline đầu tiên `2026-10` = 0/1200 hoặc 1000/1200 → `201`; kỳ `2026-11` current 1380 → `201`, `previousReading=1200`; gửi lại `2026-11` → `409`; current 1100 → `422 CURRENT_READING_INVALID`. Kiểm tra riêng baseline về sau với `previousReading` do landlord gửi.
 
 ### Bước 5 — `GET /meter-readings`
 

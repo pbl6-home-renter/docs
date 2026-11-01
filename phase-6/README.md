@@ -8,6 +8,8 @@ Demo được vòng đời **landlord-solo** (D29) trên staging:
 
 `Building/Room → Hợp đồng (mẫu + upload bản ký tay) → Chốt số điện nước (nhập tay/bulk) → Hóa đơn → Ghi nhận thanh toán tiền mặt/mock`
 
+Quyết định làm rõ MeterReading baseline và bulk của phase này: [D60](discovery/decisions.md).
+
 ## Cắt phạm vi (MVP lõi)
 
 | Nhóm | Quyết định |
