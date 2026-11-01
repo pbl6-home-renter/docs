@@ -7,6 +7,7 @@
 **Ước lượng:** 5 points · 10–14 giờ  
 **Phụ thuộc:** P6-02a, P5-09b (bảng `rooms` + Room tồn tại)  
 **Repo / branch:** `Tenancy-Service` · `feature/p6-02e-meter-reading`  
+**Iteration:** It5 (02/11–08/11)  
 **Issue:** `docs#75`
 
 ## Mục tiêu

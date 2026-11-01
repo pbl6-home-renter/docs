@@ -1,12 +1,13 @@
 # P6-03d — Admin duyệt/từ chối Building
 
 **Epic:** [P6-03](P6-03-fe-landlord-building-room-screens.md)  
-**Trạng thái:** 🟡 Open  
+**Trạng thái:** 🟢 Done (GitHub issue closed)  
 **Người phụ trách:** ThaiBao11125  
 **Người review:** baoduong17  
 **Ước lượng:** 3 points · 6–8 giờ  
 **Phụ thuộc:** P6-03a; BE P5-08d (`/admin/buildings`, `approve`, `reject`)  
 **Repo / branch:** `fe` · `feature/p6-03d-admin-building-approval`  
+**Iteration:** It5 (02/11–08/11)  
 **Issue:** `docs#83`
 
 ## Mục tiêu

@@ -4,6 +4,8 @@
 > Quy tắc (AGENTS.md `pm/`): ID tăng dần, **không renumber/reuse** — tham chiếu chéo trong repo dựa vào ID ổn định.
 > Khi Notion decision log hoạt động, bổ sung liên kết tương ứng.
 
+> **Trùng ID:** D39 tồn tại ở cả Phase 1 (billing) và Phase 2 (vòng đời user). Từ Phase 6 luôn trích kèm tiền tố phase: `P1-D39`, `P2-D39` (xem `../../phase-6/decisions.md`).
+
 ## Index
 
 | ID | Date | Decision | Status |

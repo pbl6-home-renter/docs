@@ -1,40 +1,38 @@
-# P6-01e — Thành viên HĐ, HĐ của tenant, checkout và quyết toán cọc (outline)
+# P6-01e — Thành viên HĐ, HĐ của tenant, checkout (đã tách)
 
 **Epic:** [P6-01](P6-01-tenancy-contract-vertical-slice.md)  
-**Trạng thái:** ⚪ Outline (viết chi tiết step-by-step theo `_TEMPLATE.md` khi bắt đầu Iteration 6)  
+**Trạng thái:** 🔵 Split — làm theo các sub-issue bên dưới, issue này đóng khi cả ba Done  
 **Người phụ trách:** leminhkhai345  
 **Người review:** baoduong17 (BE Lead, API owner)  
-**Ước lượng:** 8 points · 16–22 giờ (tách nhỏ khi viết chi tiết)  
-**Phụ thuộc:** P6-01d; phần quyết toán cọc phụ thuộc thêm Payment cash (lead, It6)  
+**Ước lượng:** 8 points (tổng e1–e3)  
+**Phụ thuộc:** P6-01d, P6-09  
 **Repo:** `Tenancy-Service`  
-**Iteration:** 6 (09/11)  
+**Iteration:** 6 (09/11–15/11)  
 **Issue:** `docs#69`
 
-## Mục tiêu
+## Sub-issue
 
-Hoàn thiện phần còn lại của vòng đời HĐ:
+| ID | Task | Endpoint | Pts | Phụ thuộc |
+|---|---|---|---|---|
+| [P6-01e1](P6-01e1-contract-members.md) | Bảng `contract_members`, tự thêm đại diện khi activate, API member, hàm `headCount` | `POST/GET /contract-members`, `PATCH /contract-members/{id}`, `POST /contract-members/{id}/leave-contract` | 3 | P6-01d, P6-09 |
+| [P6-01e2](P6-01e2-tenant-my-contracts.md) | Tenant xem HĐ của mình | `GET /me/contracts` (+ quyền member ở `GET /contracts/{id}`) | 2 | P6-01e1, P6-09 |
+| [P6-01e3](P6-01e3-contract-checkout.md) | Checkout: HĐ `terminated`, member rời, phòng `maintenance`; sửa `vehicleCount`/`description` khi HĐ `active` (`P6-D71`) | `POST /contracts/{id}/complete-checkout`, `PATCH /contracts/{id}` | 3 | P6-01e1, P6-01d, P6-02g1, P6-09 |
 
-- tenant xem HĐ của mình;
-- landlord quản lý thành viên ở ghép (nguồn đếm `head_count` cho phí `per_head` của Billing);
-- landlord checkout trả phòng, phòng trở về trạng thái sẵn sàng cho thuê.
+Thứ tự: `P6-01e1 → (P6-01e2 ∥ P6-01e3)`. P6-01e3 chờ thêm bảng `invoices` của P6-02g1.
 
-## Phạm vi dự kiến (tách thành sub-issue khi viết chi tiết)
+## Câu hỏi của outline cũ → đã chốt
 
-| Nhóm | Endpoint (`api-doc/src/paths/contracts/`) | Ghi chú nghiệp vụ |
-|---|---|---|
-| HĐ của tenant | `GET /me/contracts` (`me-contracts.yaml`, `CONTRACTS_MY_FETCHED`) | Lọc theo `tenant_id = user.id`, cùng HĐ mà user là `contract_members.tenant_id` |
-| Thành viên | `POST/GET /contract-members`, `PATCH /contract-members/{id}`, `POST /contract-members/{id}/leave-contract` | Bảng `contract_members` (`database-design.md` §2.8). Lỗi: `MEMBER_ALREADY_EXISTS`, `MEMBER_LEFT`, `MEMBER_ALREADY_LEFT`, `LEFT_DATE_INVALID`, `CONTRACT_ID_REQUIRED`. Không xóa bản ghi khi rời, chỉ set `left_at`. Người đại diện HĐ được tạo tự động thành member khi activate (cần chốt). |
-| Checkout | `POST /contracts/{id}/complete-checkout` | `CONTRACT_NOT_ACTIVE`, `SETTLEMENT_NOT_READY`. HĐ chuyển `terminated`; phòng gọi `Room.releaseByContract()` (viết ở P6-01d), chuyển trạng thái chờ dọn theo mô tả contract |
-| Quyết toán cọc | `POST /contracts/{id}/deposit-settlement` | Ghi Payment `invoice_id = NULL`, `contract_id`, `method = cash` (`database-design.md` dòng về "Trả cọc"); lỗi `REFUND_AMOUNT_MISMATCH`, `REFUND_PAYOUT_ACCOUNT_REQUIRED`, `SETTLEMENT_INVALID`, `CONTRACT_ID_MISMATCH`. Cần payment-service hoặc thay bằng mock ghi nhận trong tenancy: **chờ lead chốt** |
+| Câu hỏi | Quyết định |
+|---|---|
+| Activate có tự tạo member cho người đại diện? | Có — [`P6-D63`](../decisions.md#d63--thành-viên-hợp-đồng) |
+| Checkout: phòng chuyển `pending_cleanup` hay `maintenance`? HĐ `expired` hay `terminated`? | `maintenance` rồi `mark-ready`; HĐ `terminated` — [`P6-D62`](../decisions.md#d62--checkout) |
+| Quyết toán cọc ghi Payment ở đâu? | Không làm trong MVP — [`P6-D61`](../decisions.md#d61--payment-và-quyết-toán-cọc-ra-khỏi-mvp) |
+| Ảnh CCCD member có trong MVP? | Không — Stretch, [`P6-D63`](../decisions.md#d63--thành-viên-hợp-đồng) |
+| `status` member, khoảng ngày `joinedAt`/`leftOn`/`completedOn`, chống trùng member, sửa số xe khi `active`? | [`P6-D71`](../decisions.md#d71--contract-và-member-dữ-liệu-và-ràng-buộc) |
+| Landlord chọn tài khoản tenant (`tenantId`) trên web? | Không — họ tên + SĐT, [`P6-D74`](../decisions.md#d74--liên-kết-tài-khoản-tenant) |
 
-## Câu hỏi cần chốt trước khi viết chi tiết
+## Chuyển sang Stretch
 
-- Khi activate, có tự tạo `contract_members` cho người đại diện không? (Ảnh hưởng `head_count`.)
-- Mô tả checkout ghi phòng chuyển "chờ dọn dẹp", nhưng `RoomStatus` hiện chỉ có `available | occupied | maintenance`. Dùng `maintenance` hay thêm trạng thái mới (đổi contract Room)?
-- Quyết toán cọc ghi Payment ở service nào trong MVP (payment-service chưa có repo)?
-- Ảnh CCCD thành viên (`cccd_front`/`cccd_back`, D17) dùng media P6-04: có nằm trong MVP không?
-
-## Definition of Done (khi viết chi tiết)
-
-- Mỗi sub-issue theo `_TEMPLATE.md`, có đường dẫn file thật và phần Kiểm tra bước.
-- Write operation tuân theo tiêu chí chung của epic P6-01 (UoW + outbox, sequence diagram, `released`).
+- `POST /contracts/{id}/deposit-settlement` (quyết toán/hoàn cọc, lỗi `REFUND_*`, `SETTLEMENT_INVALID`, `CONTRACT_ID_MISMATCH`) — [`P6-D61`](../decisions.md#d61--payment-và-quyết-toán-cọc-ra-khỏi-mvp).
+- Ảnh CCCD member (`cccd_front`/`cccd_back`) và tự liên kết tenant theo số điện thoại — [`P6-D63`](../decisions.md#d63--thành-viên-hợp-đồng), [`P6-D74`](../decisions.md#d74--liên-kết-tài-khoản-tenant).
+- Field `identityCardNumber`, `dateOfBirth`, `gender`, `isRepresentative` của DTO thêm member — bỏ hẳn (`P6-D63`), không phải Stretch.

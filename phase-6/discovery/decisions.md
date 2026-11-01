@@ -1,5 +1,7 @@
 # Phase 6 decisions
 
+> Published decision P6-D60 is preserved below. Subsequent decisions D61–D75 are maintained in [../decisions.md](../decisions.md).
+
 ## D60 — Meter reading baseline and bulk behavior (2026-11-01)
 
 The following clarifies P6-02e/P6-02f, supersedes the replacement-baseline value in D34, and resolves the pending bulk scope from D47.

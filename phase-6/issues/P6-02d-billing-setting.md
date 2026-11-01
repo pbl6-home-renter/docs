@@ -7,6 +7,7 @@
 **Ước lượng:** 3 points · 6–8 giờ  
 **Phụ thuộc:** P6-02a, P6-02c (copy pattern scope building/room)  
 **Repo / branch:** `Tenancy-Service` · `feature/p6-02d-billing-setting`  
+**Iteration:** It5 (02/11–08/11)  
 **Issue:** `docs#74`
 
 ## Mục tiêu

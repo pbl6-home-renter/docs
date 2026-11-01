@@ -1,6 +1,8 @@
 # P6-08 — Local administrative geography API (Tenancy)
 
-## Mục tiêu
+## Mục tiêu  
+**Iteration:** It5 (02/11–08/11)  
+**Issue:** `docs#89`
 
 Triển khai API chỉ đọc cho địa giới hành chính Việt Nam để web/mobile dùng làm danh mục chọn tỉnh/thành phố và phường/xã. Không triển khai geocoding, không tạo bảng database, không gọi provider runtime và không thêm cache.
 

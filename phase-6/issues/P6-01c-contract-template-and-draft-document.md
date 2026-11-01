@@ -1,12 +1,13 @@
 # P6-01c — Mẫu hợp đồng, áp mẫu và sinh tài liệu nháp
 
 **Epic:** [P6-01](P6-01-tenancy-contract-vertical-slice.md)  
-**Trạng thái:** 🟡 Open  
+**Trạng thái:** 🟢 Done (GitHub issue closed)  
 **Người phụ trách:** leminhkhai345  
 **Người review:** baoduong17 (BE Lead, API owner)  
 **Ước lượng:** 5 points · 10–14 giờ  
 **Phụ thuộc:** P6-01b; P6-04 (Media, phần lưu file do server sinh ra)  
 **Repo / branch:** `Tenancy-Service` · `feature/p6-01c-contract-template`  
+**Iteration:** It5 (02/11–08/11)  
 **Issue:** `docs#67`
 
 ## Mục tiêu

@@ -1,12 +1,13 @@
 # P6-03b — Wizard tạo Building, sửa và xóa Building
 
 **Epic:** [P6-03](P6-03-fe-landlord-building-room-screens.md)  
-**Trạng thái:** 🟡 Open  
+**Trạng thái:** 🟢 Done (GitHub issue closed)  
 **Người phụ trách:** ThaiBao11125  
 **Người review:** baoduong17  
 **Ước lượng:** 5 points · 10–14 giờ  
 **Phụ thuộc:** P6-03a; BE P5-08b (`POST /buildings`), P5-08c (`PATCH`/`DELETE /buildings/{id}`), P5-08f (geocoding TrackAsia); P6-04 (media presign/complete)  
 **Repo / branch:** `fe` · `feature/p6-03b-building-create-edit`  
+**Iteration:** It5 (02/11–08/11)  
 **Issue:** `docs#81`
 
 ## Mục tiêu

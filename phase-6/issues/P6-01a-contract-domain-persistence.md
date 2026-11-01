@@ -1,12 +1,13 @@
 # P6-01a — Contract domain model, persistence và migration
 
 **Epic:** [P6-01](P6-01-tenancy-contract-vertical-slice.md)  
-**Trạng thái:** 🟡 Open  
+**Trạng thái:** 🟢 Done (GitHub issue closed)  
 **Người phụ trách:** leminhkhai345  
 **Người review:** baoduong17 (BE Lead)  
 **Ước lượng:** 3 points · 6–8 giờ  
 **Phụ thuộc:** P5-09a (bảng `rooms` phải có migration)  
 **Repo / branch:** `Tenancy-Service` · `feature/p6-01a-contract-domain`  
+**Iteration:** It5 (02/11–08/11)  
 **Issue:** `docs#65`
 
 ## Mục tiêu

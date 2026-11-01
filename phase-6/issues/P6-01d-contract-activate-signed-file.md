@@ -5,8 +5,9 @@
 **Người phụ trách:** leminhkhai345  
 **Người review:** baoduong17 (BE Lead, API owner)  
 **Ước lượng:** 5 points · 10–14 giờ  
-**Phụ thuộc:** P6-01b; P6-04 (Media: upload `contract_signed` + internal lookup)  
+**Phụ thuộc:** P6-01b; P6-04 (Media: upload `contract_signed`); **P6-12** (Identity `GET /internal/media/{mediaId}`, `P6-D73`)  
 **Repo / branch:** `Tenancy-Service` · `feature/p6-01d-contract-activate`  
+**Iteration:** It5 (02/11–08/11)  
 **Issue:** `docs#68`
 
 ## Mục tiêu
@@ -39,12 +40,12 @@ Sau khi hai bên ký tay, landlord upload bản ký (ảnh hoặc PDF) qua luồ
 
 ## Các bước triển khai
 
-### Bước 1 — Chốt endpoint tra cứu media với P6-04
+### Bước 1 — Kiểm tra endpoint tra cứu media của P6-12
 
 - **Cách làm:**
-  - Thống nhất internal endpoint `GET /internal/media/{mediaId}` (đề xuất). Trả về `{ id, ownerType, ownerId, purpose, status }`, trong đó `status = uploaded` sau `complete-upload`.
+  - Endpoint đã chốt ở `P6-D73`, giao ở **P6-12**: `GET /internal/media/{mediaId}` (`@InternalOnly()`, header `X-Service-Token`) trả `{ id, ownerType, ownerId, purpose, status }`, trong đó `status = uploaded` sau `complete-upload`.
   - Đồng thời xác nhận FE upload bản ký với `ownerType = contract`, `ownerId = <contractId>`, `purpose = contract_signed`. MIME cho phép theo D40: `image/jpeg`, `image/png`, `image/webp`, `application/pdf`.
-- **Kiểm tra bước:** comment chốt trên issue; gọi thử endpoint trên staging hoặc local Identity trả đúng JSON.
+- **Kiểm tra bước:** sau khi P6-12 merge, gọi thử endpoint trên local Identity (hoặc staging) trả đúng JSON.
 
 ### Bước 2 — Thêm `occupy`/`release` cho Room
 
@@ -106,7 +107,7 @@ Sau khi hai bên ký tay, landlord upload bản ký (ảnh hoặc PDF) qua luồ
 - Trạng thái `signed` (đã upload file nhưng chưa activate) chưa dùng: activate đi thẳng `draft → active`. Nếu PM muốn tách hai bước thì mở issue riêng.
 - Tạo kênh chat phòng sau khi activate (community-service, Stretch): chỉ cần event `ContractActivated` có trong outbox.
 - Kiểm tra `startDate` so với ngày hiện tại: không chặn, vì landlord có thể nhập HĐ cũ (D29).
-- Nếu P6-04 chưa có `GET /internal/media/{id}`: dùng adapter giả chỉ kiểm tra UUID hợp lệ, bật bằng `MEDIA_LOOKUP_DRIVER=stub`, **không merge `main`**.
+- `GET /internal/media/{id}` do **P6-12** giao (`P6-D73`); PR này chỉ merge sau P6-12. Trong lúc chờ, dev có thể tự giả lập adapter trên máy local để làm Bước 2+, nhưng **không commit/merge** bất kỳ driver giả nào.
 
 ## Cập nhật `api-doc`
 
