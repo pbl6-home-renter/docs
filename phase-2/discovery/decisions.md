@@ -4,6 +4,8 @@
 > Quyết định Phase 0 (D1–D29): `../../phase-0/discovery/decisions.md`
 > Quyết định Phase 1 (D30–D39): `../../phase-1/discovery/decisions.md`
 
+> **Trùng ID:** D39 tồn tại ở cả Phase 1 (billing) và Phase 2 (vòng đời user). Từ Phase 6 luôn trích kèm tiền tố phase: `P1-D39`, `P2-D39` (xem `../../phase-6/decisions.md`).
+
 ## Index
 
 | ID | Date | Decision | Status |

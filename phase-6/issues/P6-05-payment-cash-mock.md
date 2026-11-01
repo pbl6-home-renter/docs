@@ -1,11 +1,14 @@
 # P6-05 — Ghi nhận thanh toán tiền mặt / mock cho hóa đơn
 
-**Trạng thái:** ⚪ Outline (viết chi tiết trong It5)  
+**Trạng thái:** ⏸ Deferred — Stretch theo [`P6-D61`](../decisions.md#d61--payment-và-quyết-toán-cọc-ra-khỏi-mvp) (2026-11-01)  
 **Người phụ trách:** baoduong17  
 **Người review:** leminhkhai345  
 **Ước lượng:** ~8 points · 18–24 giờ (ước tính sơ bộ)  
 **Phụ thuộc:** P6-02 (Invoice — phần It6)  
-**Iteration:** It6 (09/11–15/11)
+**Iteration:** — (không nằm trong Phase 6)  
+**Issue:** `docs#85`
+
+> **Hoãn:** Payment (tiền mặt/mock) và quyết toán cọc ra khỏi MVP Phase 6. Demo dừng ở bước phát hành hóa đơn. Nội dung dưới đây giữ lại làm tham khảo khi làm Stretch; khi mở lại phải viết lại theo `_TEMPLATE.md` v2 và chốt lại các câu hỏi bên dưới thành D-ID.
 
 ## Mục tiêu
 

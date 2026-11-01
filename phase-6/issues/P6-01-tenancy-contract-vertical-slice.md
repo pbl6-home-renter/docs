@@ -3,9 +3,10 @@
 **Trạng thái:** 🟡 Open  
 **Người phụ trách:** leminhkhai345  
 **Người review:** baoduong17 (BE Lead, API owner), PM  
-**Ước lượng:** 18 points cho Iteration 5 (P6-01a → P6-01d) + 8 points cho Iteration 6 (P6-01e)  
+**Ước lượng:** 18 points cho Iteration 5 (P6-01a → P6-01d) + 8 points cho Iteration 6 (P6-01e1 → P6-01e3)  
 **Độ ưu tiên:** High  
 **Phụ thuộc:** P5-08 (Building), P5-09 (Room), P6-04 (Media upload)  
+**Iteration:** It5 (02/11–08/11)  
 **Issue:** `docs#64`
 
 ## Bối cảnh
@@ -29,9 +30,12 @@ Quy tắc nghiệp vụ bắt buộc:
 | [P6-01b](P6-01b-contract-create-and-manage-draft.md) | Tạo và quản lý HĐ nháp | `POST /contracts`, `GET /contracts`, `GET /contracts/{id}`, `PATCH /contracts/{id}` | It5 | 5 pts | P6-01a, P5-09b |
 | [P6-01c](P6-01c-contract-template-and-draft-document.md) | Mẫu HĐ, áp mẫu và sinh tài liệu nháp | `GET /contract-templates`, `GET /contract-templates/{key}`, `PUT /contracts/{id}/apply-template`, `POST /contracts/{id}/generate-draft-document` | It5 | 5 pts | P6-01b, P6-04 |
 | [P6-01d](P6-01d-contract-activate-signed-file.md) | Upload bản ký và kích hoạt HĐ | `POST /contracts/{id}/activate-contract` | It5 | 5 pts | P6-01b, P6-04 |
-| [P6-01e](P6-01e-contract-members-and-checkout.md) | Thành viên HĐ, HĐ của tenant, checkout và quyết toán cọc (outline) | `GET /me/contracts`, `/contract-members*`, `complete-checkout`, `deposit-settlement` | It6 | 8 pts | P6-01d |
+| [P6-01e](P6-01e-contract-members-and-checkout.md) | Thành viên HĐ, HĐ của tenant, checkout (🔵 Split) | — | It6 | 7 pts | P6-01d, P6-09 |
+| ↳ [P6-01e1](P6-01e1-contract-members.md) | Member: bảng, tự thêm đại diện khi activate, API, `headCount` | `/contract-members*` | It6 | 3 pts | P6-01d, P6-09 |
+| ↳ [P6-01e2](P6-01e2-tenant-my-contracts.md) | Tenant xem HĐ của mình | `GET /me/contracts` | It6 | 2 pts | P6-01e1 |
+| ↳ [P6-01e3](P6-01e3-contract-checkout.md) | Checkout: `terminated`, member rời, phòng `maintenance` | `POST /contracts/{id}/complete-checkout` | It6 | 3 pts | P6-01e1, P6-02g1 |
 
-Thứ tự: `P6-01a → P6-01b → (P6-01c ∥ P6-01d) → P6-01e`.
+Thứ tự: `P6-01a → P6-01b → (P6-01c ∥ P6-01d) → P6-01e1 → (P6-01e2 ∥ P6-01e3)`.
 
 P6-01c và P6-01d chỉ cần media ID từ P6-04 (`ownerType = contract`, `purpose = contract_template | contract_signed`). Nếu P6-04 trễ, làm trước phần domain/handler và test với media ID giả (UUID hợp lệ), ghi rõ blocker trong issue.
 
@@ -39,7 +43,8 @@ P6-01c và P6-01d chỉ cần media ID từ P6-04 (`ownerType = contract`, `purp
 
 - Tự động tạo kênh chat phòng sau khi kích hoạt (thuộc community-service, Stretch). Vẫn publish event `ContractActivated` qua outbox để sau này consumer dùng.
 - Parse nội dung file ký (`parsed_fields`) và OCR hợp đồng.
-- Thuê theo ngày (`rentalType = DAILY`) — mâu thuẫn với D9; xem mục "Sửa contract".
+- Thuê theo ngày (`rentalType = DAILY`) — mâu thuẫn với D9; đã bỏ theo [`P6-D68`](../decisions.md#d68--field-tạo-hợp-đồng).
+- Quyết toán/hoàn cọc (`POST /contracts/{id}/deposit-settlement`) — Stretch theo [`P6-D61`](../decisions.md#d61--payment-và-quyết-toán-cọc-ra-khỏi-mvp).
 - Gia hạn, chấm dứt sớm, `suspended`/`expired` tự động (cron).
 
 ## Tiêu chí nghiệm thu chung (mọi sub-issue có write operation)
@@ -51,15 +56,9 @@ P6-01c và P6-01d chỉ cần media ID từ P6-04 (`ownerType = contract`, `purp
 - `landlord_id` luôn lấy từ JWT. Landlord chỉ thao tác được trên HĐ thuộc phòng của mình, nếu không trả `403 FORBIDDEN`.
 - Manual verification (Apidog) ghi trong PR.
 
-## Sửa contract cần API owner chốt trước khi bắt đầu P6-01b
+## Field tạo/sửa HĐ
 
-| Vấn đề | Đề xuất |
-|---|---|
-| `rentalType` có `DAILY`, mâu thuẫn D9 (chỉ dài hạn) | Bỏ `DAILY`, giữ `MONTHLY` (hoặc bỏ hẳn field) |
-| `tenantCccd` bắt buộc trong `ContractCreateRequestDto`, nhưng bảng `contracts` (`database-design.md` §2.7) không có cột CCCD | Thêm cột `tenant_cccd varchar(12)` (đề xuất, vì cần cho mẫu HĐ giấy) hoặc bỏ khỏi contract |
-| `paymentDueDay` nằm trên Contract, trong khi D39 đặt `payment_due_day` ở `BillingSetting` | Giữ trên Contract làm snapshot hiển thị; Billing (P6-02) đọc từ BillingSetting |
-| `templateKey`/`templateVariables` vừa có ở create, vừa có endpoint apply-template riêng | Create chỉ lưu `templateKey` (nullable); apply-template là cách chính để đổi mẫu |
-| Chưa có endpoint upload bản ký; activate nhận thẳng `signedContractMediaId` | Giữ nguyên: FE upload qua P6-04 rồi gọi activate với media ID |
+Đã chốt theo code merge ở P6-01b — xem [`P6-D68`](../decisions.md#d68--field-tạo-hợp-đồng) (bỏ `rentalType`, `tenantCccd`, `paymentDueDay`; `templateKey`/`templateVariables` chỉ đổi qua `apply-template`). Bảng đề xuất cũ đã gỡ.
 
 ## Luồng xử lý chuẩn
 

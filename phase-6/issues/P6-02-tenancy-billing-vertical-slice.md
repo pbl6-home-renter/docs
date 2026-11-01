@@ -1,20 +1,21 @@
 # P6-02 — Billing vertical slice (Epic)
 
-> Nhóm Billing trong `tenancy-service`: đơn giá & phí định kỳ (`RatePolicy`), ngày thu dự kiến (`BillingSetting`), chốt chỉ số điện nước (`MeterReading`), và — ở Iteration 6 — hóa đơn (`Invoice`) cùng OCR preview.
+> Nhóm Billing trong `tenancy-service`: đơn giá & phí định kỳ (`RatePolicy`), ngày thu dự kiến (`BillingSetting`), chốt chỉ số điện nước (`MeterReading`), và — ở Iteration 6 — hóa đơn (`Invoice`) và hoàn thiện `MeterReading` theo `P6-D66` (OCR chạy ở `ai-service`, `P6-D67`).
 
 **Trạng thái:** 🟡 Open  
 **Người phụ trách:** huynhtiennhat0403  
 **Người review:** baoduong17 (BE Lead, API owner), PM  
-**Ước lượng:** 20 points cho It5 (P6-02a → P6-02f); It6 ước lượng lại khi viết chi tiết P6-02g/h  
+**Ước lượng:** 20 points cho It5 (P6-02a → P6-02f); 14 points cho It6 (P6-02g1–g4 + P6-02h)  
 **Độ ưu tiên:** High  
 **Phụ thuộc:** P5-09 (bảng `rooms` + Room API), P5-08b (pattern UoW + Outbox)  
+**Iteration:** It5 (02/11–08/11)  
 **Issue:** `docs#70`
 
 ## Bối cảnh
 
-MVP lõi cần luồng **chốt số → sinh hóa đơn → ghi nhận thanh toán** chạy end-to-end (`requirement.md`, D29 landlord-solo). Billing là điều kiện đầu vào của Invoice: thiếu bộ đơn giá hoặc thiếu chỉ số thì không lập được hóa đơn (`utility-billing-calculations.md` §11 EC2/EC3).
+MVP lõi cần luồng **chốt số → sinh hóa đơn → phát hành** chạy end-to-end (ghi nhận thanh toán là Stretch, `P6-D61`) (`requirement.md`, D29 landlord-solo). Billing là điều kiện đầu vào của Invoice: thiếu bộ đơn giá hoặc thiếu chỉ số thì không lập được hóa đơn (`utility-billing-calculations.md` §11 EC2/EC3).
 
-Issue này là issue cha. Công việc thực tế giao qua các sub-issue; issue cha chỉ đóng khi mọi sub-issue It5 Done (P6-02g/h có thể chuyển sang epic riêng nếu It6 thay đổi).
+Issue này là issue cha. Công việc thực tế giao qua các sub-issue; issue cha chỉ đóng khi mọi sub-issue It5 và It6 Done.
 
 ## Sub-issue
 
@@ -26,18 +27,24 @@ Issue này là issue cha. Công việc thực tế giao qua các sub-issue; issu
 | [P6-02d](P6-02d-billing-setting.md) | BillingSetting domain + API | `GET/POST /billing-settings`, `PATCH /billing-settings/{id}` | It5 | 3 pts | P6-02a, P6-02c (pattern) |
 | [P6-02e](P6-02e-meter-reading-create-list.md) | MeterReading domain + nhập tay từng chỉ số + liệt kê | `POST /meter-readings`, `GET /meter-readings` | It5 | 5 pts | P6-02a, P5-09b |
 | [P6-02f](P6-02f-meter-reading-bulk.md) | Chốt chỉ số hàng loạt theo tòa | `POST /meter-readings/bulk` | It5 | 2 pts | P6-02e |
-| [P6-02g](P6-02g-invoice-outline.md) | Invoice: sinh pending, phát hành, xem, hủy, tenant xem *(outline)* | `/invoices/*` | It6 | ~13 pts | P6-02c, P6-02e, epic Contract (`contracts` + `contract_members`) |
-| [P6-02h](P6-02h-meter-reading-ocr-preview.md) | OCR preview chỉ số *(outline, chờ chốt OCR)* | `POST /meter-readings/preview-ocr-result` | It6 | ~5 pts | P6-02e, Media upload, quyết định OCR |
+| [P6-02g](P6-02g-invoice-outline.md) | Invoice — issue cha 🔵 Split (`P6-D64`, `P6-D65`) | `/invoices/*`, `/me/invoices` | It6 | 11 pts | — |
+| ↳ [P6-02g1](P6-02g1-invoice-domain-calculator.md) | Aggregate, bảng `invoices`, calculator thuần | — | It6 | 3 pts | P6-09 |
+| ↳ [P6-02g2](P6-02g2-invoice-generate.md) | Sinh / tính lại `pending` theo tòa + kỳ | `POST /invoices/generate` | It6 | 3 pts | g1, P6-02h, P6-01e1 |
+| ↳ [P6-02g3](P6-02g3-invoice-landlord-manage.md) | Landlord xem, sửa phí khác, phát hành hàng loạt, hủy | `GET/PATCH /invoices…`, `POST /invoices/issue-invoice`, `POST /invoices/{id}/cancel-invoice` | It6 | 3 pts | g2 |
+| ↳ [P6-02g4](P6-02g4-invoice-tenant-view.md) | Tenant xem hóa đơn đã phát hành | `GET /me/invoices`, `GET /invoices/{id}` | It6 | 2 pts | g3, P6-01e2 |
+| [P6-02h](P6-02h-meter-reading-ocr-preview.md) | MeterReading: migration, baseline kỳ đầu, `source`/`ocrValue`, `evidenceMediaId`, `PATCH` có khóa kỳ (`P6-D66`, `P6-D67`, `P6-D70`) | `POST /meter-readings`, `PATCH /meter-readings/{id}` | It6 | 3 pts | P6-09, P6-02g1 |
 
 Thứ tự It5: `P6-02a → P6-02b → P6-02c → (P6-02d ∥ P6-02e) → P6-02f`.
+
+Thứ tự It6: `P6-09 → P6-02g1 → P6-02h → P6-02g2 → P6-02g3 → P6-02g4`. Vòng đời hóa đơn theo `P6-D64`, quy tắc tính theo `P6-D65`/`P6-D72`, MeterReading theo `P6-D66`/`P6-D70` (migration `meter_readings` ở P6-02h merge trước g2), OCR theo `P6-D67` (`ai-service`, Tenancy không gọi AI). Payment ra Stretch (`P6-D61`).
 
 > **P6-02a phải merge trước** khi code P6-02b/d/e: contract hiện tại của RatePolicy/BillingSetting mâu thuẫn với D39 và giữa các endpoint với nhau (chi tiết trong P6-02a).
 
 ## Ngoài phạm vi epic này (It5)
 
 - Sinh/phát hành hóa đơn, tính tiền (thuộc P6-02g, It6).
-- OCR (P6-02h); lưu liên kết ảnh chứng cứ vào `media` — media flow do baoduong17 làm song song; It5 chỉ nhận `evidenceMediaId` và để `TODO(media)`.
-- `GET /invoices/overdue-debts`, `POST /invoices/send-reminder`, reminder channel SMS/Zalo — trái D39 (không cưỡng chế thu tiền) hoặc ngoài MVP.
+- OCR và ảnh chứng cứ: `evidenceMediaId` giữ nullable, gắn bằng `PATCH` sau khi upload qua Media (`P6-D70`, `P6-D69`); OCR ở `ai-service` (`P6-D67`).
+- `GET /invoices/overdue-debts`, `POST /invoices/send-reminder`, hóa đơn quyết toán, reminder SMS/Zalo — gỡ theo `P1-D39`, `P6-D64`.
 - `PUT /buildings/{id}/vietqr-config` — thuộc nhóm Payment.
 
 ## Tiêu chí nghiệm thu chung (mọi sub-issue có write operation)

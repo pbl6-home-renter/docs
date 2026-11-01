@@ -10,7 +10,7 @@
 
 | ID | Date | Decision | Status |
 |---|---|---|---|
-| D51 | 2026-09-29 | AI removed from MVP scope; OCR for meter readings becomes a local Tesseract step inside `tenancy-service` | ⏸ Pending (PM + GV PBL6) |
+| D51 | 2026-09-29 | AI removed from MVP scope; OCR for meter readings becomes a local Tesseract step inside `tenancy-service` | ⛔ Superseded by `P6-D67` (`../../phase-6/decisions.md`) |
 | D52 | 2026-09-29 | Backend split into 4 services by bounded context: `identity`, `tenancy`, `payment`, `community` | 🟡 Proposed |
 | D53 | 2026-09-29 | Database-per-service on one Postgres instance: 4 databases, 4 Postgres roles, cross-service foreign keys forbidden | 🟡 Proposed |
 | D54 | 2026-09-29 | RabbitMQ as the message broker; HTTP/JSON for synchronous calls, AMQP topic exchange for events | 🟡 Proposed |
@@ -25,7 +25,7 @@
 ## D51 - AI removed from MVP; meter-reading OCR becomes a local Tesseract step
 
 - **Date:** 2026-09-29
-- **Status:** Pending (PM + GV PBL6)
+- **Status:** Superseded by `P6-D67` (2026-11-01) — OCR chạy ở `ai-service` riêng bằng vision LLM.
 - **Context:** `PROJECT_PLAN.md` line 13 lists **AI (1) Auto-Description** as an MVP item and `requirement.md` line 10 only records AI as *"Khuyến khích: thêm AI"*, so the plan and the requirement never agreed on how much AI was actually committed. The team has not settled on a concrete AI feature, so the AI workstream is being dropped. That leaves `requirement.md` line 27 (F5, OCR on the electricity/water bill photo) without a home, and it removes `pbl6-ai` from the repo list in the root `AGENTS.md`.
 - **Decision:** Remove AI from MVP scope. Keep OCR, but run it locally.
   - No `pbl6-ai` repo, no Python/FastAPI service, no OpenAI API call anywhere in the system.

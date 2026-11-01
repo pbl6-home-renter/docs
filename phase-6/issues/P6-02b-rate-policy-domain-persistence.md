@@ -7,6 +7,7 @@
 **Ước lượng:** 3 points · 6–8 giờ  
 **Phụ thuộc:** P6-02a (contract đã chốt)  
 **Repo / branch:** `Tenancy-Service` · `feature/p6-02b-rate-policy-domain`  
+**Iteration:** It5 (02/11–08/11)  
 **Issue:** `docs#72`
 
 ## Mục tiêu

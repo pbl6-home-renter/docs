@@ -1,12 +1,13 @@
 # P6-03c — Danh sách, tạo, sửa, xóa Room trong một Building
 
 **Epic:** [P6-03](P6-03-fe-landlord-building-room-screens.md)  
-**Trạng thái:** 🟡 Open  
+**Trạng thái:** 🟢 Done (GitHub issue closed)  
 **Người phụ trách:** ThaiBao11125  
 **Người review:** baoduong17  
 **Ước lượng:** 5 points · 10–14 giờ  
 **Phụ thuộc:** P6-03a; BE P5-09b (`POST /rooms`), P5-09c (`GET /me/rooms`, `PATCH`/`DELETE /rooms/{id}`, `mark-ready`)  
 **Repo / branch:** `fe` · `feature/p6-03c-room-management`  
+**Iteration:** It5 (02/11–08/11)  
 **Issue:** `docs#82`
 
 ## Mục tiêu

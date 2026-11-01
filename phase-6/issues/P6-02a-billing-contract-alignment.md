@@ -7,6 +7,7 @@
 **Ước lượng:** 2 points · 4–6 giờ  
 **Phụ thuộc:** —  
 **Repo / branch:** `api-doc` · `docs/p6-02a-billing-contract`  
+**Iteration:** It5 (02/11–08/11)  
 **Issue:** `docs#71`
 
 ## Mục tiêu

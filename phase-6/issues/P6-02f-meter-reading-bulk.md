@@ -7,6 +7,7 @@
 **Ước lượng:** 2 points · 4–6 giờ  
 **Phụ thuộc:** P6-02e  
 **Repo / branch:** `Tenancy-Service` · `feature/p6-02f-meter-reading-bulk`  
+**Iteration:** It5 (02/11–08/11)  
 **Issue:** `docs#76`
 
 ## Mục tiêu
@@ -16,9 +17,9 @@ Cuối tháng landlord nhập chỉ số điện/nước cho một tập phòng/
 ## Contract (sau P6-02a)
 
 - Endpoint: `POST /meter-readings/bulk` — `api-doc/src/paths/billing/meter-readings-bulk.yaml` (`postBulkMeterReadings`).
-- Request: `api-doc/src/requests/rooms/bulk-meter-reading-create-request-dto.yaml` — `buildingId`, `recordedMonth` (= `period`), `readings[] { roomId, type, currentReading, evidenceMediaId }` (1–200 dòng). Không nhận `readingMethod`, `previousReading` hoặc baseline.
+- Request: `api-doc/src/requests/rooms/bulk-meter-reading-create-request-dto.yaml` — `buildingId`, `recordedMonth` (= `period`), `readings[] { roomId, type, currentReading, source?, ocrValue? } (P6-D66/P6-D70; evidence attaches after creation)` (1–200 dòng). Không nhận `readingMethod`, `previousReading` hoặc baseline.
 - Response: `api-doc/src/responses/dtos/rooms/bulk-meter-reading-response-dto.yaml` — `201 METER_READINGS_BULK_RECORDED`, `results[]` theo phòng (`electricityReadingId`, `electricityUsage`, `waterReadingId`, `waterUsage`, `status=SUCCESS`, `note`), tổng `totalElectricityUsage`, `totalWaterUsage`; `totalRoomsRecorded` đếm `roomId` khác nhau trong request.
-- Lỗi: `404` (building), `403`, `409 DUPLICATE_READING`, `422 CURRENT_READING_INVALID`, `EVIDENCE_REQUIRED`, `VALIDATION_FAILED`.
+- Lỗi: `404` (building), `403`, `409 DUPLICATE_READING`, `422 CURRENT_READING_INVALID`, `BASELINE_REQUIRED`, `VALIDATION_FAILED`.
 
 ## Tham chiếu code
 
@@ -81,3 +82,5 @@ Cuối tháng landlord nhập chỉ số điện/nước cho một tập phòng/
 - [ ] `npm run build` + `npm run lint` pass.
 - [ ] PR vào `main` ghi `Closes pbl6-home-renter/docs#76` + link file `api-doc`.
 - [ ] baoduong17 approve.
+
+> **P6-D60 / P6-D70:** Bulk remains atomic as approved in PR #94. A missing baseline returns `BASELINE_REQUIRED` and rolls back every submitted reading. Apply the `source`/`ocrValue` and first-period baseline changes from P6-D66/P6-D70 without changing transaction semantics.

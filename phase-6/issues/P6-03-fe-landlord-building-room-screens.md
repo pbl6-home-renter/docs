@@ -1,11 +1,12 @@
 # P6-03 — Màn hình Building/Room cho Landlord và duyệt Building cho Admin (Epic)
 
-**Trạng thái:** 🟡 Open  
+**Trạng thái:** 🟢 Done (GitHub issue closed)  
 **Người phụ trách:** ThaiBao11125  
 **Người review:** baoduong17 (FE review + API owner)  
 **Ước lượng:** 18 points tổng (P6-03a 5 · P6-03b 5 · P6-03c 5 · P6-03d 3)  
 **Phụ thuộc:** `fe#6` (P5-01…P5-07) đã merge vào `main`; BE P5-08 (Building) và P5-09 (Room) đã deploy staging; P6-04 (media upload) cho P6-03b  
 **Repo / branch:** `fe` · mỗi sub-issue một branch `feature/p6-03x-<slug>`  
+**Iteration:** It5 (02/11–08/11)  
 **Issue:** `docs#79`
 
 ## Mục tiêu
