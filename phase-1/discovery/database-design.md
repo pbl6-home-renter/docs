@@ -190,10 +190,12 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 | room_id | uuid | FK→Room, NOT NULL | | | |
 | type | enum (`electricity`,`water`) | NOT NULL | 1 bản ghi/loại/kỳ | | `electricity` |
 | period | varchar(7) (`YYYY-MM`) | NOT NULL | | Min length: 7; Max length: 7; Regex: `^[0-9]{4}-(0[1-9]\|1[0-2])$` | `2026-09` |
-| previous_reading | decimal | NOT NULL | kỳ đầu = baseline chỉ số lúc bàn giao §5; kỳ sau = current_reading kỳ trước | `>= 0` | `1200` |
+| previous_reading | decimal | NOT NULL | baseline: landlord được nhập `0` hoặc chỉ số đầu kỳ thực tế; baseline đầu tiên nếu không gửi thì server dùng `0`, baseline về sau bắt buộc gửi; kỳ thường = `current_reading` của bản ghi trước, do server lấy (D60) | `>= 0` | `1200` |
 | current_reading | decimal | NOT NULL | | `>= previous_reading` | `1380` |
 | reading_date | date | nullable | ngày chốt thực tế (dọn vào/ra giữa tháng) | | `2026-09-30` |
 | is_baseline | boolean | default false | kỳ đầu hoặc sau khi thay đồng hồ | | `false` |
+
+> **D60:** API bulk chỉ ghi kỳ thường sau khi đã có baseline cho từng `(room_id, type)`. Mỗi request có thể chứa một tập phòng/chỉ số bất kỳ của tòa; một dòng lỗi làm rollback toàn bộ request. `totalRoomsRecorded` là số phòng khác nhau được ghi trong request. Điều kiện đủ cả điện và nước chỉ áp dụng khi lập hóa đơn theo từng phòng.
 
 > Ảnh đối chứng công tơ: `Media(owner_type='meter_reading', purpose='meter_reading_evidence')` — tối thiểu 1 ảnh trước khi xác nhận (service constraint). **Cách tính consumption & xử lý đồng hồ reset → `utility-billing-calculations.md` §3/EC1.**
 

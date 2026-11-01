@@ -24,8 +24,8 @@ Contract RatePolicy / BillingSetting / MeterReading trong `api-doc` nhất quán
 | 5 | Response DTO `rate-policy-create/list/update/deactivate-response-dto.yaml` | Trả từng mục (`type`, `rateKind`) thay vì bộ. | Trả `{ id, landlordId, scope, buildingId, roomId, rates, isActive, createdAt, updatedAt }`. |
 | 6 | Lỗi RatePolicy | `422 INVALID_RATE_KIND` chỉ có trong description. | Khai báo enum lỗi `422`: `INVALID_RATE_KIND` (D33: điện chỉ `flat`/`tiered`; `per_head` chỉ cho nước/phí), `TIER_CONFIG_INVALID` (tiered thiếu `steps` / bậc cuối `to≠null` / bậc không liên tục), `VALIDATION_FAILED`. `409 ACTIVE_POLICY_EXISTS` khi scope đã có bộ (kể cả đang tắt → dùng PATCH `isActive: true`). |
 | 7 | `src/requests/rooms/billing-setting-create-request-dto.yaml` (+ update, response) | Có `dueDays`, `debtScanEnabled`, `gracePeriodDays`, `overdueReminderIntervalDays`, `reminderChannels`, `meterCutoffDay`, `invoiceIssuanceDay` — **trái D39** (không cưỡng chế thu, không `overdue`) và không có trong bảng `billing_settings`. | Create = `{ scope, buildingId?, roomId?, paymentDueDay (1–28, default 5), remindDay? (1–28), botEnabled (default true) }`; Update = cùng field trừ scope/target + `isActive`. Response trả đủ các field này. **P6-02d đã chốt:** hai ngày độc lập, không dùng `DUE_DAYS_INVALID` khi `remindDay > paymentDueDay`; setting cấp phòng lấy `buildingId` từ Room và trả cả hai ID. |
-| 8 | `src/requests/rooms/meter-reading-create-request-dto.yaml` | `previousReading` bắt buộc, nhưng DB quy định = `currentReading` kỳ trước (§2.11). | `previousReading` **chỉ bắt buộc khi `isBaseline=true`**; còn lại server tự lấy từ kỳ gần nhất, nếu client gửi khác → `422 CURRENT_READING_INVALID`? *(API owner chốt: bỏ field hoặc giữ để đối chiếu)*. |
-| 9 | Bulk meter readings | Có `readingMethod` (`CAMERA_CAPTURE`/`FILE_UPLOAD`) nhưng DB không lưu; response có `status: WARNING` không định nghĩa khi nào. | Giữ `readingMethod` (chỉ log). Bulk **all-or-nothing**: lỗi bất kỳ dòng → `422`/`409`, không ghi gì. `WARNING` = tiêu thụ > 3× kỳ trước (chỉ cảnh báo) *(hoặc bỏ enum)*. |
+| 8 | `src/requests/rooms/meter-reading-create-request-dto.yaml` | Contract cũ cho baseline `previousReading=0` ở mọi trường hợp. | Mọi baseline cho phép landlord nhập `previousReading` là 0 hoặc chỉ số thực tế; baseline đầu tiên bỏ trống thì server dùng 0, baseline về sau bắt buộc gửi. Kỳ thường: server tự lấy `currentReading` kỳ trước. Cập nhật schema và example theo D60. |
+| 9 | Bulk meter readings | `readingMethod` bắt buộc nhưng không dùng; response có `WARNING`/`ERROR` dù request all-or-nothing; mô tả yêu cầu toàn bộ phòng. | Bỏ `readingMethod`; `readings` có `minItems: 1`, `maxItems: 200`; nhận một tập phòng/chỉ số bất kỳ trong cùng tòa, chỉ kỳ thường có baseline trước đó. Lỗi bất kỳ dòng → rollback và trả HTTP lỗi. Response `201` chỉ có `SUCCESS`; `totalRoomsRecorded` đếm `roomId` khác nhau trong request. |
 
 ## Tham chiếu
 
@@ -63,8 +63,8 @@ Contract RatePolicy / BillingSetting / MeterReading trong `api-doc` nhất quán
 
 ### Bước 5 — Sửa MeterReading
 
-- **File sửa:** `src/requests/rooms/meter-reading-create-request-dto.yaml`, `src/requests/rooms/bulk-meter-reading-create-request-dto.yaml`, `src/paths/billing/meter-readings-bulk.yaml` (mô tả all-or-nothing + ý nghĩa `WARNING`).
-- **Cách làm:** theo dòng #8, #9; bổ sung `422 CURRENT_READING_INVALID` vào `post` của `src/paths/billing/meter-readings.yaml` nếu chưa có trong enum.
+- **File sửa:** `src/requests/rooms/meter-reading-create-request-dto.yaml`, `src/requests/rooms/bulk-meter-reading-create-request-dto.yaml`, `src/responses/dtos/rooms/bulk-meter-reading-response-dto.yaml`, `src/paths/billing/meter-readings-bulk.yaml` (quy tắc D60, giới hạn 200 dòng, all-or-nothing).
+- **Cách làm:** theo dòng #8, #9; bổ sung `422 CURRENT_READING_INVALID` vào `post` của `src/paths/billing/meter-readings.yaml` nếu chưa có trong enum. Mã lỗi riêng cho bulk thiếu baseline vẫn cần API owner chốt.
 - **Kiểm tra bước:** bundle pass.
 
 ### Bước 6 — PR và sync

@@ -11,13 +11,13 @@
 
 ## Mục tiêu
 
-Cuối tháng landlord nhập chỉ số điện/nước cho nhiều phòng của một tòa trong **một request**; tất cả được ghi trong một transaction (all-or-nothing) và trả bảng tổng hợp tiêu thụ.
+Cuối tháng landlord nhập chỉ số điện/nước cho một tập phòng/chỉ số bất kỳ của một tòa trong **một request**; tất cả các dòng được gửi được ghi trong một transaction (all-or-nothing) và trả bảng tổng hợp tiêu thụ. Bulk chỉ ghi kỳ thường; mỗi `(roomId, type)` phải có baseline trước đó (D60).
 
 ## Contract (sau P6-02a)
 
 - Endpoint: `POST /meter-readings/bulk` — `api-doc/src/paths/billing/meter-readings-bulk.yaml` (`postBulkMeterReadings`).
-- Request: `api-doc/src/requests/rooms/bulk-meter-reading-create-request-dto.yaml` — `buildingId`, `recordedMonth` (= `period`), `readingMethod`, `readings[] { roomId, type, previousReading?, currentReading, evidenceMediaId }`.
-- Response: `api-doc/src/responses/dtos/rooms/bulk-meter-reading-response-dto.yaml` — `201 METER_READINGS_BULK_RECORDED`, `results[]` theo phòng (`electricityReadingId`, `electricityUsage`, `waterReadingId`, `waterUsage`, `status`, `note`), tổng `totalElectricityUsage`, `totalWaterUsage`.
+- Request: `api-doc/src/requests/rooms/bulk-meter-reading-create-request-dto.yaml` — `buildingId`, `recordedMonth` (= `period`), `readings[] { roomId, type, currentReading, evidenceMediaId }` (1–200 dòng). Không nhận `readingMethod`, `previousReading` hoặc baseline.
+- Response: `api-doc/src/responses/dtos/rooms/bulk-meter-reading-response-dto.yaml` — `201 METER_READINGS_BULK_RECORDED`, `results[]` theo phòng (`electricityReadingId`, `electricityUsage`, `waterReadingId`, `waterUsage`, `status=SUCCESS`, `note`), tổng `totalElectricityUsage`, `totalWaterUsage`; `totalRoomsRecorded` đếm `roomId` khác nhau trong request.
 - Lỗi: `404` (building), `403`, `409 DUPLICATE_READING`, `422 CURRENT_READING_INVALID`, `EVIDENCE_REQUIRED`, `VALIDATION_FAILED`.
 
 ## Tham chiếu code
@@ -35,7 +35,7 @@ Cuối tháng landlord nhập chỉ số điện/nước cho nhiều phòng củ
 
 ### Bước 2 — Request/Response DTO
 
-- **File tạo** (`src/modules/meter-reading/presentation/http/`): `requests/bulk-create-meter-readings.request.ts` (`@ValidateNested({ each: true })`, `@ArrayMinSize(1)`, `@IsEnum` cho `readingMethod`), `responses/bulk-meter-reading.response.dto.ts`; thêm `METER_READINGS_BULK_RECORDED` vào response code constant.
+- **File tạo** (`src/modules/meter-reading/presentation/http/`): `requests/bulk-create-meter-readings.request.ts` (`@ValidateNested({ each: true })`, `@ArrayMinSize(1)`, `@ArrayMaxSize(200)`), `responses/bulk-meter-reading.response.dto.ts`; thêm `METER_READINGS_BULK_RECORDED` vào response code constant.
 - **Kiểm tra bước:** `npm run build` pass.
 
 ### Bước 3 — Command handler bulk
@@ -45,8 +45,8 @@ Cuối tháng landlord nhập chỉ số điện/nước cho nhiều phòng củ
   1. `buildingRepository.findById(buildingId)` → `404`; khác landlord → `403`.
   2. Trong request có 2 dòng trùng `(roomId, type)` → `409 DUPLICATE_READING` (trước khi đụng DB).
   3. Mỗi `roomId` phải thuộc `buildingId` (load room, so `room.buildingId`) → sai thì `422 VALIDATION_FAILED`.
-  4. Lặp gọi `MeterReadingRecorder.record(...)` với `period = recordedMonth`; lỗi `DUPLICATE_METER_READING` của service → đổi sang `409 DUPLICATE_READING` (code của endpoint bulk). Bất kỳ lỗi nào ném ra → cả transaction rollback.
-  5. Gom kết quả theo `roomId`; `status = SUCCESS` (hoặc `WARNING` theo quyết định P6-02a #9); cộng tổng usage bằng phép cộng decimal-string.
+  4. Lặp gọi `MeterReadingRecorder.record(...)` với `period = recordedMonth`, `isBaseline=false`; thiếu baseline ở bất kỳ dòng nào → lỗi và rollback. Lỗi `DUPLICATE_METER_READING` của service → đổi sang `409 DUPLICATE_READING` (code của endpoint bulk). Bất kỳ lỗi nào ném ra → cả transaction rollback.
+  5. Gom kết quả theo `roomId`; `status = SUCCESS`; `totalRoomsRecorded` là số `roomId` khác nhau vừa ghi; cộng tổng usage bằng phép cộng decimal-string. Kết quả có thể chỉ có điện hoặc chỉ có nước; hóa đơn của phòng vẫn phải chờ đủ cả hai.
 - **Kiểm tra bước:** request 3 phòng × 2 loại → 6 row trong `meter_readings`, 6 row `meter_reading.recorded` trong outbox.
 
 ### Bước 4 — Route
@@ -56,8 +56,9 @@ Cuối tháng landlord nhập chỉ số điện/nước cho nhiều phòng củ
 
 ## Quyết định tạm thời / Ngoài phạm vi
 
-- `readingMethod` chỉ log, không lưu (DB không có cột).
-- Giới hạn `readings` tối đa 200 phần tử (`@ArrayMaxSize(200)`) — đề xuất thêm vào contract nếu API owner đồng ý.
+- Không nhận `readingMethod`; không cần trường không ảnh hưởng logic ghi chỉ số.
+- Giới hạn `readings` tối đa 200 phần tử (`@ArrayMaxSize(200)`), tương ứng `maxItems: 200` trong contract.
+- Không trả `ERROR` hoặc `WARNING` bên trong response `201`; dòng không hợp lệ trả lỗi HTTP và rollback. Cảnh báo tiêu thụ bất thường chờ quy tắc riêng.
 - OCR ở P6-02h; media chứng cứ `TODO(media)`.
 
 ## Cập nhật `api-doc` (bắt buộc trước khi đóng issue)
@@ -68,9 +69,11 @@ Cuối tháng landlord nhập chỉ số điện/nước cho nhiều phòng củ
 ## Manual verification (Apidog)
 
 1. 2 phòng × điện + nước, kỳ mới → `201`, tổng usage đúng (tính tay so sánh).
+   Cả 2 phòng phải có baseline trước đó.
 2. Một dòng `currentReading` nhỏ hơn kỳ trước → `422 CURRENT_READING_INVALID` và **không** dòng nào được ghi.
 3. Gửi lại cùng kỳ → `409 DUPLICATE_READING`; 2 dòng trùng trong body → `409`.
 4. Room thuộc tòa khác → `422`; tòa của landlord khác → `403`.
+5. Một phòng chưa có baseline → lỗi và không ghi dòng nào; một request chỉ có điện cho một phòng vẫn thành công, `totalRoomsRecorded=1` nhưng chưa đủ điều kiện lập hóa đơn.
 
 ## Definition of Done
 
