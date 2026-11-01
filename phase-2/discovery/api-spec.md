@@ -41,8 +41,8 @@
 
 | Mã | Method & path | Quyền | Mục đích | Lưu ý |
 |---|---|---|---|---|
-| 16 | `POST /me/push-devices` | `tenant`, `landlord`, `admin` | Đăng ký device token | Body: `platform` (`android` hoặc `web`), `token`; upsert theo token. |
-| 17 | `DELETE /me/push-devices/{deviceId}` | `tenant`, `landlord`, `admin` | Gỡ device token | Chỉ xóa được bản ghi device của chính người dùng hiện tại. |
+| 16 | `POST /me/push-devices` | User đăng nhập | Đăng ký mobile push device | Body: `platform=android`, `token`; user lấy từ JWT, Gateway route sang Community. |
+| 17 | `DELETE /me/push-devices/{deviceId}` | User đăng nhập | Gỡ device token | Chỉ thu hồi device của chính user; Community sở hữu token. |
 
 ---
 
@@ -229,23 +229,30 @@
 
 | Mã | Method & path | Quyền | Mục đích | Lưu ý |
 |---|---|---|---|---|
-| 94 | `GET /conversations` | `tenant`, `landlord` | Liệt kê các hội thoại của người gọi | Bộ lọc: `filter[type]` (`room`, `building`, `direct`); chỉ thấy bản ghi `ConversationMember` của mình. **Không có quyền admin.** |
+| 94 | `GET /conversations` | User đăng nhập | Liệt kê các hội thoại của người gọi | Hỗ trợ context lookup bằng cặp `contextType`, `contextId`; trả unread count và last message. Chỉ thành viên có quyền đọc mới xem được. |
 | 95 | `GET /conversations/{conversationId}` | `tenant`, `landlord` | Đọc chi tiết hội thoại | Bắt buộc kiểm tra thành viên; unread count và tin nhắn cuối là dữ liệu dựng sẵn. Không có quyền admin. |
-| 96 | `POST /conversations/resolve-conversation` | `tenant`, `landlord` | Lấy hội thoại của phòng hoặc tòa nhà | Body: đúng một trong `contractId` hoặc `buildingId`; trả hội thoại đã có, chỉ tạo mới khi vòng đời cho phép. Không có quyền admin. |
+| 96 | `POST /conversations` | User đăng nhập | Tạo chat direct hoặc group | Body `kind=direct|group`; direct nhận `recipientUserId` và dùng lại chat duy nhất của cặp; group nhận `memberUserIds[]`, caller thành admin. Context chat được tạo bởi event, client tra cứu bằng `GET /conversations?contextType=&contextId=`. |
+| 105 | `PATCH /conversations/{conversationId}` | Admin nhóm | Đổi tên hoặc ảnh nhóm | Thay đổi được lưu thành system message và phát qua Socket. |
+| 106 | `GET /conversations/{conversationId}/members` | Thành viên có quyền đọc | Xem danh sách thành viên | Bao gồm active/read_only và vai trò. |
+| 107 | `POST /conversations/{conversationId}/members` | Admin nhóm | Thêm thành viên | User thêm lại được kích hoạt membership cũ và xem toàn bộ history. |
+| 108 | `PUT /conversations/{conversationId}/members/{userId}/role` | Admin nhóm | Đổi vai trò admin/member | Không thể hạ admin cuối cùng; thay đổi tạo system message. |
+| 109 | `DELETE /conversations/{conversationId}/members/{userId}` | Admin nhóm | Kick thành viên | Chuyển read_only, ngừng gửi/nhận realtime; admin cuối được chuyển cho member tham gia sớm nhất. |
+| 110 | `DELETE /conversations/{conversationId}/members/me` | Thành viên | Tự rời group | Chuyển read_only; áp dụng chuyển admin nếu là admin cuối. |
+| 111 | `POST /conversations/{conversationId}/bot-reminders` | Landlord | Gửi bot reminder theo mẫu | Body `templateType` (`ocr_result`, `invoice`, `contract_expiring`), `resourceId`, `clientMessageId`; landlord chủ động bấm gửi, không có cron. Community dựng bot message và phân phối như chat. |
 
 ---
 
-## 21. Message (Pending)
+## 21. Message
 
 | Mã | Method & path | Quyền | Mục đích | Lưu ý |
 |---|---|---|---|---|
-| 97 | `GET /messages` | `tenant`, `landlord` | Liệt kê tin nhắn trong một hội thoại | Bộ lọc: `filter[conversationId]`; phân trang cursor; không dùng path lồng conversation. Không có quyền admin. |
-| 98 | `POST /messages` | `tenant`, `landlord` | Gửi tin nhắn | Body: `conversationId`, `type`, `content`, `mediaId` tuỳ chọn; media đính kèm dùng `ownerType=message`. Không có quyền admin. |
-| 99 | `POST /messages/mark-read` | `tenant`, `landlord` | Đánh dấu đã đọc một hội thoại | Body: `conversationId`, `lastReadMessageId`; con trỏ đã đọc là điều kiện migration vì bảng hiện tại chưa có cột này. Không có quyền admin. |
+| 97 | `GET /messages?conversationId=&cursor=&pageSize=` | User có quyền đọc | Liệt kê tin nhắn trong một hội thoại | Phân trang cursor; read-only chỉ tải tới `leftSequence`. |
+| 98 | `POST /messages` | Thành viên active | Gửi text hoặc ảnh | Body gồm `conversationId`, `clientMessageId`, `type`, `content` hoặc `mediaId`; retry cùng ID trả message cũ. Ảnh gắn với conversation qua Media Service. |
+| 99 | `POST /messages/mark-read` | Thành viên active/read-only | Cập nhật read cursor | Body `conversationId`, `lastReadSequence`; chỉ cho phép cursor tiến lên, unread đồng bộ giữa thiết bị. |
 
 ---
 
-## 22. Notification (Pending)
+## 22. Notification
 
 | Mã | Method & path | Quyền | Mục đích | Lưu ý |
 |---|---|---|---|---|
@@ -255,7 +262,7 @@
 
 ---
 
-## 23. NotificationPreference (Pending)
+## 23. NotificationPreference
 
 | Mã | Method & path | Quyền | Mục đích | Lưu ý |
 |---|---|---|---|---|
@@ -1165,101 +1172,40 @@
 
 > > Sự cố đã `resolved` hoặc `closed` không huỷ được, trả `422`.
 
-### 27.19 Conversation
+### 27.19 Conversation and group membership
 
-#### 94 · `GET /conversations` — Liệt kê các hội thoại của người gọi
+API v1 follows `pm/phase-6/discovery/community-service-design.md`. Chat supports direct/group conversations and optional domain context (`contextType`, `contextId`).
 
-- **Quyền:** `tenant`, `landlord`
-- **Query:** `filter[type]=room` · `pageNo=1` · `pageSize=20`
-- **Success:** `200` `{ "statusCode":200, "code":"CONVERSATIONS_FETCHED", "data":[{"id":"<uuid>","type":"room","title":"Phòng P.302","unreadCount":2}], "pagination":{"type":"offset","pageNo":1,"pageSize":20,"totalItems":1,"totalPages":1,"hasNextPage":false,"hasPreviousPage":false} }`
-- **Lỗi:** `403 FORBIDDEN` · `422 VALIDATION FAILED`
-- **UI:** `16._h_p_th_inbox/code.html` · `48._h_p_th_inbox_1/code.html` · `48._h_p_th_inbox_5/code.html`
-
-> Không có quyền `admin`. Admin không tham gia hội thoại.
-
-#### 95 · `GET /conversations/{conversationId}` — Đọc chi tiết hội thoại
-
-- **Quyền:** `tenant`, `landlord`
-- **Success:** `200` `{ "statusCode":200, "code":"CONVERSATION_FETCHED", "data":{"id":"<uuid>","type":"room","roomId":"<uuid>","contractId":"<uuid>","title":"Phòng P.302","unreadCount":2} }`
-- **Lỗi:** `403 FORBIDDEN` · `404 NOT FOUND`
-- **UI:** `49._chi_ti_t_cu_c_tr_chuy_n_chat_thread_detail_1/code.html` · `49._chi_ti_t_cu_c_tr_chuy_n_chat_thread_detail_5/code.html`
-
-#### 96 · `POST /conversations/resolve-conversation` — Lấy hội thoại của phòng hoặc tòa nhà
-
-- **Quyền:** `tenant`, `landlord`
-- **Body:** `{ "contractId":"<uuid>" }` hoặc `{ "buildingId":"<uuid>" }`
-- **Success:** `200` `{ "statusCode":200, "code":"CONVERSATION_RESOLVED", "data":{"id":"<uuid>","type":"room","contractId":"<uuid>"} }`
-- **Lỗi:** `422 EXACTLY ONE CONTEXT REQUIRED` · `403 FORBIDDEN` · `404 CONTEXT NOT FOUND`
-- **UI:** `18._tr_chuy_n_nh_m_ph_ng_tr_property_group_chat_room/code.html` · `19._tr_chuy_n_nh_m_t_a_nh_property_group_chat_building/code.html` · `23._xem_h_p_ng_thu_view_lease/code.html`
+- `GET /conversations`: list caller's conversations with `pageNo`/`pageSize`; optional context lookup; return unread count and last message.
+- `POST /conversations`: `kind=direct|group`; direct resolves the unique pair conversation; group accepts initial `memberUserIds` and makes caller admin.
+- `GET /conversations/{conversationId}`: return details and members when caller has read access.
+- `PATCH /conversations/{conversationId}`: admin changes group title/avatar; writes a system message and emits Socket event.
+- `GET/POST /conversations/{conversationId}/members`: list/add members; re-added members reactivate prior membership and can view full history.
+- `PUT /conversations/{conversationId}/members/{userId}/role`: admin/member; last admin cannot be demoted.
+- `DELETE /conversations/{conversationId}/members/{userId}` and `/members/me`: kick/leave. Membership becomes read-only at `leftSequence`; admin succession goes to earliest remaining member if needed.
+- Contract/building conversations are created from source-service events and found through `GET /conversations?contextType=&contextId=`.
 
 ### 27.20 Message
 
-#### 97 · `GET /messages` — Liệt kê tin nhắn trong một hội thoại
+- `GET /messages?conversationId=&cursor=&pageSize=`: cursor-paginated history; read-only users are limited through `leftSequence`.
+- `POST /messages`: `conversationId`, `clientMessageId`, `type=text|image`, and `content` or `mediaId`. Repeating the same client ID returns the existing message. Images upload directly to R2 through Media Service with a conversation owner; Community stores `mediaId`.
+- `POST /messages/mark-read`: `{ "conversationId":"<uuid>", "lastReadSequence":42 }`; the cursor only advances and unread state syncs to every device.
+- `POST /conversations/{conversationId}/bot-reminders`: landlord selects `templateType` (`ocr_result`, `invoice`, `contract_expiring`) and `resourceId`, then explicitly sends. Community renders and stores a bot message; no scheduled auto-send.
+- Message types are `text`, `image`, `system`, `bot`; clients cannot submit system/bot messages. No edit/delete or mention in v1.
+- Socket auth uses JWT; join requires active membership. Read-only members can fetch allowed old messages through REST, but do not receive new realtime events.
 
-- **Quyền:** `tenant`, `landlord`
-- **Query:** `filter[conversationId]=<uuid>` · `pageSize=30` · `cursor=<opaque>`
-- **Success:** `200` `{ "statusCode":200, "code":"MESSAGES_FETCHED", "data":[{"id":"<uuid>","conversationId":"<uuid>","senderId":"<uuid>","type":"text","content":"Dạ em gửi ảnh vòi xịt ạ","createdAt":"2026-09-23T11:30:00.000Z"}], "pagination":{"type":"cursor","pageSize":30,"nextCursor":null,"hasNextPage":false} }`
-- **Lỗi:** `403 FORBIDDEN` · `422 INVALID CURSOR` · `404 CONVERSATION NOT FOUND`
-- **UI:** `49._chi_ti_t_cu_c_tr_chuy_n_chat_thread_detail_1/code.html`
+### 27.21 Notification inbox
 
-#### 98 · `POST /messages` — Gửi tin nhắn
+- `GET /notifications?unreadOnly=&cursor=&pageSize=`: caller's business inbox (invoice/issue), cursor-paginated.
+- `POST /notifications/{notificationId}/mark-read` and `POST /notifications/mark-all-read`: mark read only; no delete endpoint.
+- Source services determine recipients and send a RabbitMQ event through transactional outbox with `sourceService`, `eventId`, `eventType`, `recipientUserIds`, and display snapshot (`type`, `title`, `body`, `deepLink`, `data`). Community creates one row per recipient/event, idempotent by source/event/recipient, then fans out the same ID over Socket and FCM.
+- FCM preference controls device push only; turning it off does not remove/hide inbox entries. Push goes to all registered mobile devices; Socket goes to connected sessions. Clients deduplicate by notification ID.
 
-- **Quyền:** `tenant`, `landlord`
-- **Body:** `{ "conversationId":"<uuid>", "type":"text", "content":"Dạ thợ mấy giờ qua kiểm được ạ", "mediaId":null }`
-- **Success:** `201` `{ "statusCode":201, "code":"MESSAGE_SENT", "data":{"id":"<uuid>","conversationId":"<uuid>","type":"text","content":"Dạ thợ mấy giờ qua kiểm được ạ","createdAt":"2026-09-23T11:38:00.000Z"} }`; `Location: /api/v1/messages`
-- **Lỗi:** `403 FORBIDDEN` · `409 CONVERSATION ARCHIVED` · `422 MESSAGE CONTENT INVALID`
-- **UI:** `49._chi_ti_t_cu_c_tr_chuy_n_chat_thread_detail_1/code.html`
+### 27.22 Notification preferences and PushDevice
 
-#### 99 · `POST /messages/mark-read` — Đánh dấu đã đọc một hội thoại
-
-- **Quyền:** `tenant`, `landlord`
-- **Body:** `{ "conversationId":"<uuid>", "lastReadMessageId":"<uuid>" }`
-- **Success:** `200` `{ "statusCode":200, "code":"MESSAGES_MARKED_READ", "data":{"conversationId":"<uuid>","unreadCount":0} }`
-- **Lỗi:** `403 FORBIDDEN` · `404 MESSAGE NOT FOUND` · `422 READ CURSOR INVALID` · điều kiện migration cho con trỏ
-- **UI:** `48._h_p_th_inbox_1/code.html`
-
-### 27.21 Notification
-
-#### 100 · `GET /notifications` — Liệt kê thông báo
-
-- **Quyền:** `tenant`, `landlord`, `admin`
-- **Query:** `filter[unreadOnly]=true` · `pageSize=20`
-- **Success:** `200` `{ "statusCode":200, "code":"NOTIFICATIONS_FETCHED", "data":[{"id":"<uuid>","type":"invoice_due","data":{"invoiceId":"<uuid>"},"readAt":null}], "pagination":{"type":"cursor","pageSize":20,"nextCursor":null,"hasNextPage":false} }`
-- **Lỗi:** `401 INVALID TOKEN` · `422 VALIDATION FAILED`
-- **UI:** `16._h_p_th_inbox/code.html` · `48._h_p_th_inbox_1/code.html` · `48._h_p_th_inbox_5/code.html`
-
-#### 101 · `POST /notifications/{notificationId}/mark-read` — Đánh dấu đã đọc một thông báo
-
-- **Quyền:** `tenant`, `landlord`, `admin`
-- **Body:** không có
-- **Success:** `200` `{ "statusCode":200, "code":"NOTIFICATION_MARKED_READ", "data":{"id":"<uuid>","readAt":"2026-09-23T11:40:00.000Z"} }`
-- **Lỗi:** `403 FORBIDDEN` · `404 NOT FOUND`
-- **UI:** `16._h_p_th_inbox/code.html` · `48._h_p_th_inbox_1/code.html` · `48._h_p_th_inbox_5/code.html`
-
-#### 102 · `POST /notifications/mark-all-read` — Đánh dấu đã đọc toàn bộ thông báo chưa đọc
-
-- **Quyền:** `tenant`, `landlord`, `admin`
-- **Body:** không có
-- **Success:** `200` `{ "statusCode":200, "code":"ALL_NOTIFICATIONS_MARKED_READ", "data":{"markedCount":3} }`
-- **Lỗi:** `401 INVALID TOKEN`
-- **UI:** `16._h_p_th_inbox/code.html` · `48._h_p_th_inbox_1/code.html` · `48._h_p_th_inbox_5/code.html`
-
-### 27.22 NotificationPreference
-
-#### 103 · `GET /me/notification-preference` — Đọc tuỳ biến thông báo
-
-- **Quyền:** `tenant`, `landlord`, `admin`
-- **Success:** `200` `{ "statusCode":200, "code":"NOTIFICATION_PREFERENCES_FETCHED", "data":[{"type":"invoice","enabled":true},{"type":"chat","enabled":true},{"type":"issue","enabled":true},{"type":"match","enabled":true},{"type":"account","enabled":true}] }`; tối đa năm bản ghi nên response này không phân trang
-- **Lỗi:** `401 INVALID TOKEN`
-- **UI:** `32._c_i_t_th_ng_b_o_notification_settings/code.html` · `51._c_i_t_th_ng_b_o_notification_settings_1/code.html` · `51._c_i_t_th_ng_b_o_notification_settings_3/code.html`
-
-#### 104 · `PUT /me/notification-preference` — Thay toàn bộ tuỳ biến thông báo
-
-- **Quyền:** `tenant`, `landlord`, `admin`
-- **Body:** `{ "preferences":[{"type":"invoice","enabled":true},{"type":"chat","enabled":false}] }`
-- **Success:** `200` `{ "statusCode":200, "code":"NOTIFICATION_PREFERENCES_UPDATED", "data":{"updatedAt":"2026-09-23T11:45:00.000Z"} }`
-- **Lỗi:** `422 INVALID NOTIFICATION TYPE` · `422 VALIDATION FAILED`
-- **UI:** `32._c_i_t_th_ng_b_o_notification_settings/code.html`
+- `GET/PUT /me/notification-preference`: per-group `pushEnabled` for `chat`, `invoice`, `issue`; defaults on. Inbox persistence is unaffected.
+- `POST /me/push-devices`, `DELETE /me/push-devices/{deviceId}`: Community owns Android push tokens; user identity comes from JWT. Gateway routes this path to Community. No token migration is required.
+- Chat push preview: sender name plus text preview, or “Đã gửi ảnh”, and a deep link to the conversation. System group-change messages use Socket only, no FCM.
 
 ### 27.23 AuditLog
 
@@ -1348,7 +1294,7 @@ Bản rà soát là commit `f96888b` với 109 route. Bảng dưới đây đố
 | 76, 77, 78 | Bỏ route lồng `/invoices/{invoiceId}`; `invoiceId` nằm trong body, action thành `create-intent` và `record-cash-payment` | 83–86 |
 | 80, 84 | `GET /issues/export` gộp vào collection `GET /issues` bằng `?format=` cho chủ nhà; thêm `GET /me/issues` cho tenant, xem D48 | 88–89 |
 | 87, 88, 89 | Bỏ route lồng `/conversations/{conversationId}`; `conversationId` nằm trong query hoặc body, `read` thành `mark-read` | 97–99 |
-| 90, 91 | `GET /contracts/{contractId}/conversation` và `GET /buildings/{buildingId}/conversation` gộp thành `POST /conversations/resolve-conversation` | 96 |
+| 90, 91 | Context conversation được tạo bởi event nguồn; client tra cứu bằng `GET /conversations?contextType=&contextId=` | 94 |
 | 93, 94 | `read` thành `mark-read`, `read-all` thành `mark-all-read` | 101–102 |
 | 97 | `GET /admin/dashboard` thành `GET /dashboard` | 107 |
 | 98, 100 | `GET /admin/users` và `GET /admin/users/export` gộp thành `GET /users` với `?format=` | 10 |

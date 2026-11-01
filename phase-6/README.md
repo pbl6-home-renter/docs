@@ -49,6 +49,6 @@ P6-08 (administrative geography) is assigned to `baoduong17` in Iteration 5 and 
 
 Xem [issues/README.md](issues/README.md).
 
-## Thiết kế Community Service
+## Community Service
 
-Chat và Notification chưa nằm trong backlog triển khai của Phase 6. Phạm vi, ERD, business logic và API cần được rà soát, xác nhận theo thứ tự trước khi tạo task/code: [Đề xuất thiết kế Community Service](discovery/community-service-design.md).
+Chat và Notification đã được chuyển sang track Phase 7, bắt đầu It5 song song với Phase 6. Xem [Phase 7 plan](../phase-7/README.md) và [task tracker](../phase-7/issues/README.md). Thiết kế ERD/business/API cùng dependency backlog được giữ tại [thiết kế Community Service](discovery/community-service-design.md) và [implementation backlog](discovery/community-service-implementation-backlog.md).

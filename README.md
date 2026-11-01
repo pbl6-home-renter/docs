@@ -11,6 +11,7 @@ PM owns this folder. Docs are grouped by phase (mirrors `PROJECT_PLAN.md`). Crea
 | 4 | `phase-4/` | Identity, FE foundation, infra (closed 21/10) | [README](phase-4/README.md), `issues/` |
 | 5 | `phase-5/` | FE Auth foundation + Tenancy Building/Room (It4) | [README](phase-5/README.md), [`issues/`](phase-5/issues/README.md) |
 | 6 | `phase-6/` | MVP core: Contract, Billing, Payment, landlord Web screens, demo (It5–It7) | [README](phase-6/README.md), [`issues/`](phase-6/issues/README.md) (template: [`_TEMPLATE.md`](phase-6/issues/_TEMPLATE.md)) |
+| 7 | `phase-7/` | Community Service: generic Chat + Notification (starts It5, parallel track) | [README](phase-7/README.md), [`issues/`](phase-7/issues/README.md), [`discovery/decisions.md`](phase-7/discovery/decisions.md) |
 
 **Source of truth (SoT):** `requirement.md` (scope) and `PROJECT_PLAN.md` (schedule), both at the `pm/` root. Never change scope without PM approval; record changes in Notion decision log.
 
