@@ -9,13 +9,17 @@
 
 ## Quy tắc đã chốt
 
-Admin group được đổi `admin ↔ member`, có thể bổ nhiệm thêm admin. Không thể hạ quyền admin cuối cùng. User hiện tại lấy từ JWT; không cho non-admin đổi role. Mỗi đổi role tạo system message.
+Admin active của group được đổi vai trò user active giữa `admin ↔ member`, có thể bổ nhiệm thêm admin. Không thể hạ quyền admin cuối cùng. User hiện tại lấy từ JWT; không cho non-admin đổi role. Khi role thực sự thay đổi, ghi system message `member_role_changed` với payload `{ action, actorUserId, member: { userId, displayName }, oldRole, newRole }` trong cùng transaction. Nếu role đích đã là role hiện tại thì trả thành công nhưng không tạo message trùng. Không gửi FCM.
 
 ## Acceptance
 
-- [ ] Request chỉ nhận role `admin|member`; endpoint kiểm tra caller là admin của group.
-- [ ] Chặn hạ admin cuối; trả mã lỗi đúng OpenAPI.
-- [ ] Role change và system message được ghi cùng transaction; không cho đổi role trong direct conversation. Nếu payload action chưa được xác định trong OpenAPI/design sau P7-01, ghi blocker, không tự phát minh cấu trúc.
+- System payload: `member_role_changed` với `actorUserId`, snapshot `member`, `oldRole`, `newRole`; nếu role đích giống hiện tại thì không ghi system message.
+- Chỉ active user member được đổi role; system message và cập nhật role cùng transaction, không gửi FCM.
+- Lỗi hạ admin cuối: `409 LAST_ADMIN_CANNOT_BE_DEMOTED`.
+
+- [ ] Request chỉ nhận role `admin|member`; endpoint kiểm tra caller và target đều là user active member của group.
+- [ ] Chặn hạ admin cuối; trả `409 LAST_ADMIN_CANNOT_BE_DEMOTED`.
+- [ ] Role change và system message đúng payload P7-D79 được ghi cùng transaction; không cho đổi role trong direct conversation. Role không đổi thì không ghi system message.
 - [ ] Apidog kiểm tra promote, demote khi còn admin khác, demote admin cuối và caller không có quyền; build/lint pass.
 
 ## Không làm
