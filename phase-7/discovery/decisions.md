@@ -8,6 +8,12 @@
 - Nếu không còn thành viên user active để tiếp nhận admin hoặc để duy trì nhóm, thao tác bị từ chối nguyên tử; không xóa/đóng conversation.
 - Payload là discriminated union: `member_kicked` và `member_left` chứa `actorUserId` cùng snapshot `member`; `admin_transferred` chứa `actorUserId` cùng snapshot admin mới trong `member`.
 
+## P7-D79 — System message đổi vai trò thành viên (2026-11-02)
+
+- Đổi vai trò ghi system message `member_role_changed` với `actorUserId`, snapshot `member`, `oldRole` và `newRole` (`admin|member`).
+- Role change và system message được ghi cùng transaction. Nếu role đích giống role hiện tại, trả thành công nhưng không ghi message trùng.
+- Chỉ admin active được đổi vai trò user active trong group; không thể hạ admin cuối cùng. Không gửi FCM.
+
 ## P7-D01 — Xếp lịch và phân công Community Service (2026-11-01)
 
 - Community Service được đưa vào Phase 7 như một track song song với Phase 6, bắt đầu từ It5 (02/11–08/11); không dời các task Phase 6 đã giao.
