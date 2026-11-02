@@ -17,7 +17,7 @@ Phase 7 bắt đầu song song trong It5 (02/11–08/11). Các task Phase 6 gi�
 
 | ID | Issue | Repo | Assignee | Ước lượng | Phụ thuộc |
 |---|---|---|---|---:|---|
-| P7-07 | [Tạo direct/group conversation](P7-07-create-direct-group.md) | community-service | `baoduong17` | 3 | P7-01, P7-04–06, CB-07 Media |
+| P7-07 | [Tạo direct/group conversation](P7-07-create-direct-group.md) | community-service | `baoduong17` | 3 | P7-01, P7-04–06 |
 | P7-08 | [Liệt kê/đọc conversation](P7-08-list-conversations.md) | community-service | `baoduong17` | 3 | P7-04, P7-07 |
 | P7-09 | [Xem/thêm thành viên](P7-09-list-add-members.md) | community-service | `baoduong17` | 3 | P7-05–07 |
 | P7-10 | [Kick/leave và read-only boundary](P7-10-remove-leave-members.md) | community-service | `baoduong17` | 3 | P7-05–06, P7-09 |
