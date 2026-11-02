@@ -5,7 +5,7 @@
 
 ## Context agent
 
-Đọc backend `AGENTS.md`, feature workflow/API presentation skills; OpenAPI `GET /messages?conversationId=...` (`getMessages`) và `POST /messages` (`postMessages`) sau P7-01; Message request/response schemas; BL-03/07/13/14, ERD-11/13.
+Đọc backend `AGENTS.md`, feature workflow/API presentation skills; OpenAPI `GET /messages?conversationId=...` (`getMessages`) và `POST /messages` (`postMessages`) sau P7-01; Message request/response schemas; BL-03/07/13/14, ERD-11/13 và P6-D76.
 
 ## Hành vi đã chốt
 
@@ -18,6 +18,7 @@ Chỉ active member gửi. Read-only member xem tới `leftSequence`; người m
 - [ ] Validate đúng loại nội dung: text có content hợp lệ; image có mediaId được Media authorization xác nhận. Không nhận file khác.
 - [ ] Gửi message không tạo business Notification row; lưu xong mới phát event realtime ở task Socket.
 - [ ] Apidog kiểm tra active/read-only/non-member, retry, cursor và ảnh; build/lint pass.
+- [ ] Message lưu `senderNameSnapshot` từ ConversationMember theo P6-D76; response list/send trả `senderName`; client không gửi tên người gửi.
 
 ## Không làm
 

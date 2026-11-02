@@ -9,11 +9,11 @@
 
 ## Quy tắc đã chốt
 
-Message lưu chung text/image/system/bot; v1 không sửa/xóa. `sequence` tăng dần trong conversation. Client message retry idempotent theo `(senderMemberId, clientMessageId)`. V1 một ảnh tối đa mỗi image message; binary nằm Media Service, Community chỉ lưu `mediaId`. Message chat không tạo Notification inbox row.
+Message lưu chung text/image/system/bot; v1 không sửa/xóa. `sequence` tăng dần trong conversation. Client message retry idempotent theo `(senderMemberId, clientMessageId)`. V1 một ảnh tối đa mỗi image message; binary nằm Media Service, Community chỉ lưu `mediaId`. Message chat không tạo Notification inbox row. Theo P6-D76, Message lưu `senderNameSnapshot` lấy từ ConversationMember lúc gửi.
 
 ## Phạm vi và acceptance
 
-- [ ] Tạo Message domain/persistence/migration với conversation, sender member, type, nội dung/media/payload, sequence, client ID và timestamps theo ERD/API.
+- [ ] Tạo Message domain/persistence/migration với conversation, sender member, `senderNameSnapshot`, type, nội dung/media/payload, sequence, client ID và timestamps theo ERD/API.
 - [ ] DB ràng buộc unique `(conversationId, sequence)` và idempotency key khi client ID có giá trị.
 - [ ] Sequence có thể được cấp an toàn khi nhiều message của cùng conversation được ghi đồng thời; mô tả concurrency strategy trong PR.
 - [ ] Không có foreign key sang Identity/Media service.
