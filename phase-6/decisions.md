@@ -3,7 +3,7 @@
 > Quyết định phát sinh trong Phase 6 (It5–It7) được ghi tại đây. ID tăng dần, **không renumber/reuse** (`pm/AGENTS.md`).
 > Phase 0 (D1–D29): `../phase-0/discovery/decisions.md` · Phase 1 (D30–D39): `../phase-1/discovery/decisions.md` · Phase 2 (D39–D50): `../phase-2/discovery/decisions.md` · Phase 3 (D51–D59): `../phase-3/discovery/decisions.md`.
 
-> Published **P6-D60** remains in [discovery/decisions.md](discovery/decisions.md). It defines atomic bulk requests and baseline inputs. This log continues with D61–D75; D75 is the new source-precedence decision. No published ID is renumbered.
+> Published **P6-D60** remains in [discovery/decisions.md](discovery/decisions.md). It defines atomic bulk requests and baseline inputs. This log continues with D61–D76; D75 is the source-precedence decision. No published ID is renumbered.
 
 ## Quy ước trích dẫn (áp dụng từ Phase 6)
 
@@ -29,6 +29,7 @@
 | D73 | 2026-11-01 | Ownership nội bộ: `participantUserIds`/`status` theo owner type; Identity có `GET /internal/media/{id}` | ✅ Accepted |
 | D74 | 2026-11-01 | Liên kết tài khoản tenant trên web để Stretch; form chỉ nhập họ tên + SĐT | ✅ Accepted |
 | D75 | 2026-11-01 | Thứ tự ưu tiên nguồn khi mâu thuẫn + mọi câu hỏi mở phải có D-ID trước khi giao việc | ✅ Accepted |
+| D76 | 2026-11-02 | Snapshot display name trên ConversationMember và Message | ✅ Accepted |
 
 ---
 
@@ -177,3 +178,13 @@
   2. Issue **không tự đặt business rule mới**. Câu hỏi nghiệp vụ phải được chốt thành D-ID trước khi issue được giao; issue chỉ trích ID.
   3. Issue **không mô tả cách viết code** (đặt file ở đâu, đặt tên gì) ngoài việc link skill; skill là nơi duy nhất giữ convention.
 - **Hệ quả:** `_TEMPLATE.md` thêm mục "Quyết định áp dụng"; mỗi repo backend có `AGENTS.md` + `.agents/skills/` (nguồn: `boilerplate`).
+
+## D76 — Snapshot tên người gửi trong chat
+
+- **Bối cảnh:** `GET /conversations` hiển thị `lastMessage.senderName`, nhưng Message chỉ lưu `senderMemberId`. Gọi Identity mỗi lần tải danh sách thêm độ trễ và phụ thuộc runtime; client cũng không được tự gửi tên người khác.
+- **Quyết định:**
+  - Lưu `displayName` trên `ConversationMember`. Community lấy tên từ Identity internal lookup khi thêm hoặc kích hoạt lại member; client không được tự cung cấp tên.
+  - Khi tạo message, lưu `senderNameSnapshot` bằng `ConversationMember.displayName` của sender. Snapshot message không đổi khi hồ sơ user đổi tên.
+  - List/detail members trả `displayName`; conversation list lấy `lastMessage.senderName` từ Message snapshot, không gọi Identity.
+  - Khi member được kích hoạt lại, cập nhật `displayName` theo Identity; message cũ giữ nguyên snapshot.
+- **Hệ quả:** P7-07, P7-09 và consumer đồng bộ membership phải điền `displayName`; P7-13 phải copy snapshot vào Message. Schema Community cần migration thêm `conversation_members.display_name` và `messages.sender_name_snapshot`.
