@@ -188,3 +188,12 @@
   - List/detail members trả `displayName`; conversation list lấy `lastMessage.senderName` từ Message snapshot, không gọi Identity.
   - Khi member được kích hoạt lại, cập nhật `displayName` theo Identity; message cũ giữ nguyên snapshot.
 - **Hệ quả:** P7-07, P7-09 và consumer đồng bộ membership phải điền `displayName`; P7-13 phải copy snapshot vào Message. Schema Community cần migration thêm `conversation_members.display_name` và `messages.sender_name_snapshot`.
+
+## D77 — Payload system message khi thêm thành viên nhóm
+
+- **Bối cảnh:** BL-23 yêu cầu ghi lại thay đổi thành viên trong lịch sử chat. P7-09 cần payload rõ ràng để client render và để service lưu message cùng transaction với membership.
+- **Quyết định:**
+  - Khi admin thêm một hoặc nhiều thành viên, Community ghi một `Message` có `type=system` và `payload={ action: "members_added", actorUserId, members: [{ userId, displayName }] }`.
+  - `senderMemberId` trỏ tới system participant của conversation; `senderNameSnapshot` lấy từ `ConversationMember.displayName` của system participant.
+  - `POST /conversations/{conversationId}/members` trả danh sách member vừa thêm hoặc kích hoạt lại. Success code là `CONVERSATION_MEMBERS_ADDED`; GET dùng `CONVERSATION_MEMBERS_FETCHED`.
+  - Membership thay đổi và system message phải commit cùng transaction. Không gửi FCM cho system message; Socket được triển khai ở task realtime.
