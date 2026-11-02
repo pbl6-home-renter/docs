@@ -1,7 +1,7 @@
 # P7-07 — Tạo direct/group conversation
 
 **Assignee:** `baoduong17` · **Iteration:** It6 · **Ước lượng:** 3 points
-**Repo:** `community-service` · **Phụ thuộc:** P7-01, P7-04–06 và CB-07 Media · **Trạng thái:** 🟡 Open
+**Repo:** `community-service` · **Phụ thuộc:** P7-01, P7-04–06 · **Trạng thái:** 🟡 Open
 
 ## Agent brief
 
@@ -11,19 +11,21 @@
 
 - Mọi user đã đăng nhập được mở direct chat hoặc tạo group; user hiện tại lấy từ JWT, không từ body.
 - Direct: đúng một conversation cho cặp user đã chuẩn hóa; request sau trả/mở lại conversation cũ, kích hoạt lại membership cũ nếu cần.
-- Group: tạo conversation mới; caller được thêm làm admin; request có danh sách thành viên ban đầu, caller không bắt buộc nằm trong danh sách.
+- Group: tạo conversation mới chưa có ảnh đại diện; caller được thêm làm admin; request có danh sách thành viên ban đầu, caller không bắt buộc nằm trong danh sách.
+- Ảnh đại diện được upload sau khi conversation đã tạo, rồi gắn qua `PATCH /conversations/{conversationId}` trong P7-12 sau khi CB-07 Media resolver sẵn sàng.
+- Kiểm tra user ID đầu vào bằng Identity `GET /internal/users?ids=...`; từ chối ID không tồn tại/đã xóa bằng 422 và fail closed nếu Identity không sẵn sàng (503). Không đọc Identity DB trực tiếp.
 
 ## Acceptance
 
 - [ ] `POST /conversations` tuân đúng request/response/status/code của OpenAPI sau P7-01.
 - [ ] Direct pair được chuẩn hóa ổn định; request đồng thời không tạo hai conversation.
 - [ ] Group có creator admin và member ban đầu không trùng; lỗi validation khớp API.
-- [ ] Nếu request có `avatarMediaId`, chỉ chấp nhận sau khi CB-07 Media resolver xác minh media complete, đúng conversation owner và purpose; tuyệt đối không lưu ID chưa được xác thực.
+- [ ] `recipientUserId`/`memberUserIds` được kiểm tra qua Identity internal lookup; ID không tồn tại hoặc đã xóa không tạo conversation.
+- [ ] Request tạo conversation không nhận `avatarMediaId`; ảnh group được xử lý riêng ở P7-12 sau khi đã có `conversationId`.
 - [ ] Mọi command ghi Conversation + Membership cùng transaction; không nhận `createdByUserId`/admin ID từ client.
 - [ ] Apidog/Swagger happy path cho direct mới, direct mở lại và tạo group; build/lint pass.
-- [ ] Nếu cần xác minh `recipientUserId/memberUserIds` tồn tại, chỉ dùng API nội bộ đã được duyệt; không truy vấn Identity DB. Nếu chưa có contract lookup, ghi blocker trước khi tự chọn hành vi cho ID không tồn tại.
 
 ## Không làm
 
 - Không làm CRUD membership sau khi tạo, list/detail, ảnh upload, context chat theo event hoặc bot.
-- Không bỏ qua xác thực `avatarMediaId`; nếu CB-07 chưa sẵn sàng, chờ dependency thay vì tin ID từ client.
+- Không upload hoặc cập nhật ảnh đại diện trong issue này; P7-12 phụ thuộc CB-07 để xác thực media.
