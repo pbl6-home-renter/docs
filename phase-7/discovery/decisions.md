@@ -1,5 +1,11 @@
 # Phase 7 decisions
 
+## P7-D80 — Phạm vi Web Chat v1 (2026-11-03, 15:53 UTC)
+
+- PM đã chốt các quyết định FE Chat v1 tại [web-chat-v1-decisions.md](web-chat-v1-decisions.md): desktop hai cột; chat 1:1 và nhóm tự do; list/search/history/text/unread; direct chỉ hiện sau tin đầu tiên, group hiện khi tạo; Socket dùng chung sau đăng nhập; badge tổng unread `9+`; toast tin chat có sender, conversation và preview; retry khi mạng trở lại với cùng `clientMessageId`.
+- Phạm vi này thay thế lựa chọn responsive web trong lượt hỏi đáp trước: FE chat tập trung desktop, còn điện thoại dùng ứng dụng mobile riêng. Lựa chọn toast chỉ có tên cũng đã được thay bằng toast có đoạn preview.
+- Cần bổ sung/đối chiếu API tìm user cho user thường, tìm conversation, sự kiện tin mới tới user room, tổng unread và ràng buộc nhóm tối thiểu ba thành viên trước khi code FE. Đây là dependency thiết kế, chưa coi là API/event đã duyệt.
+
 ## P7-D78 — Hành vi system message khi kick/rời nhóm (2026-11-02)
 
 - Kick hoặc tự rời nhóm ghi một system message riêng trong cùng transaction với thay đổi membership.
