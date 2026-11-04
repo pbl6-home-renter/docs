@@ -160,7 +160,7 @@ Trong worktree FE hiện tại đã có nền triển khai Web Chat v1; đây l�
 ### Phụ thuộc backend trước khi kiểm tra tích hợp
 
 1. Đồng bộ Community/OpenAPI để mọi `sequence` và cursor là chuỗi thập phân, bao gồm response member/list, mark-read và Socket payload.
-2. Đồng bộ system-message payload: cần `actorDisplayName` snapshot và `lastMessage.payload` có discriminator để FE dịch lịch sử/preview.
+2. Đồng bộ system-message payload: cần `actorDisplayName` snapshot và `lastMessage.payload` có discriminator để FE dịch lịch sử/preview. FE hiện dùng nhãn bản địa hóa chung nếu snapshot actor bị thiếu; đây chỉ là fallback, không thay đổi contract đã chốt.
 3. Community cần phát `chat:message-received` tới user room theo contract; nếu chưa có event thì FE vẫn tải REST được nhưng badge/toast đa trang không realtime.
 4. Cần chạy thử Gateway với hai tài khoản và DB đã migrate để xác nhận auth Socket, join, REST cursor, retry/idempotency, unread đồng bộ và media download. Hiện chưa có xác nhận kiểm tra này.
 
