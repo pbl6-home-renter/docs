@@ -62,7 +62,7 @@ inputs = {
 }
 ```
 
-- `headCount = COUNT(contract_member WHERE contract_id=? AND is_deleted = false)` — đếm **ngay tại kỳ lập hóa đơn** (không lọc theo thời điểm vào/ra từng người; việc chia nội bộ cho các thành viên trong phòng do tenant tự lo — D22). **D33:** `headCount` chỉ dùng cho **nước W2 `per_head`** và **phí F2 `per_head`** — điện không dùng (luôn theo kWh).
+- `headCount` đếm member chưa xóa có `joined_at ≤ cuối kỳ` và (`left_at IS NULL` hoặc `left_at ≥ đầu kỳ`) theo P6-D65. Member chỉ cần ở một phần của kỳ để được tính; không prorate từng người. `headCount` chỉ dùng cho nước W2 và phí F2 `per_head`, không dùng cho điện.
 - Điện & nước phải **đủ cả 2** bản ghi `MeterReading` của kỳ. Thiếu 1 → **block** (mục 11.2).
 
 ## 4. Bước 1 — Resolve bộ đơn giá (D39: 1 bộ/scope, không versioning)
@@ -180,11 +180,11 @@ function prorateRatio(contract, period):
   return (activeEnd - activeStart + 1) / daysInMonth(period)
 ```
 
-- Áp cho **tiền phòng** (`monthly_rent × ratio`) và **phí định kỳ (F1–F4)**.
+- Áp cho **tiền phòng** (`rent_price × ratio`) và **phí định kỳ (F1–F4)**.
 - **Điện/nước KHÔNG prorate theo công thức trên** — dùng lượng tiêu thụ thực từ `MeterReading` (kỳ đầu: baseline đọc tại ngày dọn vào; kỳ cuối: đọc tại ngày trả phòng → consumption thực). Tiền phòng prorate riêng, điện/nước theo số thực.
-- **VD:** HĐ 15/09–14/10, `monthly_rent = 3.000.000`, phòng 20m², phí QLVH 10.000đ/m², wifi 100.000đ.
-  - Tháng 09: ratio(15→30/09) = 16/30 = 0.5333. Phòng = 1.600.000đ; QLVH = 10.000×20×0.5333 = 106.660đ → làm tròn tổng sau.
-  - Tháng 10: ratio(01→14/10) = 14/31 = 0.4516. Phòng = 1.354.839đ.
+- **VD:** HĐ 15/09–14/10, `rent_price = 3.000.000`, phòng 20m², phí QLVH 10.000đ/m², wifi 100.000đ.
+  - Tháng 09: ratio(15→30/09) = 16/30. Phòng = 1.600.000,0000đ; QLVH = 10.000×20×16/30 = 106.666,6667đ (P6-D72).
+  - Tháng 10: ratio(01→14/10) = 14/31. Phòng = 1.354.838,7097đ (P6-D72).
   - Điện/nước tháng 09: chốt từ baseline 15/09 → theo số thực.
 
 ## 9. Bước 6 — Gộp tiền & snapshot bất biến
@@ -199,52 +199,57 @@ feeRates   = set.rates.filter(r => r.type not in ["electricity","water"])
 elecAmount = calcElectricity(elecRate, elecConsumption)                       # D33④ điện không dùng headCount
 waterAmount = calcWater(waterRate, waterConsumption, headCount)             # nước per_head dùng headCount
 feeLines   = feeRates.map(r => snapshotLine(r, qtyOf(r, inputs), serviceFrom, serviceTo, prorate))  # amount = calcFee(r, inputs, prorate)
-otherFees  = input("phí khác / giảm trừ", period, prompt="preset gợi ý + gõ tự do")   // D32: phí 1 lần (nệm mới, sửa thiết bị); D33: amount ÂM = giảm trừ/miễn giảm
-rawTotal   = rentProrated + elecAmount + waterAmount + sum(feeLines.amount) + sum(otherFees.amount)
+otherFees  = pendingInvoice?.otherFees ?? []   // P6-D64: generate lại giữ phí khác đã sửa trên hóa đơn pending
+rentProrated = roundHalfUp4(contract.rent_price * prorate)
+roundedLines = roundHalfUp4([elecAmount, waterAmount, ...feeLines.amount])
+rawTotal   = rentProrated + sum(roundedLines) + sum(otherFees.amount)
 if rawTotal < 0: throw TOTAL_NEGATIVE (EC17)
-totalAmount = roundMoney(rawTotal)
+totalAmount = roundHalfUpToDong(rawTotal)       // P6-D72
 ```
 
 - **D39 — `Invoice.breakdown` là MỘT mảng, mỗi dòng tự chứa đủ để audit** (không tách `utility_breakdown`/`fees_breakdown`):
 ```json
 [
   {"type":"electricity","name":"EVN bậc thang","rate_kind":"tiered","unit_price":null,
-   "quantity":350,"unit":"kwh","service_start":"2026-10-01","service_end":"2026-10-31",
-   "prorate_ratio":1,"amount":850400,
-   "previous_reading":1200,"current_reading":1570,
-   "tier_detail":[{"step":1,"from":0,"to":50,"price":1893,"amount":94650},
-                  {"step":2,"from":51,"to":100,"price":1956,"amount":97800}]},
-  {"type":"water","name":"Nước khoán","rate_kind":"per_head","unit_price":80000,
-   "quantity":3,"unit":"person","service_start":"2026-10-01","service_end":"2026-10-31",
-   "prorate_ratio":1,"amount":240000},
-  {"type":"wifi","name":"Wifi","rate_kind":"fixed_per_period","unit_price":100000,
-   "quantity":1,"unit":"period","service_start":"2026-10-01","service_end":"2026-10-31",
-   "prorate_ratio":1,"amount":100000},
-  {"type":"maintenance","name":"QLVH","rate_kind":"per_area_m2","unit_price":10000,
-   "quantity":18.5,"unit":"m2","service_start":"2026-10-01","service_end":"2026-10-31",
-   "prorate_ratio":1,"amount":185000}
+   "quantity":"350","unit":"kwh","service_start":"2026-10-01","service_end":"2026-10-31",
+   "prorate_ratio":"1","amount":"850400.0000",
+   "previous_reading":"1200","current_reading":"1550",
+   "tier_detail":[{"step":1,"from":0,"to":50,"price":"1893","quantity":"50","amount":"94650.0000"},
+                  {"step":2,"from":51,"to":100,"price":"1956","quantity":"50","amount":"97800.0000"},
+                  {"step":3,"from":101,"to":200,"price":"2283","quantity":"100","amount":"228300.0000"},
+                  {"step":4,"from":201,"to":300,"price":"2833","quantity":"100","amount":"283300.0000"},
+                  {"step":5,"from":301,"to":400,"price":"2927","quantity":"50","amount":"146350.0000"}]},
+  {"type":"water","name":"Nước khoán","rate_kind":"per_head","unit_price":"80000",
+   "quantity":"3","unit":"person","service_start":"2026-10-01","service_end":"2026-10-31",
+   "prorate_ratio":"1","amount":"240000.0000"},
+  {"type":"wifi","name":"Wifi","rate_kind":"fixed_per_period","unit_price":"100000",
+   "quantity":"1","unit":"period","service_start":"2026-10-01","service_end":"2026-10-31",
+   "prorate_ratio":"1","amount":"100000.0000"},
+  {"type":"maintenance","name":"QLVH","rate_kind":"per_area_m2","unit_price":"10000",
+   "quantity":"18.5","unit":"m2","service_start":"2026-10-01","service_end":"2026-10-31",
+   "prorate_ratio":"1","amount":"185000.0000"}
 ]
 ```
 - **`service_start`/`service_end` = khoảng dịch vụ thực tế**, khác `Invoice.period` (tháng dịch vụ) khi HĐ vào/ra giữa tháng hoặc dọn vào/ra giữa kỳ — HĐ bắt đầu 15/09 thì dòng điện có `service_start = 2026-09-15`. Đây là điều kiện để giải thích "khoản này thu cho tháng nào".
 - **`other_fees` (snapshot jsonb, phí 1 lần D32; **D33 — amount ÂM = giảm trừ/miễn giảm**)**:
 ```json
-[{"name":"Nệm mới","amount":250000},
- {"name":"Sửa bật lửa bếp","amount":50000},
- {"name":"Giảm trừ hỗ trợ","amount":-700000}]
+[{"name":"Nệm mới","amount":"250000"},
+ {"name":"Sửa bật lửa bếp","amount":"50000"},
+ {"name":"Giảm trừ hỗ trợ","amount":"-700000"}]
 ```
-- **Bất biến D33/D39:** `rent_amount + Σ(breakdown[].amount) + Σ(other_fees[].amount) == total_amount` giữ nguyên với `other_fees` âm (snapshot giữ dấu âm); **block nếu `total_amount < 0`** (EC17). Sau khi `issued_at` được set (đã phát hành) **không sửa** — sai thì `void` + tạo hóa đơn thay thế (`voided_invoice_id`), giữ bản cũ. Chỉ `rent_amount` + `total_amount` là cột denormalized cho dashboard D20 (D37); điện/nước/phí đọc từ snapshot jsonb (nguồn duy nhất, không cột kép).
+- **Bất biến P6-D72:** mỗi dòng tiền được làm tròn half-up tới 4 chữ số thập phân; `total_amount = roundHalfUp(rent_amount + Σ breakdown[].amount + Σ other_fees[].amount)` về số nguyên đồng. Vì vậy tổng có thể khác tổng số học chưa làm tròn; `other_fees` âm được giữ nguyên dấu, nhưng tổng âm bị chặn (`TOTAL_NEGATIVE`). Sau khi `issued_at` được set, hóa đơn không sửa được; sai thì `void` + tạo bản thay thế (`voided_invoice_id`).
 
-## 10. Pseudocode luồng lập hóa đơn (TỪNG PHÒNG — D33②)
+## 10. Luồng lập hóa đơn theo yêu cầu (P6-D64)
 
-> **D33② Trigger:** hàm này được gọi **tự động cho từng phòng** ngay khi phòng đó đủ (a) 2 `MeterReading` kỳ hiện tại VÀ (b) policy/phí resolve không lỗi. Không batch toàn kỳ. Landlord không cần nhập tay — danh sách "phòng chốt số xong" hiển thị để rà soát trước khi phát hành.
+Landlord gọi `POST /invoices/generate` với `buildingId` và `period`. Với mỗi hợp đồng `active` có hiệu lực trong kỳ của tòa, hệ thống kiểm đủ hai chỉ số công tơ và bộ rate, rồi tính theo §3–§9. Thiếu dữ liệu thì trả `blocked[] { roomId, contractId, reasonCode }` mà không ghi hóa đơn. Bản `pending` đã có được tính lại, giữ `other_fees` và `note`; bản `issued` giữ nguyên. Không có trigger sinh tự động từ MeterReading.
 
 ```
-def generateInvoice(contractId, period):
+def generateInvoiceForContract(contractId, period):
   contract = load(contractId); room = contract.room; building = room.building
   elecReading = MeterReading.find(room.id, "electricity", period)   # null → BLOCK (11.2)
   waterReading = MeterReading.find(room.id, "water", period)
   set = resolveRateSet(room, building, contract.landlord_id)        # D39: null → BLOCK (11.3)
-  if existing invoice (contractId, period, invoice_status in ['pending','issued']): return duplicate error (11.7)   # D33① partial unique
+  if existing invoice (contractId, period, status='issued'): return skipped
   headCount = countContractMembers(contract, period)
   vehicleCount = contract.vehicle_count                # D32: kê khai lúc tạo/cập nhật HĐ (EC8 nếu NULL)
   prorate = prorateRatio(contract, period)
@@ -255,12 +260,12 @@ def generateInvoice(contractId, period):
   elec  = snapshotLine(elecRate,  elecReading.consumption,  serviceFrom, serviceTo, prorate)            # D33④ điện không dùng headCount
   water = snapshotLine(waterRate, waterReading.consumption, serviceFrom, serviceTo, prorate, headCount) # nước per_head dùng headCount
   fees  = feeRates.map(r => snapshotLine(r, qtyOf(r), serviceFrom, serviceTo, prorate))                 # BLOCK nếu thiếu nền tảng (11.6)
-  otherFees = promptOtherFees()                        # D32: phí 1 lần; D33: amount âm = giảm trừ
-  rentProrated = roundMoney(contract.monthly_rent * prorate)
-  total = roundMoney(rentProrated + elec.amount + water.amount + feesSum + otherFeesSum)
-  if total < 0: throw TOTAL_NEGATIVE (EC17)
-  invoice = Invoices.create({ ..., breakdown: [elec, water] + fees, other_fees, total_amount: total })
-  return invoice   # invoice_status = pending
+  otherFees, note = existing pending invoice ? existing.other_fees, existing.note : [], null
+  rentProrated = roundHalfUp4(contract.rent_price * prorate)
+  amounts = [rentProrated, ...roundHalfUp4(each breakdown amount), ...otherFees.amount]
+  total = roundHalfUpToDong(sum(amounts))
+  if total < 0: return blocked(TOTAL_NEGATIVE)
+  return existing pending invoice ? recalculate and keep extras/note : create pending invoice
 ```
 
 ## 11. Edge cases & blocking — toàn bộ
@@ -275,12 +280,12 @@ def generateInvoice(contractId, period):
 | EC6 | `per_area_m2` mà `room.area` NULL | Block kỳ đó, yêu cầu nhập diện tích phòng | `AREA_MISSING` |
 | EC7 | `per_head` mà `headCount = 0` | Block, yêu cầu thêm thành viên HĐ (D29: passive vẫn phải khai tên/SĐT) | `HEADCOUNT_ZERO` |
 | EC8 | `per_vehicle` mà `contract.vehicle_count` NULL (chưa kê khai xe khi tạo/cập nhật HĐ) | Block, hiển thị ô nhập số xe trên HĐ | `VEHICLE_COUNT_MISSING` |
-| EC9 | Hóa đơn đã tồn tại (contract, period, `invoice_status IN ('pending','issued')`) | Chặn tạo trùng; **partial unique D33①** `(contract_id, period) WHERE invoice_status IN ('pending','issued') AND is_deleted = false` — chỉ tạo được hóa đơn thay thế sau khi void bản cũ | `INVOICE_DUPLICATE` |
+| EC9 | Hóa đơn đã tồn tại cho `(contract, period)` | `pending` được tính lại và giữ `other_fees`/`note`; `issued` được bỏ qua; sau `void` có thể tạo bản thay thế. Partial unique `(contract_id, period) WHERE status IN ('pending','issued') AND is_deleted = false` (P6-D64). | — |
 | EC10 | Prorate tháng đầu/cuối, `ratio=0` (HĐ ngoài kỳ) | Không phát hành hóa đơn cho kỳ đó | — |
 | EC11 | Fee `building` áp nhiều phòng | Tạo dòng fee riêng cho **từng phòng** | — |
 | EC12 | `consumption` = 0 | Hợp lệ → amount = 0, vẫn lập hóa đơn (điện/nước bậc 1 tối thiểu nếu luật/phí duy trì không nằm trong app) | — |
 | EC13 | Bộ rate `steps` thiếu bậc ∞ ở cuối | Block khi tính (chê cấu hình sai), không tự bịa giá | `TIER_CONFIG_INVALID` |
-| EC14 | Làm tròn mỗi dòng trước khi cộng | **Không** — chỉ làm tròn tổng; snapshot lưu số chính xác (VD 1.354.839đ vẫn đủ) | — |
+| EC14 | Số tiền lẻ do prorate | Làm tròn half-up mỗi dòng tới 4 chữ số thập phân; chỉ làm tròn `total_amount` về số nguyên đồng (P6-D72). | — |
 | EC15 | Thanh toán một phần (Σ Payment success < total_amount) | **D39 — không ghi status:** UI suy ra "chưa thu / thu một phần / thu đủ / thu dư" từ Σ success so với `total_amount`, hiển thị "đã thu X / còn thiếu Y". **Không có `overdue`** — app không cưỡng chế thu tiền | — |
 | EC16 | Webhook thanh toán tới hóa đơn đã `void` | KHÔNG set `paid`; ghi nhận Payment + cờ **cảnh báo chủ trọ đối soát** (D33⑤) | `INVOICE_VOIDED` |
 | EC17 | `total_amount < 0` (do `other_fees` âm vượt tổng) | Block tạo hóa đơn (D33⑥) — giảm trừ không được làm hóa đơn âm | `TOTAL_NEGATIVE` |
