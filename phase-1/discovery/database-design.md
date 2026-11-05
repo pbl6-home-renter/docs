@@ -209,16 +209,17 @@ CONSTRAINT contract_tenant_identity_check CHECK (
 | contract_id | uuid | FK→Contract, NOT NULL | | | |
 | code | varchar(32) | UNIQUE, NOT NULL | mã nhận diện nhúng trong VietQR (`addInfo`) để webhook đối soát **theo mã, không theo amount** | Min length: 1; Max length: 32 | `INV-202609-8F2K` |
 | period | varchar(7) | NOT NULL | kỳ tính tiền (tháng dịch vụ) | Min length: 7; Max length: 7; Regex: `^[0-9]{4}-(0[1-9]\|1[0-2])$` | `2026-09` |
-| rent_amount | decimal | NOT NULL | tiền phòng **prorated** theo §8 (`monthly_rent × ratio`); denormalized cho Dashboard (D20) | `>=0` | `3500000` |
-| breakdown | jsonb | nullable | snapshot bất biến của điện/nước/phí định kỳ. **D39 bắt buộc mỗi item có:** `type`, `name`, `rate_kind`, `unit_price`, `quantity`, `unit`, `service_start`, `service_end`, `prorate_ratio`, `amount` (kèm `tier_detail` nếu `tiered`) | | `[{"type":"electricity","name":"Điện EVN","rate_kind":"flat","unit_price":4000,"quantity":180,"unit":"kwh","service_start":"2026-09-01","service_end":"2026-09-30","prorate_ratio":1,"amount":720000}]` |
-| other_fees | jsonb | nullable | phí 1 lần / ngoài lệ (không trong cấu hình). **D33 — cho phép `amount` ÂM = giảm trừ/miễn giảm** (snapshot giữ dấu âm) | | `[{"name":"Vệ sinh lễ","amount":50000}]` |
-| total_amount | decimal | NOT NULL | | `>=0` | `4610000` |
-| status | enum (`pending`,`issued`,`void`) | NOT NULL default `pending` | **D39 — bỏ `overdue`; `cancel` → `void`.** `pending` = auto-sinh chưa phát hành; `issued` = đã gửi chủ trọ; `void` = hủy (giữ audit, không sửa/xoá). **Trạng thái thu tiền KHÔNG lưu** — suy ra từ Σ `Payment` success (D33③) | | `pending` |
+| rent_amount | numeric(14,4) | NOT NULL | tiền phòng prorated theo §8 (`rent_price × ratio`), làm tròn half-up 4 chữ số thập phân (P6-D65/D72) | `>=0` | `3500000.0000` |
+| breakdown | jsonb | NOT NULL default `[]` | Snapshot điện/nước/phí định kỳ. Mỗi item có `type`, `name`, `rate_kind`, `unit_price`, `quantity`, `unit`, `service_start`, `service_end`, `prorate_ratio`, `amount` (thêm `tier_detail` nếu tiered). Các giá trị decimal trong JSON lưu dưới dạng chuỗi; `amount` làm tròn half-up 4 chữ số thập phân (P6-D65/D72). | | `[{"type":"electricity","name":"Điện","rate_kind":"flat","unit_price":"4000","quantity":"180","unit":"kwh","service_start":"2026-09-01","service_end":"2026-09-30","prorate_ratio":"1","amount":"720000.0000"}]` |
+| other_fees | jsonb | NOT NULL default `[]` | Phí một lần/giảm trừ; `amount` là decimal string và được phép âm (P1-D33, P6-D65). | | `[{"name":"Vệ sinh lễ","amount":"50000"}]` |
+| total_amount | numeric | NOT NULL | Round half-up về đồng của `rent_amount + Σ breakdown.amount + Σ other_fees.amount` (P6-D72). | `>=0`, số nguyên đồng | `4610000` |
+| status | enum (`pending`,`issued`,`void`) | NOT NULL default `pending` | `pending` do landlord yêu cầu sinh/tính lại; `issued` bất biến; `void` giữ bản ghi để audit (P1-D39, P6-D64). Trạng thái thu tiền không lưu trên Invoice. | | `pending` |
 | issued_at | timestamp | nullable | thời điểm **Phát hành** (rời `pending`) — audit D18/D20; `NULL` khi còn pending | | `2026-09-30T20:15:00Z` |
 | voided_invoice_id | uuid | FK→Invoice, nullable | **D37 — bản thay thế trỏ về bản đã void**, giữ vòng đời hóa đơn | | `NULL` |
+| void_reason | text | nullable | Lý do hủy, bắt buộc 1–500 ký tự khi đổi sang `void` (P6-D72). | | `Sai chỉ số điện` |
 | note | text | nullable | | | `Tháng nhập cư, prorate từ 15/09` |
 
-> **Cách tính toàn bộ (điện/nước/phí/prorate/làm tròn/block lỗi) → `utility-billing-calculations.md` §2–§11.** UNIQUE **partial** `(contract_id, period) WHERE invoice_status IN ('pending','issued') AND is_deleted = false` — cho phép tạo hóa đơn thay thế sau khi void bản sai (bản cũ giữ audit). **D33② — Invoice pending auto-sinh theo TỪNG PHÒNG** khi phòng đủ 2 MeterReading + policy OK (không batch toàn kỳ). **D39 — không lưu `due_date`:** app không cưỡng chế thu tiền nên không có mốc hạn/`overdue`; ngày thu dự kiến nằm ở `BillingSetting.payment_due_day`, chỉ để hiển thị.
+> Không lưu `landlord_id`, `building_id` hoặc `room_id` trên Invoice; truy vấn qua `Contract → Room → Building`. UNIQUE **partial** `(contract_id, period) WHERE status IN ('pending','issued') AND is_deleted = false` cho phép tạo bản thay thế sau khi void. Theo P6-D64, landlord gọi `POST /invoices/generate` cho tòa + kỳ; thiếu dữ liệu trả trong `blocked[]`, bản `pending` được tính lại, bản `issued` giữ nguyên. Không có trigger tự sinh từ MeterReading hoặc hóa đơn quyết toán riêng. Không lưu `due_date`/`overdue` (P1-D39). Công thức chi tiết: `utility-billing-calculations.md` §2–§11, áp dụng các quyết định Phase 6 mới hơn.
 
 ### 2.13 Payment
 > **Service:** `payment-service` · DB `payment_db` · Bảng `payments`
