@@ -1,5 +1,7 @@
 # Khảo sát mức sẵn sàng triển khai Web Chat v1
 
+> **Lưu ý cập nhật 07/11/2026:** Phần bên dưới là ảnh chụp trạng thái ngày 04/11/2026 và đã lỗi thời; Web Chat v1 hiện đã được triển khai, user đã demo và xác nhận ổn định. Xem [trạng thái hiện tại và phạm vi tiếp theo](web-chat-v1-current-status.md). Không dùng các mục B1–B5/F1–F4 bên dưới làm backlog còn mở.
+
 > Ngày rà soát: 04/11/2026. Đây là khảo sát mã nguồn và contract, chưa chạy thử end-to-end vì chưa có Community DB/schema trong phiên này. [Quyết định sản phẩm đã chốt](web-chat-v1-decisions.md) là nguồn cho phạm vi; tài liệu này ghi khoảng cách giữa quyết định và code hiện tại. Chưa bắt đầu code FE.
 
 ## 1. Kết luận để mở Goal

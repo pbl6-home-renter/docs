@@ -45,6 +45,19 @@ Phase 7 bắt đầu song song trong It5 (02/11–08/11). Các task Phase 6 gi�
 
 CB-06–16 được giữ ở backlog cấp cao và sẽ được tách tương tự trước khi đến iteration tương ứng. `baoduong17` phụ trách backend; `ThaiBao11125` Web và `tphuongin` Android theo [Phase 7 plan](../README.md). Chưa tạo issue bên ngoài trên GitHub Projects.
 
+## Web follow-up sau khi demo Chat v1
+
+Các việc dưới đây tách FE theo quyết định đã có; chưa gán iteration. Web Chat v1 cơ bản đã demo ổn định, nên các task này không mở lại phạm vi list/history/text/realtime đã hoàn thành.
+
+| ID | Issue | Repo | Assignee | Ước lượng | Phụ thuộc |
+|---|---|---|---|---:|---|
+| P7-15 | [Notification inbox và cài đặt push trên Web](P7-15-web-notification-inbox.md) | fe | `ThaiBao11125` | 3 | Community notification/preferences API và Socket event |
+| P7-16 | [Quản lý nhóm chat trên Web](P7-16-web-group-management.md) | fe | `ThaiBao11125` | 5 | P7-09–12, CB-07 Media |
+| P7-17 | [Gửi ảnh trong Web Chat](P7-17-web-chat-image-send.md) | fe | `ThaiBao11125` | 3 | P7-13, CB-07 Media |
+| P7-18 | [Kiểm chứng tích hợp Web Chat qua Gateway](P7-18-web-chat-integration-validation.md) | fe, api-gateway, community-service | `ThaiBao11125` | 2 | P7-15–17 |
+
+P7-17/18 là backlog kế tiếp, không nằm trong lát code hiện tại. Lịch It8 vẫn chưa được ấn định.
+
 ## Cách giao cho agent
 
 Gửi nguyên file issue tương ứng cho agent. Issue nêu repo, nguồn chuẩn, rule đã chốt, phạm vi, acceptance và kiểm tra. Agent vẫn phải đọc `AGENTS.md` cùng skill bắt buộc trong repo đích; nếu tài liệu/code mâu thuẫn, theo D75 và ghi blocker, không tự bịa hướng xử lý.

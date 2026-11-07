@@ -1,5 +1,7 @@
 # Đề xuất thiết kế Community Service: Chat và Notification
 
+> **Làm rõ email (2026-11-07):** Identity vẫn sở hữu nghiệp vụ forgot/reset password và tạo nội dung email đã render. Identity publish `email.send_requested` qua transactional outbox; Community tiêu thụ queue và gửi bằng SMTP với `From` lấy từ cấu hình Community. Community lưu metadata/trạng thái `EmailDelivery` trong 90 ngày, không lưu body, không retry cùng request ID khi SMTP lỗi. Email nghiệp vụ Invoice chưa nằm trong phạm vi hiện tại.
+
 > **Trạng thái:** ERD v1 và API/event contract v1 đã được duyệt; implementation được xếp ở Phase 7.
 > **Phạm vi lịch:** Bắt đầu It5 (02/11–08/11) song song với Phase 6; xem [Phase 7 plan](../../phase-7/README.md).
 > **Cách làm:** Chốt phạm vi → ERD → business logic → API/event contract → tạo backlog → code.
@@ -39,7 +41,7 @@ Không triển khai chat `@issue`, Issue panel, mention hoặc MessageMention tr
 | `ConversationMember` | User hoặc bot tham gia conversation; lưu vai trò, trạng thái, thời điểm vào/rời và read cursor. | Vai trò lõi của user: `admin/member`; người tạo nhóm là admin ban đầu. Admin có thể thêm thành viên, đổi vai trò hoặc loại thành viên qua cùng application service. Event domain cũng dùng application service này để đồng bộ thành viên. |
 | `Message` | Lưu sender, loại tin, nội dung/media và thời điểm gửi. | Gắn với một conversation; sender có thể là user hoặc bot. Lưu message trước khi phát Socket.io/FCM. |
 | `Notification` | Lưu business notification theo từng recipient, gồm loại, nội dung/payload điều hướng và trạng thái đọc. | Community nhận recipient list từ event; cùng một event được RabbitMQ gửi lại cũng không tạo item trùng. Không lưu chat message. |
-| `NotificationPreference` | Lưu user bật/tắt thông báo theo nhóm. | Tắt thông báo thì không gửi push; bản ghi business notification vẫn được lưu trong inbox để xem lại. Không thay đổi recipient do service nguồn chỉ định. |
+| `NotificationPreference` | Lưu lựa chọn nhận delivery theo từng nhóm `chat`/`invoice`/`issue`. | Tắt nhóm thì không gửi push thiết bị và không hiện toast Web; business notification vẫn lưu/hiện trong inbox và Socket vẫn phát để đồng bộ. Recipient vẫn do service nguồn chỉ định. Quy tắc này được cập nhật bởi P7-D82. |
 | `PushDevice` | Token FCM, platform và thời điểm hoạt động cuối của thiết bị. | User có thể có nhiều thiết bị; chỉ user hiện tại được đăng ký/thu hồi thiết bị của mình. |
 
 ### Cách biểu diễn context
@@ -62,7 +64,7 @@ Tên cột, enum, index và biểu diễn bot participant sẽ được chốt �
 | `ConversationMember` | `id`, `conversationId`, `participantType` (`user`/`system`), `userId?`, `displayName`, `systemParticipantKey?`, `role` (`admin`/`member`), `status` (`active`/`read_only`), `joinedAt`, `leftAt?`, `leftSequence?`, `lastReadSequence` | `displayName` lấy từ Identity lúc thêm/kích hoạt member. Giữ membership row khi rời; chỉ đọc message tới `leftSequence`. Thêm lại thì kích hoạt row cũ, cập nhật displayName và đặt read cursor tới tin mới nhất hiện tại. |
 | `Message` | `id`, `conversationId`, `sequence`, `senderMemberId`, `senderNameSnapshot`, `clientMessageId?`, `messageType` (`text`/`image`/`system`/`bot`), `text?`, `mediaId?`, `payload?`, `createdAt` | `senderNameSnapshot` copy từ ConversationMember khi gửi, bất biến theo thời gian. Unique `(conversationId, sequence)` và `(senderMemberId, clientMessageId)` khi client ID có giá trị. Một ảnh tối đa mỗi message; chỉ tham chiếu Media ID. Không sửa/xóa ở bản đầu. System/bot message dùng cùng bảng. |
 | `Notification` | `id`, `sourceService`, `eventId`, `recipientUserId`, `type`, `title`, `body`, `deepLink?`, `data`, `readAt?`, `createdAt` | Một row cho mỗi event/recipient; unique `(sourceService, eventId, recipientUserId)`. Lưu snapshot, không FK recipient tới Identity. |
-| `NotificationPreference` | `id`, `userId`, `category` (`chat`/`invoice`/`issue`), `pushEnabled` | Unique `(userId, category)`. Chỉ điều khiển push; không ẩn/xóa inbox. |
+| `NotificationPreference` | `id`, `userId`, `category` (`chat`/`invoice`/`issue`), `pushEnabled` | Unique `(userId, category)`. API field `pushEnabled` điều khiển push thiết bị và toast Web; không ẩn/xóa inbox. Quy tắc hiện hành theo P7-D82. |
 | `PushDevice` | `id`, `userId`, `platform`, `token`, `lastSeenAt`, `revokedAt?` | Một user có nhiều device; token không được gắn đồng thời với nhiều user. Đăng ký/thu hồi theo user từ JWT. |
 
 `directPairKey` và `sequence` là tên logic để review; tên cột, kiểu dữ liệu, partial index, cách lưu payload và chính sách xóa sẽ được chốt trước migration.
@@ -88,10 +90,10 @@ Các quy tắc trong mục này được đưa ra để chốt lần lượt. Tr
 | BL-13 | Sửa/xóa message đã gửi | Bản đầu không hỗ trợ sửa/xóa; nội dung message giữ nguyên sau khi gửi. | Đã chốt |
 | BL-14 | Loại nội dung message | Hỗ trợ văn bản và ảnh; chưa hỗ trợ các loại tệp khác. Ảnh dùng Media Service nếu phù hợp. | Đã chốt |
 | BL-15 | Read state của chat | Số tin chưa đọc theo từng hội thoại và thao tác mark-read; không có dấu đã xem trên từng message. | Đã chốt |
-| BL-16 | Notification inbox khi user tắt push | Notification vẫn được lưu và hiển thị trong inbox; preference chỉ tắt push delivery. | Đã chốt |
+| BL-16 | Notification inbox khi user tắt một nhóm | Notification vẫn được lưu và hiển thị trong inbox; preference tắt push delivery và toast Web theo P7-D82. | Đã chốt, cập nhật 07/11/2026 |
 | BL-17 | Fan-out notification tới nhiều phiên/thiết bị | Lưu một inbox notification cho mỗi recipient/event; gửi cùng `notificationId` qua các phiên Socket đang kết nối và các PushDevice mobile đã đăng ký để client khử trùng lặp. | Đã chốt |
 | BL-18 | Đồng bộ trạng thái đã đọc giữa các thiết bị | Trạng thái đọc thuộc inbox của user; mark-read trên thiết bị nào cũng đồng bộ sang các thiết bị khác. | Đã chốt |
-| BL-19 | Mức cấu hình notification preference | User bật/tắt push theo từng nhóm notification như chat, invoice, issue; inbox vẫn lưu theo BL-16. | Đã chốt |
+| BL-19 | Mức cấu hình notification preference | User bật/tắt delivery push thiết bị và toast Web theo từng nhóm chat, invoice, issue; inbox vẫn lưu theo BL-16. | Đã chốt, cập nhật 07/11/2026 |
 | BL-20 | Tắt push riêng cho từng conversation | Bản đầu chỉ có preference chung cho toàn bộ chat; chưa có mute riêng từng conversation. | Đã chốt |
 | BL-21 | Các loại business notification tích hợp ban đầu | Invoice và issue; event type khác bổ sung sau khi có nhu cầu cụ thể. | Đã chốt |
 | BL-22 | Thao tác với notification inbox | Chỉ hỗ trợ mark-read/mark-all-read; không cho user xóa notification ở bản đầu. | Đã chốt |
@@ -126,7 +128,7 @@ Các quy tắc business trong bảng trên đã được xác nhận. Những l�
 | Message và history | Chỉ member active được gửi. Người rời/bị kick ở chat tự do/contract/building chỉ đọc message tới `leftSequence`; thành viên mới được thêm xem toàn bộ history. Message không sửa/xóa sau khi gửi trong bản đầu. Mỗi member có read cursor riêng; hiển thị số unread theo conversation và mark-read, không có read receipt trên từng message. |
 | Chat realtime/offline | Phát message qua Socket.io cho client đang mở; Android nền/offline nhận FCM nếu bật thông báo chat. Khi reconnect, client tải message còn thiếu từ API. Không cần bảng lịch sử delivery riêng. |
 | Bot reminder | Landlord chọn ngữ cảnh/nội dung reminder và xác nhận gửi; bot tạo message trong chat. Không có scheduler tự phát. |
-| Business notification | Service nguồn xác định recipient và gửi event; Community không tra cứu hợp đồng để quyết định người nhận. Community lưu một notification cho mỗi recipient/event, sau đó fan-out cùng notification ID qua Socket tới các session đang kết nối và FCM tới các thiết bị đã đăng ký. Client khử trùng lặp theo notification ID; preference chỉ điều khiển push. |
+| Business notification | Service nguồn xác định recipient và gửi event; Community không tra cứu hợp đồng để quyết định người nhận. Community lưu một notification cho mỗi recipient/event, sau đó fan-out cùng notification ID qua Socket tới các session đang kết nối và FCM tới các thiết bị đã đăng ký. Client khử trùng lặp theo notification ID; preference điều khiển FCM và toast Web theo P7-D82, không lọc inbox hay Socket sync. |
 
 Các quy tắc trên là đề xuất dựa trên yêu cầu hiện có và thông lệ chat nhóm; cần được rà soát tại buổi chốt business logic trước khi đóng API.
 
@@ -179,7 +181,7 @@ ERD v1 và API/event contract v1 đã được duyệt. OpenAPI YAML chuẩn và
 | Socket.io | `conversation.message.created`, `conversation.updated`, `conversation.member.updated`, `conversation.read-state.updated`, `notification.created` | Gửi realtime tới session đã xác thực; server kiểm tra membership trước khi join room. |
 | RabbitMQ | Context/building created, ContractMember added/removed, `notification.requested` | Đồng bộ membership/context hoặc business notification; xử lý event idempotent. Tên/payload phải khớp event contract nguồn. |
 
-Quy ước đã duyệt: chat 1:1 duy nhất theo cặp user; group tạo mới và người tạo là admin. Chat 1:1 mở lại sẽ kích hoạt membership cũ cho hai bên. Member thêm lại vào nhóm xem toàn bộ history; member read-only chỉ xem tới `leftSequence`. `POST /messages` nhận `clientMessageId` để retry không tạo trùng; `lastReadSequence` chỉ được tiến lên. Source service cung cấp recipient và snapshot nội dung notification; Community tạo một inbox row cho mỗi recipient/event, rồi fan-out cùng ID qua Socket và FCM tới các thiết bị/session phù hợp. Preference chỉ tắt push, không ẩn inbox. Group/system changes tạo system message + Socket, không FCM. Push chat gửi tới tất cả thiết bị mobile đã đăng ký; client khử trùng theo ID.
+Quy ước đã duyệt: chat 1:1 duy nhất theo cặp user; group tạo mới và người tạo là admin. Chat 1:1 mở lại sẽ kích hoạt membership cũ cho hai bên. Member thêm lại vào nhóm xem toàn bộ history; member read-only chỉ xem tới `leftSequence`. `POST /messages` nhận `clientMessageId` để retry không tạo trùng; `lastReadSequence` chỉ được tiến lên. Source service cung cấp recipient và snapshot nội dung notification; Community tạo một inbox row cho mỗi recipient/event và phát Socket để đồng bộ inbox. Community áp dụng preference khi gửi FCM; FE áp dụng cùng preference khi hiện toast Web. Tắt một category không ẩn inbox hoặc chặn Socket sync. Group/system changes tạo system message + Socket, không FCM. Push chat gửi tới tất cả thiết bị mobile đã đăng ký; client khử trùng theo ID.
 
 ### Quyết định API đã chốt
 
@@ -269,7 +271,7 @@ POST /messages/mark-read
 GET /notifications?unreadOnly=true&cursor=<opaque>&limit=20
 ```
 
-`PUT /me/notification-preference` nhận danh sách category `chat|invoice|issue` và `pushEnabled`. `POST /me/push-devices` nhận token/platform; owner luôn suy ra từ JWT.
+`PUT /me/notification-preference` nhận danh sách category `chat|invoice|issue` và API field `pushEnabled`. Theo P7-D82, giá trị này áp dụng cho push thiết bị và toast Web; inbox vẫn được lưu và đồng bộ. `POST /me/push-devices` nhận token/platform; owner luôn suy ra từ JWT.
 
 ### Event contract v1 đề xuất
 

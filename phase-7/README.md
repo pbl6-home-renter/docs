@@ -4,8 +4,8 @@
 > **Phạm vi lịch:** It5 khởi động ngày 02/11/2026. Các iteration sau giữ theo thứ tự phụ thuộc; ngày It8 sẽ chốt khi gần lập lịch.
 > **Thiết kế đã duyệt:** [Community Service design](../phase-6/discovery/community-service-design.md).
 > **Backlog chi tiết:** [Community implementation backlog](../phase-6/discovery/community-service-implementation-backlog.md).
-> **Web Chat v1 đã chốt:** [Phạm vi và hành vi FE](discovery/web-chat-v1-decisions.md); các bổ sung API/event ở cuối tài liệu vẫn cần thiết kế trước khi code.
-> **Trước khi mở Goal FE:** [Khảo sát mức sẵn sàng Web Chat v1](discovery/web-chat-v1-readiness-audit.md) ghi các phụ thuộc backend, contract và checklist kiểm chứng.
+> **Web Chat v1 đã chốt:** [Phạm vi và hành vi FE](discovery/web-chat-v1-decisions.md); mục khảo sát/API nháp trong tài liệu là ảnh chụp lịch sử ngày 03/11, không phải backlog hiện tại.
+> **Trạng thái hiện tại:** [Rà soát sau demo Web Chat v1](discovery/web-chat-v1-current-status.md) đối chiếu quyết định với mã nguồn và liệt kê các bước tiếp theo. Bản khảo sát ban đầu ngày 04/11 cũng chỉ là ảnh chụp lịch sử.
 > **Giao việc độc lập:** [Prompt bàn giao cho Claude](discovery/web-chat-v1-claude-handoff.md) chia contract và các API còn thiếu theo thứ tự phụ thuộc.
 
 ## Mục tiêu

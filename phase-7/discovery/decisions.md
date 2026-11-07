@@ -1,10 +1,25 @@
 # Phase 7 decisions
 
+## P7-D81 — Trạng thái sau demo và chia backlog Web (2026-11-07)
+
+- Web Chat v1 đã được user demo và xác nhận ổn định; readiness audit ngày 04/11 chỉ là ảnh chụp lịch sử, không còn phản ánh trạng thái hiện tại.
+- Việc Web tiếp theo tách thành Notification inbox/push preference, quản lý group, gửi ảnh, rồi kiểm chứng tích hợp qua Gateway. Không tự gán các task này vào It8 khi chưa chốt lịch.
+- Inbox có unread thì chuông Web hiển thị dot, không hiển thị số vì Community chưa có tổng unread notification endpoint.
+- Notification page dùng API cursor list, mark-one/all, GET/PUT preference và hai Socket event đã có; không thêm API backend cho phạm vi này.
+- Group management FE dùng các endpoint Community đã có. Group avatar dùng `ownerType=conversation`, `purpose=conversation_avatar`, presigned upload rồi PATCH `avatarMediaId`.
+
+## P7-D82 — Preference điều khiển thông báo nổi Web và push thiết bị (2026-11-07)
+
+- Với từng nhóm `chat`, `invoice`, `issue`, khi user tắt thông báo thì không gửi push tới thiết bị và không hiện toast nổi trong Web.
+- Việc tắt không chặn Socket event cần cho đồng bộ, không xóa/lọc business notification khỏi inbox, và không ngăn cập nhật conversation list/unread của chat.
+- Khi bật, chat toast dùng `chat:message-received`; Invoice/Issue toast dùng payload `notification:created` (`notificationId`, `type`, `title`, `body`, `deepLink`, `data`, `createdAt`). Click toast đánh dấu notification business đã đọc và mở deep link nội bộ; URL không hợp lệ mở inbox.
+- Preference theo category hiện được lưu qua API `pushEnabled`; FE dùng cùng giá trị để quyết định hiển thị toast Web, còn Community áp dụng cho push thiết bị.
+
 ## P7-D80 — Phạm vi Web Chat v1 (2026-11-03, 15:53 UTC)
 
 - PM đã chốt các quyết định FE Chat v1 tại [web-chat-v1-decisions.md](web-chat-v1-decisions.md): desktop hai cột; chat 1:1 và nhóm tự do; list/search/history/text/unread; direct chỉ hiện sau tin đầu tiên, group hiện khi tạo; Socket dùng chung sau đăng nhập; badge tổng unread `9+`; toast tin chat có sender, conversation và preview; retry khi mạng trở lại với cùng `clientMessageId`.
 - Phạm vi này thay thế lựa chọn responsive web trong lượt hỏi đáp trước: FE chat tập trung desktop, còn điện thoại dùng ứng dụng mobile riêng. Lựa chọn toast chỉ có tên cũng đã được thay bằng toast có đoạn preview.
-- Cần bổ sung/đối chiếu API tìm user cho user thường, tìm conversation, sự kiện tin mới tới user room, tổng unread và ràng buộc nhóm tối thiểu ba thành viên trước khi code FE. Đây là dependency thiết kế, chưa coi là API/event đã duyệt.
+- Tại thời điểm ghi P7-D80, các API tìm user, tìm conversation, unread summary, sự kiện tin mới tới user room và ràng buộc nhóm tối thiểu ba thành viên còn là dependency cần đối chiếu. Các dependency này đã được xử lý sau đó; xem [trạng thái Web Chat hiện tại](web-chat-v1-current-status.md) để biết phần nào đã triển khai và phần nào còn lại.
 
 ## P7-D78 — Hành vi system message khi kick/rời nhóm (2026-11-02)
 

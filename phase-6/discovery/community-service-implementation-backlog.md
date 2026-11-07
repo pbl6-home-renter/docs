@@ -1,5 +1,7 @@
 # Backlog triển khai Community Service
 
+> **Làm rõ email (2026-11-07):** Community đã triển khai mailer SMTP dùng chung qua queue. Identity sở hữu luồng reset password, render nội dung và publish request bằng transactional outbox; Community chỉ vận chuyển email, lưu metadata/trạng thái delivery và không retry cùng request ID. Email nghiệp vụ Invoice vẫn ngoài phạm vi.
+
 > **Trạng thái:** Đã được xếp lịch và gán owner trong [Phase 7 task tracker](../../phase-7/issues/README.md).
 > **Phạm vi lịch:** Track Phase 7 chạy song song; bắt đầu It5 (02/11–08/11) với CB-01–05. Các task còn lại được xếp theo dependency tới It8.
 > **Thiết kế đã duyệt:** [ERD và business/API design](community-service-design.md).
@@ -9,7 +11,9 @@
 
 Chia Community Service thành các lát triển khai có thể review riêng, theo dependency giữa Community, Tenancy, Identity/Media, Gateway, Web và Android. Backlog này không thay đổi scope hoặc lịch Phase 6. Mã P7-CB, owner và iteration được theo dõi tại Phase 7; các PR triển khai sẽ được tách nhỏ theo template của repo tương ứng.
 
-## 2. Hiện trạng repo đã đối chiếu
+## 2. Hiện trạng repo đã đối chiếu lúc lập backlog
+
+> Bảng dưới đây là baseline discovery trước khi Community/Chat được triển khai; không phản ánh trạng thái repo ngày 07/11/2026. Dùng [rà soát Phase 7 sau demo](../../phase-7/discovery/web-chat-v1-current-status.md) cho trạng thái FE hiện tại và đối chiếu từng task tracker trước khi mở backlog mới.
 
 | Repo | Hiện trạng liên quan | Ý nghĩa với backlog |
 |---|---|---|
@@ -171,7 +175,7 @@ Contract/building chat phụ thuộc event producer và đồng bộ membership.
 **Acceptance criteria:**
 
 - [ ] Notification lưu recipient, source/event ID, type/title/body/deepLink/data snapshot, created/read time; unique dedup theo source/event/recipient.
-- [ ] Inbox hỗ trợ list cursor, unread filter, mark-one/all; không có delete; preference `chat|invoice|issue` mặc định bật và chỉ điều khiển push.
+- [ ] Inbox hỗ trợ list cursor, unread filter, mark-one/all; không có delete; preference `chat|invoice|issue` mặc định bật, điều khiển push thiết bị và toast Web theo P7-D82.
 - [ ] Community sở hữu PushDevice; owner lấy từ JWT; duplicate token được upsert/diễn giải idempotent; chỉ platform Android trong v1.
 
 **Verification:** Tạo nhiều recipient cho event, đọc trên session khác, tắt preference nhưng inbox vẫn còn, register/revoke token chính chủ.

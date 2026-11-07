@@ -1,6 +1,6 @@
 # Quyết định cho Web Chat v1
 
-> **Trạng thái:** Phạm vi và hành vi sản phẩm đã được PM chốt qua từng câu hỏi ngày 03/11/2026. Thiết kế API/event và backlog FE còn cần đối chiếu trước khi code.
+> **Trạng thái:** Phạm vi và hành vi sản phẩm đã được PM chốt qua từng câu hỏi ngày 03/11/2026. Đây là nguồn quyết định sản phẩm; contract API/event hiện hành được đối chiếu trong [trạng thái Web Chat hiện tại](web-chat-v1-current-status.md) và tài liệu API của các repo.
 > **Nền tảng:** `fe/` (React trên web), tập trung giao diện desktop. Ứng dụng Android là một client riêng.
 > **Nguồn thiết kế backend:** [Community Service design](../../phase-6/discovery/community-service-design.md) và [Phase 7 plan](../README.md).
 
@@ -45,9 +45,9 @@
 | Tải lại/đóng trang | Không lưu hàng đợi tin chờ gửi qua lần tải lại; chỉ tự gửi lại khi trang hiện tại còn mở. |
 | Reconnect | Dùng REST tải tin còn thiếu theo cursor/sequence; Socket là kênh realtime, không phải nguồn lịch sử duy nhất. |
 
-## 4. Việc cần đối chiếu và bổ sung trước khi triển khai FE
+## 4. Ảnh chụp khảo sát ban đầu ngày 03/11 (lưu lịch sử)
 
-Các mục dưới đây là **đầu việc thiết kế**, chưa phải hợp đồng API/event đã duyệt:
+Các bảng dưới đây ghi lại câu hỏi và trạng thái mã nguồn tại thời điểm khảo sát ban đầu, không phải backlog hiện tại. Nhiều API/event trong bảng đã được chốt và triển khai sau đó. Dùng [trạng thái Web Chat hiện tại](web-chat-v1-current-status.md) cùng mã nguồn/API docs để xác định việc còn lại; không mở lại các mục lịch sử nếu không có bằng chứng sai lệch mới.
 
 1. Xác định route và response của API tìm Landlord/Tenant đang hoạt động theo tên cho Landlord/Tenant. Mốc đầu chỉ lộ ID và tên; phân trang, loại Admin và user hiện tại khỏi kết quả. Khi `q` rỗng hoặc thiếu, API vẫn trả một trang user để picker có danh sách ban đầu. Identity hiện có `GET /users` dành cho admin. FE dùng avatar chữ cái, ảnh đại diện user để sau.
 2. Bổ sung truy vấn tìm hội thoại theo tên người/nhóm trên toàn bộ hội thoại của user, không chỉ lọc trang đã tải. Danh sách cần ẩn direct conversation chưa có message và lọc `kind=direct|group` cho mốc FE này. Tìm tên chat 1:1 theo `ConversationMember.displayName` của người còn lại.
@@ -58,7 +58,7 @@ Các mục dưới đây là **đầu việc thiết kế**, chưa phải hợp 
 7. Đối chiếu API cursor, `clientMessageId`, mark-read và Socket contract hiện tại; cập nhật OpenAPI và `api-docs/docs/community-socket-v1.md` khi bổ sung contract.
 8. **Đã chốt route tra cứu direct:** mở rộng `GET /conversations?kind=direct&otherUserId=<uuid>` để trả 0 hoặc 1 conversation mà không tạo mới. Direct chưa có message được xem như chưa có chat hiển thị, nên kết quả rỗng; khi bấm gửi, `POST /conversations` resolve lại ID cũ. Nếu có lịch sử thì FE mở ngay. Khi direct cũ từng ở trạng thái read-only, cần khớp quy tắc mở lại đã chốt trước đây.
 
-### Kết quả rà soát code ngày 03/11/2026 — chưa phải quyết định thiết kế
+### Kết quả rà soát code ngày 03/11/2026 — trạng thái lịch sử, không phải trạng thái hiện tại
 
 | Phần | Hiện trạng đã kiểm tra | Cần làm rõ hoặc xử lý |
 |---|---|---|
@@ -78,9 +78,9 @@ Các mục dưới đây là **đầu việc thiết kế**, chưa phải hợp 
 
 Đây là kết quả đọc mã nguồn, chưa xác nhận chạy end-to-end vì môi trường DB/Socket của dự án chưa được chuẩn bị trong lượt rà soát này.
 
-### Bản phác thảo API/Socket để review — chưa duyệt contract cuối
+### Bản phác thảo API/Socket ngày 03/11 — bản nháp lịch sử
 
-Các dòng dưới đây chuyển hành vi đã chốt thành contract cụ thể để backend, API docs và FE cùng review. Tên route/event mới là **đề xuất kỹ thuật**; chưa triển khai.
+Các dòng dưới đây là đề xuất kỹ thuật tại thời điểm khảo sát để chuyển hành vi sản phẩm thành contract. Chúng có thể đã được cập nhật trong OpenAPI và code; không dùng chúng làm contract hiện hành nếu khác với API docs hoặc [trạng thái hiện tại](web-chat-v1-current-status.md).
 
 | Owner | Route/event đề xuất | Input hoặc payload chính | Kết quả/quy tắc |
 |---|---|---|---|
@@ -157,14 +157,14 @@ Trong worktree FE hiện tại đã có nền triển khai Web Chat v1; đây l�
 | Hành vi chat | Tra direct cũ trước; direct mới chỉ tạo khi gửi tin đầu. Có tạo nhóm, history cursor, optimistic send với retry cùng `clientMessageId`, mark-read khi đang thấy tin mới nhất, dịch system message, xem ảnh nhận được. |
 | Thành phần giao diện | Conversation list, dialog chat mới, chat window/feed/composer, message item và preview ảnh được tách thành component nhỏ; nội dung vi/en dùng i18n. |
 
-### Phụ thuộc backend trước khi kiểm tra tích hợp
+### Các phụ thuộc được ghi nhận ngày 03/11 — cần xác minh theo trạng thái hiện tại
 
-1. Đồng bộ Community/OpenAPI để mọi `sequence` và cursor là chuỗi thập phân, bao gồm response member/list, mark-read và Socket payload.
+1. Khi lập khảo sát, cần đồng bộ Community/OpenAPI để mọi `sequence` và cursor là chuỗi thập phân, bao gồm response member/list, mark-read và Socket payload.
 2. Đồng bộ system-message payload: cần `actorDisplayName` snapshot và `lastMessage.payload` có discriminator để FE dịch lịch sử/preview. FE hiện dùng nhãn bản địa hóa chung nếu snapshot actor bị thiếu; đây chỉ là fallback, không thay đổi contract đã chốt.
 3. Community cần phát `chat:message-received` tới user room theo contract; nếu chưa có event thì FE vẫn tải REST được nhưng badge/toast đa trang không realtime.
 4. Cần chạy thử Gateway với hai tài khoản và DB đã migrate để xác nhận auth Socket, join, REST cursor, retry/idempotency, unread đồng bộ và media download. Hiện chưa có xác nhận kiểm tra này.
 
-Các trạng thái trên cần được đối chiếu lại với branch/PR hiện tại trước khi coi là hoàn tất; phần FE trong worktree chưa được commit.
+Các ghi chú này mô tả thời điểm 03/11, không xác nhận trạng thái branch/PR hiện tại. Trạng thái FE mới hơn và các bước còn lại được ghi tại [rà soát sau demo](web-chat-v1-current-status.md); trạng thái commit/merge phải kiểm tra trên repo tương ứng.
 
 ## 7. Tài liệu tham chiếu
 
