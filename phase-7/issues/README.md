@@ -1,5 +1,7 @@
 # Phase 7 — Community Service task tracker
 
+Status: all P7 chat tasks have been implemented, per PM update.
+
 Phase 7 bắt đầu song song trong It5 (02/11–08/11). Các task Phase 6 giữ nguyên. Mỗi issue dưới đây có đủ bối cảnh để giao độc lập cho agent; issue không thay thế `AGENTS.md`/skill của repo và không được tự tạo business rule.
 
 ## It5 — bắt đầu Chat REST
