@@ -1,7 +1,7 @@
 # P7-09 — Xem và thêm thành viên conversation
 
 **Assignee:** `baoduong17` · **Iteration:** It6 · **Ước lượng:** 3 points
-**Repo:** `community-service` · **Phụ thuộc:** P7-05, P7-07 · **Trạng thái:** 🟡 Open
+**Repo:** `community-service` · **Phụ thuộc:** P7-05, P7-07 · **Trạng thái:** 🟢 Done
 
 ## Context agent
 

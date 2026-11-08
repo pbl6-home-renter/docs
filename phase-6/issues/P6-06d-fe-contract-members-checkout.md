@@ -5,7 +5,7 @@
 **Người phụ trách:** ThaiBao11125  
 **Người review:** baoduong17  
 **Ước lượng:** 3 points · 6–8 giờ  
-**Phụ thuộc:** P6-06a (trang chi tiết HĐ); BE P6-01e1 (thành viên HĐ theo `P6-D63`), P6-01e3 (checkout theo `P6-D62`); P6-09 (api-docs khớp `decisions.md`); FE P6-03c (API phòng: `GET /rooms/{id}`, `mark-ready`)  
+**Phụ thuộc:** P6-06a (trang chi tiết HĐ); BE P6-01e1 (thành viên HĐ theo `P6-D63`), P6-01e3 (checkout theo `P6-D62`);; FE P6-03c (API phòng: `GET /rooms/{id}`, `mark-ready`) 
 **Repo / branch:** `fe` · `feat/p6-06d-contract-members-checkout`  
 **Iteration:** It6 (09/11–15/11)  
 **Issue:** `docs#105`
@@ -61,7 +61,7 @@ Trên trang chi tiết HĐ (`/contracts/:id`, P6-06a) có tab **Thành viên**: 
 
 ### Bước 1 — Xác nhận contract BE đã sẵn sàng
 
-- **Cách làm:** đọc [P6-01e1](P6-01e1-contract-members.md), [P6-01e3](P6-01e3-contract-checkout.md); chỉ bắt đầu khi hai task này merge và P6-09 cập nhật `contract-member-*`, `complete-checkout` (bỏ `identityCardNumber`, `isRepresentative`, `pending_cleanup`). Chưa có đến giữa It6 → báo PM dời sang It7, ghi vào comment issue.
+- **Cách làm:** đọc [P6-01e1](P6-01e1-contract-members.md), [P6-01e3](P6-01e3-contract-checkout.md); chỉ bắt đầu khi hai task này merge và `api-docs` phản ánh contract hiện hành (`contract-member-*`, `complete-checkout`; bỏ `identityCardNumber`, `isRepresentative`, `pending_cleanup`). Chưa có đến giữa It6 → báo PM dời sang It7, ghi vào comment issue.
 - **Kiểm tra bước:** Apidog: activate 1 HĐ → `GET /contract-members?filter[contractId]` có sẵn người đại diện.
 
 ### Bước 2 — Tầng dữ liệu members + checkout

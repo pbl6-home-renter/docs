@@ -1,7 +1,7 @@
 # P7-03 — Bật Community trong runtime nội bộ
 
 **Assignee:** `baoduong17` · **Iteration:** It5 · **Ước lượng:** 1 point
-**Repo:** `infra` + `community-service` · **Phụ thuộc:** — · **Trạng thái:** 🟡 Open
+**Repo:** `infra` + `community-service` · **Phụ thuộc:** — · **Trạng thái:** 🟢 Done
 
 ## Bối cảnh agent cần đọc
 

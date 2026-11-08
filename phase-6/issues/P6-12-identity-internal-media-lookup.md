@@ -1,6 +1,6 @@
 # P6-12 — Identity: `GET /internal/media/{mediaId}` cho service nội bộ
 
-**Trạng thái:** 🟡 Open  
+**Trạng thái:** 🟢 Done
 **Người phụ trách:** baoduong17  
 **Người review:** leminhkhai345 (dùng ở P6-01d)  
 **Ước lượng:** 1 point · 2–3 giờ  

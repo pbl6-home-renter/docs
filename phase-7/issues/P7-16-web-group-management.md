@@ -1,7 +1,7 @@
 # P7-16 — Quản lý nhóm chat trên Web
 
 **Assignee:** `ThaiBao11125` · **Iteration:** Chưa gán · **Ước lượng:** 5 points
-**Repo:** `fe` · **Phụ thuộc:** P7-09–12 Community group APIs, CB-07 Media · **Trạng thái:** 🟡 In progress
+**Repo:** `fe` · **Phụ thuộc:** P7-09–12 Community group APIs, CB-07 Media · **Trạng thái:** 🟢 Done
 
 ## Context agent
 

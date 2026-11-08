@@ -1,7 +1,7 @@
 # P7-17 — Gửi ảnh trong Web Chat
 
 **Assignee:** `ThaiBao11125` · **Iteration:** Chưa gán · **Ước lượng:** 3 points
-**Repo:** `fe` · **Phụ thuộc:** P7-13, CB-07 Media · **Trạng thái:** 🔵 Planned
+**Repo:** `fe` · **Phụ thuộc:** P7-13, CB-07 Media · **Trạng thái:** 🟢 Done
 
 ## Quy tắc đã chốt
 

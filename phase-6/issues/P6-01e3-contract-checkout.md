@@ -5,7 +5,7 @@
 **Người phụ trách:** leminhkhai345  
 **Người review:** baoduong17 (BE Lead, API owner)  
 **Ước lượng:** 3 points · 7–9 giờ  
-**Phụ thuộc:** P6-01e1 (member + `leave()`), P6-01d (`Room.releaseByContract()`), P6-02g1 (bảng `invoices`), P6-09 (`api-docs` checkout theo `P6-D62`)  
+**Phụ thuộc:** P6-01e1 (member + `leave()`), P6-01d (`Room.releaseByContract()`), P6-02g1 (bảng `invoices`) 
 **Repo / branch:** `Tenancy-Service` · `feature/p6-01e3-contract-checkout`  
 **Iteration:** It6 (09/11–15/11)  
 **Issue:** `docs#97`
@@ -32,7 +32,7 @@ Landlord gọi `POST /contracts/{id}/complete-checkout { completedOn }` khi hóa
 | `PATCH /contracts/{contractId}` (đã có, P6-01b) — mở rộng cho `active` | `patchContractsContractid` | landlord | `200 CONTRACT_UPDATED` | `409 CONTRACT_NOT_DRAFT` (HĐ `active` gửi field khác `vehicleCount`/`description`; HĐ `terminated`) |
 
 - Path: `api-docs/src/paths/contracts/contracts-contractId-complete-checkout.yaml`; request `api-docs/src/requests/contracts/contract-checkout-complete-request-dto.yaml` (`completedOn: date`); response `api-docs/src/responses/dtos/contracts/contract-checkout-complete-response-dto.yaml`.
-- Làm theo `api-docs` **sau P6-09**: response `status = terminated` (bản trên `main` còn `expired`), không còn `pending_cleanup`, `SETTLEMENT_NOT_READY` là **409** (bản trên `main` ghi 422 — `decisions.md` thắng theo `P6-D75`).
+- Làm theo quyết định P6-D62 và contract hiện hành: response `status = terminated`, không còn `pending_cleanup`, `SETTLEMENT_NOT_READY` là **409**. Cập nhật `api-docs` cùng PR implementation; nếu `main` còn contract cũ thì sửa trong PR này và API owner review.
 
 ### Mapping field
 

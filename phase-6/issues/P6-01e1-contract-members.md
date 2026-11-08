@@ -5,7 +5,7 @@
 **Người phụ trách:** leminhkhai345  
 **Người review:** baoduong17 (BE Lead, API owner)  
 **Ước lượng:** 3 points · 8–10 giờ  
-**Phụ thuộc:** P6-01d (handler activate — chưa có trên `main`), P6-09 (`api-docs` khớp `P6-D63`)  
+**Phụ thuộc:** P6-01d (handler activate — chưa có trên `main`) 
 **Repo / branch:** `Tenancy-Service` · `feature/p6-01e1-contract-members`  
 **Iteration:** It6 (09/11–15/11)  
 **Issue:** `docs#95`
@@ -37,7 +37,7 @@ Có bảng `contract_members`. Khi HĐ được activate, người đại diện
 - Path: `api-docs/src/paths/contracts/contract-members.yaml`, `contract-members-contractMemberId.yaml`, `contract-members-contractMemberId-leave-contract.yaml`.
 - Request: `api-docs/src/requests/contracts/contract-member-add-request-dto.yaml`, `contract-member-update-request-dto.yaml` (`tenantPhone`), `contract-member-leave-request-dto.yaml` (`leftOn`).
 - Response: `api-docs/src/responses/dtos/contracts/contract-member-add-response-dto.yaml`, `contract-member-list-response-dto.yaml`, `contract-member-update-response-dto.yaml`, `contract-member-leave-response-dto.yaml`.
-- Làm theo `api-docs` **sau P6-09**: request thêm member không còn `identityCardNumber`, `dateOfBirth`, `gender`, `isRepresentative`. Bản hiện tại trên `main` còn các field này — không implement chúng.
+- Làm theo contract đã duyệt trong `api-docs`: request thêm member không còn `identityCardNumber`, `dateOfBirth`, `gender`, `isRepresentative`. Cập nhật `api-docs` cùng PR implementation; không chờ một issue đồng bộ API riêng.
 - `GET`: chỉ `format=json` (khác → `422 VALIDATION_FAILED`, như P6-01b). Item: `id, contractId, tenantId, tenantName, tenantPhone, joinedAt, leftAt, status` (`active | left`, `P6-D71`).
 
 ### Mapping field
@@ -76,9 +76,9 @@ Có bảng `contract_members`. Khi HĐ được activate, người đại diện
 
 ## Các bước triển khai
 
-### Bước 1 — Đọc contract sau P6-09, chuẩn bị dữ liệu
+### Bước 1 — Đọc contract hiện hành và chuẩn bị dữ liệu
 
-- **Cách làm:** pull `main`; đọc PR P6-09 phần member; chuẩn bị 1 HĐ `active` của landlord A (activate qua P6-01d, hoặc `UPDATE contracts SET status='active'` nếu P6-01d chưa merge), 1 HĐ `draft`, 1 HĐ của landlord B.
+- **Cách làm:** pull `main`; đối chiếu contract member trong `api-docs` với P6-D63/D71 và cập nhật spec trong cùng PR nếu cần; chuẩn bị 1 HĐ `active` của landlord A (activate qua P6-01d, hoặc `UPDATE contracts SET status='active'` nếu P6-01d chưa merge), 1 HĐ `draft`, 1 HĐ của landlord B.
 - **Kiểm tra bước:** `GET /api/v1/tenancy/health` → `200`; `SELECT id, status, landlord_id FROM contracts` thấy đủ 3 HĐ.
 
 ### Bước 2 — Domain `ContractMember` + repository port

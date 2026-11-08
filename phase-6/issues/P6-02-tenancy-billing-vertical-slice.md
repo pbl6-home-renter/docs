@@ -3,7 +3,7 @@
 > Nhóm Billing trong `tenancy-service`: đơn giá & phí định kỳ (`RatePolicy`), ngày thu dự kiến (`BillingSetting`), chốt chỉ số điện nước (`MeterReading`), và — ở Iteration 6 — hóa đơn (`Invoice`) và hoàn thiện `MeterReading` theo `P6-D66` (OCR chạy ở `ai-service`, `P6-D67`).
 
 **Trạng thái:** 🟡 Open  
-**Người phụ trách:** huynhtiennhat0403  
+**Người phụ trách:** leminhkhai345  
 **Người review:** baoduong17 (BE Lead, API owner), PM  
 **Ước lượng:** 20 points cho It5 (P6-02a → P6-02f); 14 points cho It6 (P6-02g1–g4 + P6-02h)  
 **Độ ưu tiên:** High  
@@ -28,15 +28,15 @@ Issue này là issue cha. Công việc thực tế giao qua các sub-issue; issu
 | [P6-02e](P6-02e-meter-reading-create-list.md) | MeterReading domain + nhập tay từng chỉ số + liệt kê | `POST /meter-readings`, `GET /meter-readings` | It5 | 5 pts | P6-02a, P5-09b |
 | [P6-02f](P6-02f-meter-reading-bulk.md) | Chốt chỉ số hàng loạt theo tòa | `POST /meter-readings/bulk` | It5 | 2 pts | P6-02e |
 | [P6-02g](P6-02g-invoice-outline.md) | Invoice — issue cha 🔵 Split (`P6-D64`, `P6-D65`) | `/invoices/*`, `/me/invoices` | It6 | 11 pts | — |
-| ↳ [P6-02g1](P6-02g1-invoice-domain-calculator.md) | Aggregate, bảng `invoices`, calculator thuần | — | It6 | 3 pts | P6-09 |
+| ↳ [P6-02g1](P6-02g1-invoice-domain-calculator.md) | Aggregate, bảng `invoices`, calculator thuần | — | It6 | 3 pts |  |
 | ↳ [P6-02g2](P6-02g2-invoice-generate.md) | Sinh / tính lại `pending` theo tòa + kỳ | `POST /invoices/generate` | It6 | 3 pts | g1, P6-02h, P6-01e1 |
 | ↳ [P6-02g3](P6-02g3-invoice-landlord-manage.md) | Landlord xem, sửa phí khác, phát hành hàng loạt, hủy | `GET/PATCH /invoices…`, `POST /invoices/issue-invoice`, `POST /invoices/{id}/cancel-invoice` | It6 | 3 pts | g2 |
 | ↳ [P6-02g4](P6-02g4-invoice-tenant-view.md) | Tenant xem hóa đơn đã phát hành | `GET /me/invoices`, `GET /invoices/{id}` | It6 | 2 pts | g3, P6-01e2 |
-| [P6-02h](P6-02h-meter-reading-ocr-preview.md) | MeterReading: migration, baseline kỳ đầu, `source`/`ocrValue`, `evidenceMediaId`, `PATCH` có khóa kỳ (`P6-D66`, `P6-D67`, `P6-D70`) | `POST /meter-readings`, `PATCH /meter-readings/{id}` | It6 | 3 pts | P6-09, P6-02g1 |
+| [P6-02h](P6-02h-meter-reading-ocr-preview.md) | MeterReading: migration, baseline kỳ đầu, `source`/`ocrValue`, `evidenceMediaId`, `PATCH` có khóa kỳ (`P6-D66`, `P6-D67`, `P6-D70`) | `POST /meter-readings`, `PATCH /meter-readings/{id}` | It6 | 3 pts | P6-02g1 |
 
 Thứ tự It5: `P6-02a → P6-02b → P6-02c → (P6-02d ∥ P6-02e) → P6-02f`.
 
-Thứ tự It6: `P6-09 → P6-02g1 → P6-02h → P6-02g2 → P6-02g3 → P6-02g4`. Vòng đời hóa đơn theo `P6-D64`, quy tắc tính theo `P6-D65`/`P6-D72`, MeterReading theo `P6-D66`/`P6-D70` (migration `meter_readings` ở P6-02h merge trước g2), OCR theo `P6-D67` (`ai-service`, Tenancy không gọi AI). Payment ra Stretch (`P6-D61`).
+Thứ tự It6: `P6-02g1 → P6-02h → P6-02g2 → P6-02g3 → P6-02g4`. Mỗi issue backend cập nhật `api-docs` cùng PR implementation. Vòng đời hóa đơn theo `P6-D64`, quy tắc tính theo `P6-D65`/`P6-D72`, MeterReading theo `P6-D66`/`P6-D70` (migration `meter_readings` ở P6-02h merge trước g2), OCR theo `P6-D67` (`ai-service`, Tenancy không gọi AI). Payment ra Stretch (`P6-D61`).
 
 > **P6-02a phải merge trước** khi code P6-02b/d/e: contract hiện tại của RatePolicy/BillingSetting mâu thuẫn với D39 và giữa các endpoint với nhau (chi tiết trong P6-02a).
 

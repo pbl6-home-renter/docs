@@ -30,14 +30,14 @@ Chuyển từ Phase 4 (`P4-24`, `P4-25`). Building được tách thành sub-iss
 |---|---|---|---|---|---|
 | [P5-08](P5-08-tenancy-building-vertical-slice.md) | Building vertical slice (Epic) | BE Dev | In progress | 24 pts (tổng, gồm P5-08f) | P4-21 |
 | ↳ [P5-08a](P5-08a-building-domain-persistence.md) | Building domain model và persistence | BE Dev | Done (migration lỗi chạy lại — sửa ở P5-08b) | 3 pts · 6–8h | P4-21 |
-| ↳ [P5-08b](P5-08b-building-create-command.md) | Create Building — slice mẫu UoW + Outbox | BE Dev | Open | 5 pts · 10–14h | P5-08a |
-| ↳ [P5-08c](P5-08c-building-landlord-management.md) | Landlord quản lý Building | BE Dev | Open | 5 pts · 10–14h | P5-08b |
-| ↳ [P5-08d](P5-08d-building-admin-approval.md) | Admin duyệt/từ chối Building | BE Dev | Open | 5 pts · 10–14h | P5-08b |
+| ↳ [P5-08b](P5-08b-building-create-command.md) | Create Building — slice mẫu UoW + Outbox | leminhkhai345 | Open | 5 pts · 10–14h | P5-08a |
+| ↳ [P5-08c](P5-08c-building-landlord-management.md) | Landlord quản lý Building | leminhkhai345 | Open | 5 pts · 10–14h | P5-08b |
+| ↳ [P5-08d](P5-08d-building-admin-approval.md) | Admin duyệt/từ chối Building | leminhkhai345 | Open | 5 pts · 10–14h | P5-08b |
 | ↳ [P5-08e](P5-08e-building-public-search.md) | Tìm kiếm và xem Building public | BE Dev | Open | 3 pts · 6–8h | P5-08d |
 | [P5-09](P5-09-tenancy-room-vertical-slice.md) | Room vertical slice (Epic) | BE Dev | In progress | 16 pts (tổng) | P5-08a, P5-08b, P5-08d |
 | ↳ [P5-09a](P5-09a-room-domain-persistence.md) | Room domain model và persistence | BE Dev | Done (thiếu migration `rooms` — bổ sung ở P5-09b) | 3 pts · 6–8h | P5-08a |
-| ↳ [P5-09b](P5-09b-room-create-command.md) | Create Room trong Building đã duyệt | BE Dev | Open | 5 pts · 10–14h | P5-09a, P5-08b, P5-08d |
-| ↳ [P5-09c](P5-09c-room-landlord-management.md) | Landlord quản lý Room | BE Dev | Open | 5 pts · 10–14h | P5-09b |
+| ↳ [P5-09b](P5-09b-room-create-command.md) | Create Room trong Building đã duyệt | leminhkhai345 | Open | 5 pts · 10–14h | P5-09a, P5-08b, P5-08d |
+| ↳ [P5-09c](P5-09c-room-landlord-management.md) | Landlord quản lý Room | leminhkhai345 | Open | 5 pts · 10–14h | P5-09b |
 | ↳ [P5-09d](P5-09d-room-public-search.md) | Tìm kiếm và xem chi tiết Room | BE Dev | Open | 3 pts · 6–8h | P5-09b, P5-08e |
 
 Thứ tự:

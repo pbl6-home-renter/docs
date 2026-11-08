@@ -1,7 +1,7 @@
 # P7-12 — Sửa tên và ảnh đại diện group
 
 **Assignee:** `baoduong17` · **Iteration:** It6 · **Ước lượng:** 2 points
-**Repo:** `community-service` · **Phụ thuộc:** P7-04, P7-06–07 và CB-07 Media · **Trạng thái:** 🟡 Open
+**Repo:** `community-service` · **Phụ thuộc:** P7-04, P7-06–07 và CB-07 Media · **Trạng thái:** 🟢 Done
 
 ## Context agent
 

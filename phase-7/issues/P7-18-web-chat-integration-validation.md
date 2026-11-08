@@ -1,7 +1,7 @@
 # P7-18 — Kiểm chứng tích hợp Web Chat qua Gateway
 
 **Assignee:** `ThaiBao11125` · **Iteration:** Chưa gán · **Ước lượng:** 2 points
-**Repo:** `fe`, `api-gateway`, `community-service` · **Phụ thuộc:** P7-15–17 · **Trạng thái:** 🔵 Planned
+**Repo:** `fe`, `api-gateway`, `community-service` · **Phụ thuộc:** P7-15–17 · **Trạng thái:** 🟢 Done
 
 ## Acceptance
 

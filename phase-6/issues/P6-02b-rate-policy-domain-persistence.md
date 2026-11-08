@@ -2,7 +2,7 @@
 
 **Epic:** [P6-02](P6-02-tenancy-billing-vertical-slice.md)  
 **Trạng thái:** 🟡 Open  
-**Người phụ trách:** huynhtiennhat0403  
+**Người phụ trách:** leminhkhai345  
 **Người review:** baoduong17 (BE Lead)  
 **Ước lượng:** 3 points · 6–8 giờ  
 **Phụ thuộc:** P6-02a (contract đã chốt)  

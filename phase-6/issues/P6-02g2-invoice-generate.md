@@ -2,10 +2,10 @@
 
 **Epic:** [P6-02](P6-02-tenancy-billing-vertical-slice.md) · cha: [P6-02g](P6-02g-invoice-outline.md)  
 **Trạng thái:** 🟡 Open  
-**Người phụ trách:** huynhtiennhat0403  
+**Người phụ trách:** leminhkhai345  
 **Người review:** baoduong17 (BE Lead, API owner)  
 **Ước lượng:** 3 points · 8–12 giờ  
-**Phụ thuộc:** P6-02g1 (aggregate + calculator), P6-02h (migration `meter_readings` + baseline kỳ đầu — phải merge trước, `P6-D70`), P6-01e1 (port đếm member theo kỳ), P6-09 (contract `POST /invoices/generate`)  
+**Phụ thuộc:** P6-02g1 (aggregate + calculator), P6-02h (migration `meter_readings` + baseline kỳ đầu — phải merge trước, `P6-D70`), P6-01e1 (port đếm member theo kỳ) 
 **Repo / branch:** `Tenancy-Service` · `feature/p6-02g2-invoice-generate`  
 **Iteration:** It6 (09/11–15/11)  
 **Issue:** `docs#99`
@@ -26,13 +26,13 @@ Landlord chọn **Tòa + Kỳ** rồi gọi `POST /invoices/generate { buildingI
 - `P6-D72` — bộ rate thiếu mục `electricity`/`water` → `blocked` `RATE_MISSING`; `totalAmount` = round half-up của Σ dòng (calculator g1).
 - `P1-D39` (EC4) — tính bằng bộ rate **đang chạy lúc gọi**; bản `pending` cũ được tính lại với giá mới.
 
-## Contract (sau P6-09)
+## Contract (đồng bộ cùng implementation theo quyết định đã duyệt)
 
 | Endpoint | operationId | Success | Lỗi riêng |
 |---|---|---|---|
 | `POST /invoices/generate` | `postInvoicesGenerate` | `200 INVOICES_GENERATED` | `404 BUILDING_NOT_FOUND`, `403 FORBIDDEN`, `422 VALIDATION_FAILED` |
 
-- File: `api-docs/src/paths/invoices/invoices-generate.yaml` (P6-09 tạo); request `api-docs/src/requests/invoices/invoice-generate-request-dto.yaml`. P6-09 gỡ `POST /invoices` (`createSettlementInvoice`).
+- File contract: `api-docs/src/paths/invoices/invoices-generate.yaml`; request `api-docs/src/requests/invoices/invoice-generate-request-dto.yaml`. Cập nhật operation/schema cùng PR implementation theo P6-D64/D72; bỏ `POST /invoices` settlement (`createSettlementInvoice`) khỏi spec.
 - Role: `landlord`. Trả `200` (không phải `201`) vì một lần gọi có thể chỉ tính lại.
 - Response `data`:
 

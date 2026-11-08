@@ -1,7 +1,7 @@
 # P7-02 — Route API Community và PushDevice qua Gateway
 
 **Assignee:** `baoduong17` · **Iteration:** It5 · **Ước lượng:** 1 point
-**Repo:** `api-gateway` · **Phụ thuộc:** — · **Trạng thái:** 🟡 Open
+**Repo:** `api-gateway` · **Phụ thuộc:** — · **Trạng thái:** 🟢 Done
 
 ## Bối cảnh agent cần đọc
 

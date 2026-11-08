@@ -2,7 +2,7 @@
 
 **Epic:** [P6-02](P6-02-tenancy-billing-vertical-slice.md)  
 **Trạng thái:** 🟡 Open  
-**Người phụ trách:** huynhtiennhat0403  
+**Người phụ trách:** leminhkhai345  
 **Người review:** baoduong17 (API owner) — **bắt buộc approve trước khi code P6-02b/d/e**  
 **Ước lượng:** 2 points · 4–6 giờ  
 **Phụ thuộc:** —  

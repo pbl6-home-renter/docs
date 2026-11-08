@@ -4,7 +4,7 @@
 **Người phụ trách:** baoduong17  
 **Người review:** cả team  
 **Ước lượng:** 3 points · 8 giờ  
-**Phụ thuộc:** P6-01e1–e3, P6-02g1–g3, P6-10b, P6-11 (seed chạy được khi các bảng đã có migration)  
+**Phụ thuộc:** P6-01e1–e3, P6-02g1–g3, P6-11 (seed chạy được khi các bảng đã có migration)  
 **Repo / branch:** `Identity-Service`, `Tenancy-Service` · `feature/p6-07-demo-seed`; `pm` (kịch bản demo)  
 **Iteration:** It6 (seed) → It7 (diễn tập)  
 **Issue:** `docs#87`
@@ -69,7 +69,7 @@ Staging có dữ liệu thật để demo vòng đời landlord-solo **từ tòa
 
 ### Bước 5 — Kịch bản demo + diễn tập
 
-- **File tạo:** `pm/phase-6/demo-script.md` (*mới*): tài khoản, thứ tự màn hình (admin duyệt tòa → landlord tạo HĐ, upload bản ký, activate → thêm member → chụp công tơ OCR → generate hóa đơn → xử lý phòng bị chặn → phát hành → void + tạo lại → checkout → mark-ready), câu nói cho từng bước, phương án dự phòng khi OCR/API lỗi (nhập tay, dữ liệu đã seed sẵn).
+- **File tạo:** `pm/phase-6/demo-script.md` (*mới*): tài khoản, thứ tự màn hình (admin duyệt tòa → landlord tạo HĐ, upload bản ký, activate → thêm member → nhập chỉ số thủ công kèm ảnh → generate hóa đơn → xử lý phòng bị chặn → phát hành → void + tạo lại → checkout → mark-ready), câu nói cho từng bước và phương án dự phòng khi API lỗi (dữ liệu đã seed sẵn).
 - **Kiểm tra bước:** diễn tập 1 lần cuối It6 với cả team; bug ghi thành issue It7.
 
 ## Ngoài phạm vi

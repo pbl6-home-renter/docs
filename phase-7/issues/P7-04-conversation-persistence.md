@@ -1,7 +1,7 @@
 # P7-04 — Tạo Conversation generic và persistence
 
 **Assignee:** `baoduong17` · **Iteration:** It5 · **Ước lượng:** 3 points
-**Repo:** `community-service` · **Phụ thuộc:** P7-01, P7-03 · **Trạng thái:** 🟡 Open
+**Repo:** `community-service` · **Phụ thuộc:** P7-01, P7-03 · **Trạng thái:** 🟢 Done
 
 ## Context chuyển cho agent
 

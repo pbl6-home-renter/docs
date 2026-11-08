@@ -5,7 +5,7 @@
 **Người phụ trách:** ThaiBao11125  
 **Người review:** baoduong17  
 **Ước lượng:** 3 points · 6–8 giờ  
-**Phụ thuộc:** P6-09 (api-docs khớp `P6-D64`/`P6-D65`); BE P6-02g1–g3 (generate, list/detail/patch, issue/void); FE P6-06b (link sửa chỉ số), P6-06a (link sửa HĐ, Dialog số xe khi `active`); BE P6-01e3 (`PATCH /contracts/{id}` cho HĐ `active`)  
+**Phụ thuộc:**; BE P6-02g1–g3 (generate, list/detail/patch, issue/void); FE P6-06b (link sửa chỉ số), P6-06a (link sửa HĐ, Dialog số xe khi `active`); BE P6-01e3 (`PATCH /contracts/{id}` cho HĐ `active`) 
 **Repo / branch:** `fe` · `feat/p6-06c-invoice-screens`  
 **Iteration:** It6 (09/11–15/11)  
 **Issue:** `docs#104`
@@ -30,7 +30,7 @@ Landlord vào **Hóa đơn**, chọn tòa + kỳ, bấm **Lập hóa đơn** →
 
 | Endpoint (`api-docs/src/paths/invoices/`) | Thành công | Lỗi cần xử lý trên UI |
 |---|---|---|
-| `POST /invoices/generate` (P6-09 thêm) | `200`/`201` + `generated[]`, `recalculated[]`, `blocked[]` (tên field theo api-docs) | `403`, `404` tòa, `422 VALIDATION_FAILED` |
+| `POST /invoices/generate` ( thêm) | `200`/`201` + `generated[]`, `recalculated[]`, `blocked[]` (tên field theo api-docs) | `403`, `404` tòa, `422 VALIDATION_FAILED` |
 | `GET /invoices` (`invoices.yaml`, `getInvoices`) — `filter[buildingId]`, `filter[period]`, `filter[status]`, `filter[roomId]` | `200 INVOICES_FETCHED` | `422` |
 | `GET /invoices/{id}` (`getInvoicesInvoiceid`) | `200 INVOICE_FETCHED` | `404` |
 | `PATCH /invoices/{id}` (`patchInvoicesInvoiceid`) — `otherFees[]`, `note` | `200 INVOICE_UPDATED` | `409 INVOICE_ALREADY_ISSUED`, `422 TOTAL_NEGATIVE`, `VALIDATION_FAILED` |
@@ -55,7 +55,7 @@ Mã `reasonCode` trong `blocked[]` (`pm/phase-1/discovery/utility-billing-calcul
 |---|---|---|
 | `buildingId`, `period` (generate) | Select Tòa + picker Kỳ trên thanh lọc | bắt buộc; kỳ `YYYY-MM` |
 | `code`, `roomName`, `tenantName`, `period`, `status`, `totalAmount` | cột danh sách | chỉ đọc |
-| `breakdown[]` (`type`, `name`, `rateKind`, `quantity`, `unit`, `unitPrice`, `prorateRatio`, `amount`; tên theo api-docs sau P6-09) | bảng "Chi tiết dịch vụ" ở trang chi tiết | chỉ đọc, giữ số thập phân như API trả |
+| `breakdown[]` (`type`, `name`, `rateKind`, `quantity`, `unit`, `unitPrice`, `prorateRatio`, `amount`; tên theo api-docs sau ) | bảng "Chi tiết dịch vụ" ở trang chi tiết | chỉ đọc, giữ số thập phân như API trả |
 | `otherFees[].name` | "Nội dung" | bắt buộc, không rỗng |
 | `otherFees[].amount` | "Số tiền" (cho nhập dấu `-`) | bắt buộc, khác 0, số nguyên đồng; âm = giảm trừ |
 | `note` | "Ghi chú" (`Textarea`) | tuỳ chọn |
@@ -74,7 +74,7 @@ Mã `reasonCode` trong `blocked[]` (`pm/phase-1/discovery/utility-billing-calcul
 
 ## Các bước triển khai
 
-### Bước 1 — Đọc contract sau P6-09, chuẩn bị dữ liệu
+### Bước 1 — Đọc contract hiện hành trong `api-docs`, chuẩn bị dữ liệu
 
 - **Cách làm:** ghi vào comment issue: response `generate`, tên field `breakdown` (đối chiếu `P6-D72`: không còn `sendNotification`, `vietQrContent`). Staging: tòa 3 phòng có HĐ active; 2 phòng đủ chỉ số kỳ, 1 phòng thiếu nước.
 - **Kiểm tra bước:** Apidog `POST /invoices/generate` trả 2 hóa đơn + 1 `blocked` `READING_MISSING`.

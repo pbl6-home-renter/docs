@@ -5,7 +5,7 @@
 **Người phụ trách:** leminhkhai345  
 **Người review:** baoduong17 (BE Lead, API owner)  
 **Ước lượng:** 8 points (tổng e1–e3)  
-**Phụ thuộc:** P6-01d, P6-09  
+**Phụ thuộc:** P6-01d 
 **Repo:** `Tenancy-Service`  
 **Iteration:** 6 (09/11–15/11)  
 **Issue:** `docs#69`
@@ -14,9 +14,9 @@
 
 | ID | Task | Endpoint | Pts | Phụ thuộc |
 |---|---|---|---|---|
-| [P6-01e1](P6-01e1-contract-members.md) | Bảng `contract_members`, tự thêm đại diện khi activate, API member, hàm `headCount` | `POST/GET /contract-members`, `PATCH /contract-members/{id}`, `POST /contract-members/{id}/leave-contract` | 3 | P6-01d, P6-09 |
-| [P6-01e2](P6-01e2-tenant-my-contracts.md) | Tenant xem HĐ của mình | `GET /me/contracts` (+ quyền member ở `GET /contracts/{id}`) | 2 | P6-01e1, P6-09 |
-| [P6-01e3](P6-01e3-contract-checkout.md) | Checkout: HĐ `terminated`, member rời, phòng `maintenance`; sửa `vehicleCount`/`description` khi HĐ `active` (`P6-D71`) | `POST /contracts/{id}/complete-checkout`, `PATCH /contracts/{id}` | 3 | P6-01e1, P6-01d, P6-02g1, P6-09 |
+| [P6-01e1](P6-01e1-contract-members.md) | Bảng `contract_members`, tự thêm đại diện khi activate, API member, hàm `headCount` | `POST/GET /contract-members`, `PATCH /contract-members/{id}`, `POST /contract-members/{id}/leave-contract` | 3 | P6-01d |
+| [P6-01e2](P6-01e2-tenant-my-contracts.md) | Tenant xem HĐ của mình | `GET /me/contracts` (+ quyền member ở `GET /contracts/{id}`) | 2 | P6-01e1 |
+| [P6-01e3](P6-01e3-contract-checkout.md) | Checkout: HĐ `terminated`, member rời, phòng `maintenance`; sửa `vehicleCount`/`description` khi HĐ `active` (`P6-D71`) | `POST /contracts/{id}/complete-checkout`, `PATCH /contracts/{id}` | 3 | P6-01e1, P6-01d, P6-02g1 |
 
 Thứ tự: `P6-01e1 → (P6-01e2 ∥ P6-01e3)`. P6-01e3 chờ thêm bảng `invoices` của P6-02g1.
 

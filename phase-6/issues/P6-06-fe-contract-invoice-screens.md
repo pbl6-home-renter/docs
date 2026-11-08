@@ -4,7 +4,7 @@
 **Người phụ trách:** ThaiBao11125  
 **Người review:** baoduong17  
 **Ước lượng:** 12 points (4 sub-issue × 3 points) · 24–32 giờ  
-**Phụ thuộc:** P6-09 (api-docs khớp `decisions.md`) chặn **cả 4** sub-issue; P6-03c (feature `rooms` trên FE); BE P6-01b–e, P6-02e–h, P6-02g1–g3, P6-10b (ai-service OCR)  
+**Phụ thuộc:** chặn **cả 4** sub-issue; P6-03c (feature `rooms` trên FE); BE P6-01b–e, P6-02e–h, P6-02g1–g3
 **Iteration:** It6 (09/11–15/11); P6-06d có thể dời It7  
 **Repo:** `fe`  
 **Issue:** `docs#86`
@@ -13,15 +13,15 @@
 
 ## Mục tiêu
 
-Landlord thao tác trọn vòng đời trên Web và dừng ở **phát hành hóa đơn** (`P6-D61`): tạo HĐ nháp → áp mẫu, tải bản nháp → upload bản ký, kích hoạt → nhập chỉ số điện nước (tay hoặc OCR gợi ý) có ảnh minh chứng → lập hóa đơn theo tòa + kỳ → sửa phí khác → phát hành / hủy và lập lại → quản lý thành viên → trả phòng.
+Landlord thao tác trọn vòng đời trên Web và dừng ở **phát hành hóa đơn** (`P6-D61`): tạo HĐ nháp → áp mẫu, tải bản nháp → upload bản ký, kích hoạt → nhập chỉ số điện nước thủ công có ảnh minh chứng → lập hóa đơn theo tòa + kỳ → sửa phí khác → phát hành / hủy và lập lại → quản lý thành viên → trả phòng.
 
 ## Sub-issue
 
 | ID | Task | Pts | Phụ thuộc chính | Màn UI (outline Phase 2) |
 |---|---|---|---|---|
-| [P6-06a](P6-06a-fe-contract-list-create-activate.md) · [#102](https://github.com/pbl6-home-renter/docs/issues/102) | Danh sách, tạo HĐ nháp, áp mẫu, bản nháp, upload bản ký, kích hoạt | 3 | P6-01b/c/d, P6-09, P6-03c | LL-11, LL-12, LL-13, LL-14 |
-| [P6-06b](P6-06b-fe-meter-reading-entry.md) · [#103](https://github.com/pbl6-home-renter/docs/issues/103) | Nhập chỉ số theo tòa + kỳ, OCR gợi ý, ảnh minh chứng, khóa kỳ | 3 | P6-02e/f, P6-02h, P6-10b, P6-09 | LL-18, LL-18b, LL-20 |
-| [P6-06c](P6-06c-fe-invoice-screens.md) · [#104](https://github.com/pbl6-home-renter/docs/issues/104) | Lập hóa đơn (kết quả + phòng bị chặn), danh sách, chi tiết, phí khác, phát hành, hủy + lập lại | 3 | P6-02g1–g3, P6-01e3 (sửa số xe HĐ `active`), P6-09 | LL-21, LL-22 (phần phát hành) |
+| [P6-06a](P6-06a-fe-contract-list-create-activate.md) · [#102](https://github.com/pbl6-home-renter/docs/issues/102) | Danh sách, tạo HĐ nháp, áp mẫu, bản nháp, upload bản ký, kích hoạt | 3 | P6-01b/c/d, P6-03c | LL-11, LL-12, LL-13, LL-14 |
+| [P6-06b](P6-06b-fe-meter-reading-entry.md) · [#103](https://github.com/pbl6-home-renter/docs/issues/103) | Nhập chỉ số theo tòa + kỳ, ảnh minh chứng, khóa kỳ | 3 | P6-02e/f, P6-02h | LL-18, LL-18b |
+| [P6-06c](P6-06c-fe-invoice-screens.md) · [#104](https://github.com/pbl6-home-renter/docs/issues/104) | Lập hóa đơn (kết quả + phòng bị chặn), danh sách, chi tiết, phí khác, phát hành, hủy + lập lại | 3 | P6-02g1–g3, P6-01e3 (sửa số xe HĐ `active`) | LL-21, LL-22 (phần phát hành) |
 | [P6-06d](P6-06d-fe-contract-members-checkout.md) · [#105](https://github.com/pbl6-home-renter/docs/issues/105) | Tab thành viên, trả phòng, phòng sẵn sàng cho thuê — ⚠️ **có thể dời It7** | 3 | P6-01e1, P6-01e3, P6-06a | LL-15, LL-16, LL-17, LL-32 |
 | **Tổng** | | **12** | | |
 
@@ -43,7 +43,7 @@ Thứ tự: `P6-06a → P6-06d`; `P6-06b → P6-06c` (link sửa `READING_MISSIN
 | Trường `rentalType`, CCCD, `paymentDueDay` khi tạo HĐ (LL-11) | `P6-D68` |
 | CCCD/ảnh CCCD/cờ đại diện của thành viên, "xóa" thành viên (LL-16, LL-17) | `P6-D63` (rời = `leftAt`) |
 | Toggle "Có xe" từng thành viên (LL-16/LL-54) | `P1-D32`, `P6-D65` — số xe ở HĐ |
-| `readingDate`, `readingMethod`, OCR preview trong Tenancy | `P6-D66`, `P6-D67` |
+| OCR preview trong Tenancy | Chưa có endpoint được công bố trong phạm vi issue hiện tại |
 | Phòng `pending_cleanup` sau trả phòng | `P6-D62` — dùng `maintenance` + `mark-ready` |
 | Ô chọn tài khoản tenant khi tạo HĐ/thêm thành viên | `P6-D74` — Stretch |
 | VietQR trên hóa đơn (LL-22), checkbox gửi thông báo khi phát hành | `P6-D72` |
@@ -69,5 +69,5 @@ Thứ tự: `P6-06a → P6-06d`; `P6-06b → P6-06c` (link sửa `READING_MISSIN
 ## Definition of Done (epic)
 
 - [ ] P6-06a–c đóng trong It6; P6-06d đóng trong It6 hoặc được PM xác nhận dời It7.
-- [ ] Demo trên staging: tạo HĐ → kích hoạt → nhập chỉ số (1 phòng bằng OCR) → lập hóa đơn → phát hành, không lỗi console.
+- [ ] Demo trên staging: tạo HĐ → kích hoạt → nhập chỉ số thủ công có ảnh minh chứng → lập hóa đơn → phát hành, không lỗi console.
 - [ ] Các sub-issue làm đúng các D-ID ở mục "Vấn đề còn mở → đã chốt".

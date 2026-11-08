@@ -1,7 +1,7 @@
 # P7-06 — Lưu Message, sequence và idempotency key
 
 **Assignee:** `baoduong17` · **Iteration:** It5 · **Ước lượng:** 3 points
-**Repo:** `community-service` · **Phụ thuộc:** P7-04, P7-05 · **Trạng thái:** 🟡 Open
+**Repo:** `community-service` · **Phụ thuộc:** P7-04, P7-05 · **Trạng thái:** 🟢 Done
 
 ## Context agent
 

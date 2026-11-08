@@ -2,10 +2,10 @@
 
 **Epic:** [P6-02](P6-02-tenancy-billing-vertical-slice.md)  
 **Trạng thái:** 🔵 Split — làm qua 4 sub-issue bên dưới, issue này đóng khi cả 4 Done  
-**Người phụ trách:** huynhtiennhat0403  
+**Người phụ trách:** leminhkhai345  
 **Người review:** baoduong17 (BE Lead, API owner)  
 **Ước lượng:** 11 points (tổng sub-issue)  
-**Phụ thuộc:** P6-09 (api-docs khớp `decisions.md`), P6-02c, P6-02e, P6-02h (migration `meter_readings`), P6-01e1/P6-01e2 (`contract_members`, quy tắc "HĐ của tôi")  
+**Phụ thuộc:** P6-02c, P6-02e, P6-02h (migration `meter_readings`), P6-01e1/P6-01e2 (`contract_members`, quy tắc "HĐ của tôi")
 **Repo:** `Tenancy-Service` (+ 1 dòng ở `api-gateway` trong g4)  
 **Iteration:** It6 (09/11–15/11)  
 **Issue:** `docs#77`
@@ -26,12 +26,12 @@ Landlord chọn Tòa + Kỳ → sinh/tính lại hóa đơn `pending` cho mọi 
 
 | ID | Task | Endpoint | Estimate | Phụ thuộc |
 |---|---|---|---|---|
-| [P6-02g1](P6-02g1-invoice-domain-calculator.md) | Aggregate, bảng `invoices`, calculator thuần + bảng Ví dụ số | — | 3 pts | P6-09 |
+| [P6-02g1](P6-02g1-invoice-domain-calculator.md) | Aggregate, bảng `invoices`, calculator thuần + bảng Ví dụ số | — | 3 pts |  |
 | [P6-02g2](P6-02g2-invoice-generate.md) | Sinh / tính lại `pending` theo tòa + kỳ, `blocked[]` | `POST /invoices/generate` | 3 pts | g1, P6-02h, P6-01e1 |
 | [P6-02g3](P6-02g3-invoice-landlord-manage.md) | Landlord list/detail/PATCH, phát hành hàng loạt (`Idempotency-Key`), hủy | `GET /invoices`, `GET/PATCH /invoices/{id}`, `POST /invoices/issue-invoice`, `POST /invoices/{id}/cancel-invoice` | 3 pts | g2 |
 | [P6-02g4](P6-02g4-invoice-tenant-view.md) | Tenant xem hóa đơn `issued` | `GET /me/invoices`, `GET /invoices/{id}` | 2 pts | g3, P6-01e2 |
 
-Thứ tự: `P6-09 → g1 → P6-02h → g2 → g3 → g4`.
+Thứ tự: `g1 → P6-02h → g2 → g3 → g4`. API contract được cập nhật trong PR implementation của từng issue backend, không có dependency P6-09 riêng.
 
 ## Đã gỡ khỏi phạm vi (so với outline cũ)
 

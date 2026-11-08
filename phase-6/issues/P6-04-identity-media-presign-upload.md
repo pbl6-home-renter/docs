@@ -2,7 +2,7 @@
 
 **Trạng thái:** 🟡 Open  
 **Người phụ trách:** baoduong17  
-**Người review:** BE member (leminhkhai345 hoặc huynhtiennhat0403)  
+**Người review:** baoduong17 (BE Lead, API owner)  
 **Ước lượng:** 8 points · 18–24 giờ  
 **Phụ thuộc:** — (chặn P6-03b, P6-03d, và upload file HĐ ký trong Contract)  
 **Repo / branch:** `Identity-Service` · `feature/p6-04-media-upload`; `infra` (env R2); `api-doc` (sửa contract nếu chốt mục dưới)  

@@ -5,7 +5,7 @@
 **Ước lượng:** 2 points
 **Repo:** `api-docs`
 **Phụ thuộc:** —
-**Trạng thái:** 🟡 Open
+**Trạng thái:** 🟢 Done
 
 ## Bối cảnh cho agent
 

@@ -1,11 +1,11 @@
-# P6-06b — Nhập chỉ số điện nước theo tòa và kỳ, có OCR gợi ý (Web)
+# P6-06b — Nhập chỉ số điện nước theo tòa và kỳ, kèm ảnh minh chứng (Web)
 
 **Epic:** [P6-06](P6-06-fe-contract-invoice-screens.md)  
 **Trạng thái:** 🟡 Open  
 **Người phụ trách:** ThaiBao11125  
 **Người review:** baoduong17  
 **Ước lượng:** 3 points · 6–8 giờ  
-**Phụ thuộc:** P6-09 (api-docs khớp `P6-D66`/`P6-D67`); BE P6-02e (`POST/GET /meter-readings`), P6-02f (`POST /meter-readings/bulk`), P6-02h (`source`/`ocrValue`, `evidenceMediaId`, baseline kỳ đầu, `PATCH` có khóa kỳ), P6-10b (`POST /api/v1/ai/meter-readings/ocr`); FE P6-03c (API phòng)  
+**Phụ thuộc:** BE P6-02e (`POST/GET /meter-readings`), P6-02f (`POST /meter-readings/bulk`), P6-02h (`source`/`ocrValue`, `evidenceMediaId`, baseline kỳ đầu, `PATCH` có khóa kỳ); FE P6-03c (API phòng)
 **Repo / branch:** `fe` · `feat/p6-06b-meter-reading-entry`  
 **Iteration:** It6 (09/11–15/11)  
 **Issue:** `docs#103`
@@ -20,9 +20,9 @@ Landlord mở **Chỉ số điện nước**, chọn tòa + kỳ (`YYYY-MM`), th
 
 - `P6-D70` — response reading có `evidenceMediaId` (null = chưa có ảnh) → FE biết trạng thái ảnh sau F5; sau khi upload ảnh gọi `PATCH /meter-readings/{id} { evidenceMediaId }`; chỉ sửa được reading **mới nhất** của phòng + loại (`409 METER_READING_NOT_LATEST`); không có xóa; bulk remains atomic; a missing baseline returns `BASELINE_REQUIRED` and rolls back all submitted readings (P6-D60); kỳ đầu `previous` = chỉ số bàn giao.
 - `P6-D66` — giữ bulk; không gửi `evidenceMediaId` lúc tạo; ảnh minh chứng upload **sau** khi tạo reading (`ownerType=meter_reading`, `ownerId=<readingId>`, `purpose=meter_reading_evidence`), FE bắt buộc có ảnh; thêm `source: manual|ocr`, `ocrValue?`; kỳ (`period`) là khóa, không có `readingDate`; sửa bị chặn khi kỳ đã có hóa đơn `issued` → `409 PERIOD_ALREADY_INVOICED`.
-- `P6-D67` — chụp ảnh → `POST /api/v1/ai/meter-readings/ocr` (multipart, JPEG/PNG/WebP ≤ 5 MB, timeout 15 s) → hiện số gợi ý + độ tin cậy → người dùng xác nhận/sửa → `POST /meter-readings` với `source='ocr'`, `ocrValue` → upload ảnh. Lỗi/timeout/`value=null` → chuyển nhập tay. AI chỉ gợi ý; Tenancy vẫn kiểm tra `current ≥ previous` (EC1).
+- `P6-D67` mô tả OCR ở `ai-service`, nhưng endpoint OCR không nằm trong backlog/API contract đang dùng cho issue này. Không tự gọi endpoint đó; chỉ triển khai nhập tay với `source=manual`. Mở rộng OCR cần flow/API được PM và API owner xác nhận riêng.
 - `P6-D69` — upload sau khi có id thật.
-- `P1-D35` — OCR sai/mờ thì chụp lại hoặc sửa tay; luôn phải có ảnh công tơ.
+- `P1-D35` — luôn phải có ảnh công tơ làm minh chứng.
 - `P6-D65` — chỉ số là string decimal, không ép `number`.
 
 ## Contract
@@ -33,7 +33,6 @@ Landlord mở **Chỉ số điện nước**, chọn tòa + kỳ (`YYYY-MM`), th
 | `POST /meter-readings` (`postMeterReadings`) | `201 METER_READING_CREATED` | `409 DUPLICATE_METER_READING`, `422 CURRENT_READING_INVALID`, `BASELINE_REQUIRED`, `VALIDATION_FAILED` |
 | `POST /meter-readings/bulk` (`meter-readings-bulk.yaml`, `postBulkMeterReadings`) | `201 METER_READINGS_BULK_RECORDED` (`results[]` có `electricityReadingId`, `waterReadingId`; successful results only) | `409 DUPLICATE_READING`, `422 CURRENT_READING_INVALID` (theo P6-02f) |
 | `PATCH /meter-readings/{meterReadingId}` (`patchMeterReadingsMeterreadingid`) `{ currentReading?, evidenceMediaId? }` | `200 METER_READING_UPDATED` | `409 PERIOD_ALREADY_INVOICED`, `409 METER_READING_NOT_LATEST`, `422 CURRENT_READING_INVALID` |
-| `POST /api/v1/ai/meter-readings/ocr` (`api-docs/src/paths/ai/`, P6-09/P6-10b) | `200` `{ value: string \| null, confidence: number }` | `413`/`422` ảnh sai, `429`, timeout |
 | `GET /invoices?filter[buildingId]&filter[period]&filter[status]=issued` | `200 INVOICES_FETCHED` | — (dùng để tính phòng bị khóa) |
 | Media presign → PUT → complete (`features/media`) | `MEDIA_UPLOAD_COMPLETED` | `MEDIA_TYPE_NOT_ALLOWED`, `MEDIA_FILE_TOO_LARGE` |
 
@@ -44,14 +43,14 @@ Danh sách phòng: `GET /me/rooms?filter[buildingId]` (P6-03c). Chỉ số kỳ 
 | DTO field | UI | Validation / ghi chú |
 |---|---|---|
 | `roomId`, `type` (`electricity`/`water`) | dòng phòng × cột Điện / Nước | lấy từ dòng, không cho nhập |
-| `period` (bulk: tên field theo api-docs sau P6-09) | Picker "Kỳ" trên thanh lọc | `^[0-9]{4}-(0[1-9]\|1[0-2])$`, lưu trên URL |
+| `period` (bulk: tên field theo api-docs sau ) | Picker "Kỳ" trên thanh lọc | `^[0-9]{4}-(0[1-9]\|1[0-2])$`, lưu trên URL |
 | `previousReading` (response) | cột "Chỉ số cũ" (chỉ đọc) | lấy từ kỳ trước hoặc chỉ số bàn giao cùng kỳ (`P6-D70`); chưa có → nhãn "Chưa có chỉ số bàn giao" |
 | `currentReading` | ô "Chỉ số mới" | bắt buộc, `^(0\|[1-9][0-9]*)(\.[0-9]+)?$`; FE cảnh báo khi < chỉ số cũ, BE quyết định (`CURRENT_READING_INVALID`) |
 | `isBaseline` | checkbox "Chỉ số bàn giao / thay đồng hồ" (chỉ trong Dialog từng phòng) | mặc định `false` |
 | `source` | không hiển thị; `ocr` nếu số đến từ AI (kể cả đã sửa), ngược lại `manual` | enum `manual\|ocr` |
-| `ocrValue` | nhãn nhỏ "AI gợi ý: 1380 (92%)" | gửi khi `source=ocr`, giữ nguyên số AI trả |
+| `ocrValue` | không hiển thị | không gửi trong luồng nhập tay |
 | `consumption` (response) | cột "Tiêu thụ" | chỉ đọc |
-| file ảnh | nút "Chụp/Chọn ảnh" mỗi ô | JPEG/PNG/WebP; ≤ 5 MB cho OCR; bắt buộc trước khi Lưu |
+| file ảnh | nút "Chụp/Chọn ảnh" mỗi ô | bắt buộc trước khi Lưu |
 | `evidenceMediaId` (response; PATCH body) | biểu tượng ảnh / nhãn "Thiếu ảnh" | `null` → "Thiếu ảnh" + nút "Tải lại ảnh"; có id → mở ảnh bằng `useMediaObjectUrl` |
 
 ## Tham chiếu code
@@ -63,14 +62,14 @@ Danh sách phòng: `GET /me/rooms?filter[buildingId]` (P6-03c). Chỉ số kỳ 
 
 ## Các bước triển khai
 
-### Bước 1 — Đọc contract sau P6-09 và chuẩn bị dữ liệu
+### Bước 1 — Đọc contract hiện hành và chuẩn bị dữ liệu
 
-- **Cách làm:** đọc `meter-readings*.yaml`, `paths/ai/`; ghi vào comment issue tên field bulk, atomic bulk error response, response OCR. Trên staging: tòa có 3 phòng có HĐ active, baseline kỳ trước đã nhập bằng Apidog; chuẩn bị 2 ảnh công tơ (1 rõ, 1 mờ).
-- **Kiểm tra bước:** Apidog gọi OCR với ảnh rõ trả `value` khác `null`; với ảnh mờ trả `null` hoặc confidence thấp.
+- **Cách làm:** đọc `meter-readings*.yaml` và xác nhận `source`/`ocrValue` theo P6-D67. Không gọi endpoint OCR đã bị gỡ khỏi phạm vi; nếu `ai-service` chưa có endpoint OCR đang được công bố thì luồng nhập tay vẫn hoạt động, OCR để ngoài phạm vi. Trên staging: tòa có 3 phòng có HĐ active, baseline kỳ trước đã nhập bằng Apidog.
+- **Kiểm tra bước:** xác nhận API đọc/ghi MeterReading trong `api-docs`; không phụ thuộc endpoint OCR đã bị gỡ khỏi phạm vi.
 
-### Bước 2 — Tầng dữ liệu `meter-readings` + OCR
+### Bước 2 — Tầng dữ liệu `meter-readings`
 
-- **Cách làm:** DTO, API, query keys, hook cho list, create, bulk, `PATCH` và OCR (multipart, hủy sau 15 s bằng `AbortController`, `skipErrorToast` vì lỗi OCR xử lý tại chỗ). Namespace `meterReadings` theo `fe-structure` §5.
+- **Cách làm:** DTO, API, query keys, hook cho list, create, bulk và `PATCH`. Namespace `meterReadings` theo `fe-structure` §5.
 - **Kiểm tra bước:** `npm run build` pass.
 
 ### Bước 3 — Trang `/meter-readings`: chọn tòa + kỳ, bảng phòng
@@ -78,10 +77,10 @@ Danh sách phòng: `GET /me/rooms?filter[buildingId]` (P6-03c). Chỉ số kỳ 
 - **Cách làm:** thanh lọc Tòa + Kỳ (mặc định tháng hiện tại, lưu trên URL). Bảng: Phòng | Điện (cũ / mới / tiêu thụ) | Nước (cũ / mới / tiêu thụ) | Ảnh | Trạng thái. Phòng có hóa đơn `issued` của kỳ → badge **Đã khóa**, ô chỉ đọc. Ô ảnh lấy từ `evidenceMediaId` của reading (không lưu trạng thái ảnh ở client). Chưa chọn tòa → empty state hướng dẫn.
 - **Kiểm tra bước:** chọn tòa + kỳ có dữ liệu → thấy chỉ số cũ đúng kỳ trước; F5 giữ tòa và kỳ.
 
-### Bước 4 — Ô nhập có OCR (dùng chung cho bảng và Dialog)
+### Bước 4 — Nhập chỉ số và giữ ảnh minh chứng
 
-- **Cách làm:** nút "Chụp/Chọn ảnh" (`<input type="file" accept="image/jpeg,image/png,image/webp" capture="environment">`, trên điện thoại mở camera). Kiểm tra MIME/≤ 5 MB → gọi OCR, hiện spinner. Có `value` → điền ô, hiện "AI gợi ý: X (độ tin cậy Y%)", người dùng xác nhận hoặc sửa. Lỗi, timeout hoặc `value=null` → `AlertBanner` "Không nhận diện được, vui lòng nhập tay" (LL-20), ô trống, **giữ ảnh** để làm minh chứng. Nút "Chụp lại".
-- **Kiểm tra bước:** ảnh rõ → ô có số gợi ý; ảnh mờ → banner nhập tay, ô trống; tắt mạng khi gọi OCR → sau ≤ 15 s chuyển nhập tay, trang không trắng.
+- **Cách làm:** nhập chỉ số bằng tay, hỗ trợ chọn/chụp ảnh minh chứng. Không gửi ảnh tới endpoint OCR trong phạm vi issue này. Upload ảnh sau khi tạo reading theo P6-D66/D69.
+- **Kiểm tra bước:** nhập chỉ số và ảnh minh chứng hoạt động; lỗi upload không làm mất giá trị đã nhập, có thể thử tải lại.
 
 ### Bước 5 — Lưu từng phòng và lưu cả tòa, rồi upload ảnh
 
@@ -116,14 +115,13 @@ Danh sách phòng: `GET /me/rooms?filter[buildingId]` (P6-03c). Chỉ số kỳ 
 ## Acceptance
 
 - [ ] Chọn tòa + kỳ → bảng phòng có chỉ số cũ, giữ trên URL.
-- [ ] Ảnh rõ → số gợi ý + độ tin cậy; lưu → reading có `source=ocr`, `ocrValue` (kiểm tra bằng `GET /meter-readings`).
-- [ ] OCR lỗi / timeout 15 s / `value=null` → nhập tay được, reading lưu với `source=manual`.
+- [ ] Nhập tay lưu reading với `source=manual`; không gọi endpoint OCR đã bị gỡ.
 - [ ] Không có ảnh → không lưu được ô đó; lưu xong → ảnh `meter_reading_evidence` gắn đúng `readingId` và `GET /meter-readings` trả `evidenceMediaId`; F5 vẫn hiện đúng "có ảnh" / "Thiếu ảnh".
 - [ ] Bulk 3 phòng → `201 METER_READINGS_BULK_RECORDED`; one room lacks a baseline → `BASELINE_REQUIRED` and no readings saved; một dòng nhỏ hơn chỉ số cũ → `422 CURRENT_READING_INVALID` hiển thị đúng dòng.
 - [ ] Chỉ reading mới nhất có nút Sửa; kỳ đã phát hành hóa đơn → ô khóa; ép sửa → `409 PERIOD_ALREADY_INVOICED` / `METER_READING_NOT_LATEST` hiển thị đúng.
 
 ## Definition of Done
 
-- [ ] Mọi bước qua phần Kiểm tra bước; mọi ô Acceptance được người làm tick, kèm ảnh/video luồng OCR (thành công + thất bại) trong PR.
+- [ ] Mọi bước qua phần Kiểm tra bước; mọi ô Acceptance được người làm tick, kèm ảnh/video luồng nhập chỉ số và upload minh chứng trong PR.
 - [ ] `npm run build` + `npm run lint` + `npm run i18n:check` pass; không có file `*.test.ts`; key có ở cả `vi` và `en`.
 - [ ] Không sửa file ngoài phạm vi; PR vào `main` ghi `Closes pbl6-home-renter/docs#103`, ≥ 1 reviewer approve.

@@ -2,10 +2,10 @@
 
 **Epic:** [P6-02](P6-02-tenancy-billing-vertical-slice.md)  
 **Trạng thái:** 🟡 Open (viết lại theo `P6-D66`/`P6-D67`/`P6-D70` — thay outline "OCR preview" cũ; ước lượng tăng 2 → 3 points vì thêm baseline kỳ đầu + `evidenceMediaId`, bỏ `DELETE`)  
-**Người phụ trách:** huynhtiennhat0403  
+**Người phụ trách:** leminhkhai345  
 **Người review:** baoduong17 (BE Lead, API owner)  
 **Ước lượng:** 3 points · 8–10 giờ  
-**Phụ thuộc:** P6-09 (contract MeterReading sau D66/D70), P6-02g1 (bảng `invoices` — chỉ cần cho bước 5). **P6-02g2 phụ thuộc task này** (migration phải merge trước, `P6-D70`).  
+**Phụ thuộc:** P6-02g1 (bảng `invoices` — chỉ cần cho bước 5). **P6-02g2 phụ thuộc task này** (migration phải merge trước, `P6-D70`).
 **Repo / branch:** `Tenancy-Service` · `feature/p6-02h-meter-reading-source-lock`  
 **Iteration:** It6 (09/11–15/11)  
 **Issue:** `docs#78`
@@ -34,7 +34,7 @@ Bảng `meter_readings` được tạo bằng migration đúng shape cuối; k�
 - `P6-D69` — upload ảnh sau khi có `readingId` thật; Identity hỏi quyền qua `GET /internal/ownership/meter_reading/{id}` (P6-11).
 - `P6-D65` — chỉ số là `numeric` trong DB, string trong JSON.
 
-## Contract (sau P6-09)
+## Contract (đồng bộ cùng implementation theo quyết định đã duyệt)
 
 | Endpoint | operationId | Success | Lỗi riêng |
 |---|---|---|---|
@@ -42,7 +42,7 @@ Bảng `meter_readings` được tạo bằng migration đúng shape cuối; k�
 | `PATCH /meter-readings/{meterReadingId}` | `patchMeterReadingsMeterreadingid` | `200 METER_READING_UPDATED` | `404 METER_READING_NOT_FOUND`, `409 PERIOD_ALREADY_INVOICED`, `409 METER_READING_NOT_LATEST`, `422 CURRENT_READING_INVALID` |
 
 - Không có `DELETE` trong MVP (`P6-D70`) — nhập sai thì `PATCH`.
-- File: `api-docs/src/paths/billing/meter-readings.yaml`, `meter-readings-meterReadingId.yaml` (P6-09 tạo); request `api-docs/src/requests/rooms/meter-reading-create-request-dto.yaml`, `meter-reading-update-request-dto.yaml` (mới); schema `api-docs/src/schemas/billing/meter-reading.yaml`. P6-09 bỏ `EVIDENCE_REQUIRED`, `readingDate`, file `meter-readings-preview-ocr-result.yaml`; giữ `evidenceMediaId` (nullable) trong response.
+- File contract: `api-docs/src/paths/billing/meter-readings.yaml`, `meter-readings-meterReadingId.yaml`; request `api-docs/src/requests/rooms/meter-reading-create-request-dto.yaml`, `meter-reading-update-request-dto.yaml`; schema `api-docs/src/schemas/billing/meter-reading.yaml`. Cập nhật spec cùng PR implementation: bỏ `EVIDENCE_REQUIRED`, `readingDate`, `meter-readings-preview-ocr-result.yaml`; giữ `evidenceMediaId` nullable trong response.
 - Role: `landlord`; phòng của landlord khác → `403`.
 
 ### Mapping field

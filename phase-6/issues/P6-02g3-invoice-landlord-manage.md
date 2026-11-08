@@ -2,10 +2,10 @@
 
 **Epic:** [P6-02](P6-02-tenancy-billing-vertical-slice.md) · cha: [P6-02g](P6-02g-invoice-outline.md)  
 **Trạng thái:** 🟡 Open  
-**Người phụ trách:** huynhtiennhat0403  
+**Người phụ trách:** leminhkhai345  
 **Người review:** baoduong17 (BE Lead, API owner)  
 **Ước lượng:** 3 points · 8–12 giờ  
-**Phụ thuộc:** P6-02g2 (có hóa đơn `pending` để thao tác), P6-09 (contract Invoice sau D64)  
+**Phụ thuộc:** P6-02g2 (có hóa đơn `pending` để thao tác) 
 **Repo / branch:** `Tenancy-Service` · `feature/p6-02g3-invoice-landlord`  
 **Iteration:** It6 (09/11–15/11)  
 **Issue:** `docs#100`
@@ -25,7 +25,7 @@ Landlord xem danh sách/chi tiết hóa đơn theo tòa + kỳ, thêm phí khác
 - `P6-D72` — `cancel-invoice` bắt buộc `reason` 1–500 ký tự, lưu vào `void_reason`; `InvoiceIssueRequestDto` **không có** `sendNotification`; response **không có** `vietQrContent` (web không hiển thị QR); tổng = round half-up của Σ dòng.
 - `P6-D61` — không có trạng thái "đã thu": bỏ `paidAmount`, `remainingAmount`, `dueDate`, `INVOICE_ALREADY_PAID`.
 
-## Contract (sau P6-09)
+## Contract (đồng bộ cùng implementation theo quyết định đã duyệt)
 
 | Endpoint | operationId | Success | Lỗi riêng |
 |---|---|---|---|
@@ -36,7 +36,7 @@ Landlord xem danh sách/chi tiết hóa đơn theo tòa + kỳ, thêm phí khác
 | `POST /invoices/{invoiceId}/cancel-invoice` | `postInvoicesInvoiceidCancelInvoice` | `200 INVOICE_CANCELLED` | `409 INVOICE_ALREADY_VOIDED`, `422 VALIDATION_FAILED` (thiếu/sai `reason`), `404`, `403` |
 
 - File: `api-docs/src/paths/invoices/invoices.yaml`, `invoices-invoiceId.yaml`, `invoices-issue-invoice.yaml`, `invoices-invoiceId-cancel-invoice.yaml`; request `api-docs/src/requests/invoices/invoice-update-request-dto.yaml`, `invoices-issue-request-dto.yaml`, `invoice-cancel-request-dto.yaml`.
-- P6-09 sửa so với hiện tại: PATCH `TOTAL_AMOUNT_INVALID` → `TOTAL_NEGATIVE`; `otherFees[].amount` integer → string; cancel bỏ `INVOICE_ALREADY_PAID`/`CANNOT_DELETE`, thêm `INVOICE_ALREADY_VOIDED`; ví dụ `succeeded[].invoiceStatus` phải là `issued`; `maxItems` cho `invoiceIds` (đề xuất **100**, `P2-D43` để BE chọn); list bỏ `format` xlsx/csv/pdf; bỏ `sendNotification` khỏi request issue và `vietQrContent` khỏi response (`P6-D72`).
+- Trong cùng PR implementation, đồng bộ spec: PATCH dùng `TOTAL_NEGATIVE`; `otherFees[].amount` là string; cancel bỏ `INVOICE_ALREADY_PAID`/`CANNOT_DELETE`, thêm `INVOICE_ALREADY_VOIDED`; `succeeded[].invoiceStatus` là `issued`; `maxItems` cho `invoiceIds` theo giới hạn đã chốt ở P2-D43; list bỏ `format` xlsx/csv/pdf; bỏ `sendNotification` và `vietQrContent` theo P6-D72. API owner duyệt thay đổi trước merge.
 - Role: `landlord` cho cả 5 endpoint (tenant xem ở P6-02g4). Hóa đơn của landlord khác → `403`.
 
 ### Mapping field

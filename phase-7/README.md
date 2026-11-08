@@ -1,5 +1,7 @@
 # Phase 7 — Community Service: Chat và Notification
 
+> Trạng thái hiện tại: toàn bộ issue P7-01–P7-18 đã được triển khai xong theo xác nhận của PM. Bảng lịch bên dưới là kế hoạch ban đầu, không phải backlog còn mở.
+
 > **Trạng thái:** Đã xếp lịch, bắt đầu trong It5; chạy song song với các task Phase 6 đã giao.
 > **Phạm vi lịch:** It5 khởi động ngày 02/11/2026. Các iteration sau giữ theo thứ tự phụ thuộc; ngày It8 sẽ chốt khi gần lập lịch.
 > **Thiết kế đã duyệt:** [Community Service design](../phase-6/discovery/community-service-design.md).

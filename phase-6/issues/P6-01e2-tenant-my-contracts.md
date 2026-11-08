@@ -5,7 +5,7 @@
 **Người phụ trách:** leminhkhai345  
 **Người review:** baoduong17 (BE Lead, API owner)  
 **Ước lượng:** 2 points · 4–6 giờ  
-**Phụ thuộc:** P6-01e1 (bảng `contract_members`), P6-09 (`api-docs` bỏ `rentalType`)  
+**Phụ thuộc:** P6-01e1 (bảng `contract_members`) 
 **Repo / branch:** `Tenancy-Service` · `feature/p6-01e2-me-contracts`  
 **Iteration:** It6 (09/11–15/11)  
 **Issue:** `docs#96`
@@ -32,7 +32,7 @@ Tenant gọi `GET /me/contracts` nhận danh sách HĐ mà mình đứng tên **
 | `GET /me/contracts` | `getMeContracts` | tenant | `200 CONTRACTS_MY_FETCHED` + `pagination` offset | `403` (role khác), `422 VALIDATION_FAILED` |
 | `GET /contracts/{contractId}` (sửa quyền) | `getContractsContractid` | landlord, tenant | `200 CONTRACT_FETCHED` | `403`, `404` |
 
-- Path: `api-docs/src/paths/contracts/me-contracts.yaml`; response item `api-docs/src/responses/dtos/contracts/my-contract-list-response-dto.yaml` (**sau P6-09**: không có `rentalType`).
+- Path: `api-docs/src/paths/contracts/me-contracts.yaml`; response item `api-docs/src/responses/dtos/contracts/my-contract-list-response-dto.yaml` (theo P6-D63: không có `rentalType`). Nếu implementation đổi contract, cập nhật `api-docs` cùng PR.
 - Query: `filter[status]` (giá trị của `ContractStatus`), `filter[roomId]` (uuid), `pageNo`, `pageSize ≤ 100`; chỉ `format=json` (khác → `422`).
 - Gateway đã route `/me/contracts` → Tenancy (`api-gateway/src/constants/route-paths.constants.ts`), không cần sửa gateway.
 

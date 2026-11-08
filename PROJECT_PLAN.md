@@ -137,6 +137,8 @@ See `issues/README.md` for the issue list and coverage map.
 
 > **Phase 7 parallel track (approved 2026-11-01):** Community Service starts in It5 (02/11–08/11) without moving Phase 6 tasks. `baoduong17` owns Community backend; `ThaiBao11125` owns Web; `tphuongin` owns Android. It5 foundations are P7-01–06; conversation APIs follow in It6. See the detailed issue tracker in `phase-7/issues/README.md`. Domain event publishers remain later integration work.
 
+> **Phase 8 (dự kiến triển khai trong ba tuần):** Hoàn thiện CRUD Web, vòng đời invoice Tenancy (cập nhật OpenAPI cùng PR implementation), context event/notification qua RabbitMQ, smoke test end-to-end và bộ báo cáo cuối kỳ. Phạm vi chỉ gồm Web; chat P7 đã xong. Xem [`phase-8/README.md`](phase-8/README.md) và [`phase-8/issues/README.md`](phase-8/issues/README.md). Payment/settlement, overdue/reminder/reconciliation và tự liên kết tenant bằng số điện thoại tiếp tục nằm ngoài scope theo P6-D61/D64/D72/D74.
+
 ### Phase 5 — Hardening, demo & submission (W12–14)
 - Bug-fix pass, seed realistic demo data, final deploy.
 - Demo script + rehearsal; record demo video.

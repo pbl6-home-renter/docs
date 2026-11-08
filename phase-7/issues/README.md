@@ -1,6 +1,8 @@
+> Theo xác nhận của PM, toàn bộ task P7-01–P7-18 đã triển khai xong. Trạng thái bên dưới được đồng bộ sang Done.
+
 # Phase 7 — Community Service task tracker
 
-Status: all P7 chat tasks have been implemented, per PM update.
+Trạng thái: toàn bộ task chat P7 đã được triển khai xong theo xác nhận của PM.
 
 Phase 7 bắt đầu song song trong It5 (02/11–08/11). Các task Phase 6 giữ nguyên. Mỗi issue dưới đây có đủ bối cảnh để giao độc lập cho agent; issue không thay thế `AGENTS.md`/skill của repo và không được tự tạo business rule.
 

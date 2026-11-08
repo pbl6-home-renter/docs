@@ -1,7 +1,7 @@
 # P7-15 — Notification inbox và cài đặt push trên Web
 
 **Assignee:** `ThaiBao11125` · **Iteration:** Chưa gán · **Ước lượng:** 3 points
-**Repo:** `fe` · **Phụ thuộc:** Community API list/mark-read/preferences và Socket notification events · **Trạng thái:** 🟡 In progress
+**Repo:** `fe` · **Phụ thuộc:** Community API list/mark-read/preferences và Socket notification events · **Trạng thái:** 🟢 Done
 
 ## Context agent
 

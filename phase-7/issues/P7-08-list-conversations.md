@@ -1,7 +1,7 @@
 # P7-08 — Liệt kê và đọc conversation theo membership
 
 **Assignee:** `baoduong17` · **Iteration:** It6 · **Ước lượng:** 3 points
-**Repo:** `community-service` · **Phụ thuộc:** P7-04–07 · **Trạng thái:** 🟡 Open
+**Repo:** `community-service` · **Phụ thuộc:** P7-04–07 · **Trạng thái:** 🟢 Done
 
 ## Context agent
 

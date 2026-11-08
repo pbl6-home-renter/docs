@@ -2,10 +2,10 @@
 
 **Epic:** [P6-02](P6-02-tenancy-billing-vertical-slice.md) · cha: [P6-02g](P6-02g-invoice-outline.md)  
 **Trạng thái:** 🟡 Open  
-**Người phụ trách:** huynhtiennhat0403  
+**Người phụ trách:** leminhkhai345  
 **Người review:** baoduong17 (BE Lead, API owner)  
 **Ước lượng:** 3 points · 8–12 giờ  
-**Phụ thuộc:** P6-09 (api-docs khớp `decisions.md`), P6-02c (RatePolicy — đã merge `65c4910`), P6-02e (MeterReading — đã merge `6251329`)  
+**Phụ thuộc:** P6-02c (RatePolicy — đã merge `65c4910`), P6-02e (MeterReading — đã merge `6251329`)
 **Repo / branch:** `Tenancy-Service` · `feature/p6-02g1-invoice-domain`  
 **Iteration:** It6 (09/11–15/11)  
 **Issue:** `docs#98`
@@ -27,7 +27,7 @@ Có aggregate `Invoice` + bảng `invoices` (migration chạy được) và mộ
 
 ## Contract
 
-Không có endpoint. Shape dữ liệu phải khớp schema `Invoice` sau P6-09: `api-docs/src/schemas/billing/invoice.yaml` (`breakdown[].serviceStart/serviceEnd` là `date`, mọi số tiền là string).
+Không có endpoint. Shape dữ liệu phải khớp schema `Invoice` và P6-D64/D72: `api-docs/src/schemas/billing/invoice.yaml` (`breakdown[].serviceStart/serviceEnd` là `date`, mọi số tiền là string). Nếu phát hiện schema chưa đúng, issue implementation có API công khai liên quan cập nhật `api-docs` cùng PR.
 
 ### Mapping field
 
@@ -81,7 +81,7 @@ Bộ rate dùng chung: **EVN** = `tiered` steps `[0–50:1893, 51–100:1956, 10
 
 ### Bước 1 — Branch, đọc contract, thêm thư viện decimal
 
-- **Cách làm:** tạo branch từ `main`; đọc schema Invoice sau P6-09; `package.json` chưa có thư viện decimal → thêm `decimal.js` (`P6-D65` cho phép). Không dùng `number` cho tiền ở bất kỳ đâu trong module mới.
+- **Cách làm:** tạo branch từ `main`; đối chiếu schema Invoice hiện có với P6-D64/D65/D72; `package.json` chưa có thư viện decimal → thêm `decimal.js` (`P6-D65` cho phép). Không dùng `number` cho tiền ở bất kỳ đâu trong module mới.
 - **Kiểm tra bước:** `npm ls decimal.js` có 1 version; `GET http://localhost:3002/api/v1/tenancy/health` → `200`.
 
 ### Bước 2 — Domain `Invoice` (aggregate, VO, exception, event)
@@ -115,7 +115,7 @@ Bộ rate dùng chung: **EVN** = `tiered` steps `[0–50:1893, 51–100:1956, 10
 
 ## Cập nhật `api-docs` (bắt buộc trước khi đóng issue)
 
-- [ ] Schema `Invoice` (sau P6-09) khớp entity: tiền là string, `serviceStart/serviceEnd` là `date`, có `voidReason` (`P6-D72`), không có `vietQrContent`.
+- [ ] Schema `Invoice` khớp entity theo P6-D64/D72: tiền là string, `serviceStart/serviceEnd` là `date`, có `voidReason`, không có `vietQrContent`; mọi sai lệch được ghi để đồng bộ trong PR API liên quan.
 
 ## Acceptance
 

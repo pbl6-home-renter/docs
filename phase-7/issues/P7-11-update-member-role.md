@@ -1,7 +1,7 @@
 # P7-11 — Đổi vai trò admin/member trong group
 
 **Assignee:** `baoduong17` · **Iteration:** It6 · **Ước lượng:** 2 points
-**Repo:** `community-service` · **Phụ thuộc:** P7-05, P7-07 · **Trạng thái:** 🟡 Open
+**Repo:** `community-service` · **Phụ thuộc:** P7-05, P7-07 · **Trạng thái:** 🟢 Done
 
 ## Agent brief
 

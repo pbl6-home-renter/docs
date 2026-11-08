@@ -1,7 +1,7 @@
 # P6-11 — Tenancy: `GET /internal/ownership/{ownerType}/{ownerId}` cho Media
 
 **Liên quan:** [P6-04](P6-04-identity-media-presign-upload.md) (Identity media — phía gọi). Không thuộc epic.  
-**Trạng thái:** 🟡 Open  
+**Trạng thái:** 🟢 Done
 **Người phụ trách:** baoduong17  
 **Người review:** leminhkhai345 (BE)  
 **Ước lượng:** 2 points · 5–7 giờ  
@@ -24,7 +24,7 @@ Identity hỏi được Tenancy "entity này của landlord nào, ai tham gia, t
 - `P6-D70` — migration `meter_readings` sinh ở P6-02h.
 - `P6-D66` — ảnh minh chứng chỉ số: `owner_type = meter_reading`, `owner_id = <readingId>`.
 
-## Contract (internal — không nằm trong `api-docs` public, theo P6-09)
+## Contract (internal — không nằm trong `api-docs` public)
 
 - `GET /internal/ownership/{ownerType}/{ownerId}` — ngoài prefix `api/v1` (`src/main.ts` exclude `internal/(.*)`), gateway không route tới.
 - Auth: header `X-Service-Token` = `SERVICE_TOKEN` (`ServiceTokenGuard`); sai/thiếu → `401`.

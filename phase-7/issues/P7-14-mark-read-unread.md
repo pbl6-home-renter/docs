@@ -1,7 +1,7 @@
 # P7-14 — Mark-read và unread count theo conversation
 
 **Assignee:** `baoduong17` · **Iteration:** It6 · **Ước lượng:** 2 points
-**Repo:** `community-service` · **Phụ thuộc:** P7-05, P7-06, P7-08, P7-13 · **Trạng thái:** 🟡 Open
+**Repo:** `community-service` · **Phụ thuộc:** P7-05, P7-06, P7-08, P7-13 · **Trạng thái:** 🟢 Done
 
 ## Context agent
 

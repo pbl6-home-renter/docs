@@ -5,7 +5,7 @@
 **Người phụ trách:** ThaiBao11125  
 **Người review:** baoduong17  
 **Ước lượng:** 3 points · 6–8 giờ  
-**Phụ thuộc:** P6-09 (api-docs khớp `decisions.md`); BE P6-01b (`POST/GET/PATCH /contracts`), P6-01c (mẫu HĐ, apply-template, generate-draft-document), P6-01d (activate); FE P6-03c (API phòng `GET /me/rooms` để chọn phòng)  
+**Phụ thuộc:**; BE P6-01b (`POST/GET/PATCH /contracts`), P6-01c (mẫu HĐ, apply-template, generate-draft-document), P6-01d (activate); FE P6-03c (API phòng `GET /me/rooms` để chọn phòng) 
 **Repo / branch:** `fe` · `feat/p6-06a-contract-list-activate`  
 **Iteration:** It6 (09/11–15/11)  
 **Issue:** `docs#102`
@@ -39,7 +39,7 @@ Landlord vào menu **Hợp đồng** thấy danh sách HĐ của mình (lọc th
 | `POST /contracts/{id}/activate-contract` | `postContractsContractidActivateContract` | `200 CONTRACT_ACTIVATED` | `409 CONTRACT_NOT_READY`, `409 SIGNED_FILE_MISSING`, `409 ACTIVE_CONTRACT_EXISTS`, `503` |
 | Media `presign-upload` → PUT → `complete-upload` | (dùng `features/media`) | `MEDIA_UPLOAD_COMPLETED` | `MEDIA_TYPE_NOT_ALLOWED`, `MEDIA_FILE_TOO_LARGE` |
 
-Role: landlord. Không tìm thấy hoặc HĐ của landlord khác → `404`/`403` → `ErrorState`. Kiểu số tiền theo `api-docs` sau P6-09 (`P6-D65`: tiền là string trong DTO) — hiển thị bằng `formatVnd`.
+Role: landlord. Không tìm thấy hoặc HĐ của landlord khác → `404`/`403` → `ErrorState`. Kiểu số tiền theo `api-docs` hiện hành (`P6-D65`: tiền là string trong DTO) — hiển thị bằng `formatVnd`.
 
 ### Mapping field
 
@@ -72,7 +72,7 @@ Cột danh sách (`ContractListResponseDto`): `contractCode`, `roomName`, `tenan
 
 ### Bước 1 — Đọc contract và chuẩn bị dữ liệu
 
-- **Cách làm:** tạo branch theo `fe-feature-workflow`. Đọc các file contract ở trên **sau khi P6-09 merge**; field/mã lỗi lệch issue thì comment vào issue trước khi code. Trên staging chuẩn bị 1 tòa `approved` có 2 phòng `available` và 1 mẫu HĐ seed (`standard-room-lease-v1`).
+- **Cách làm:** tạo branch theo `fe-feature-workflow`. Đọc các file contract hiện hành trong `api-docs`; nếu field/mã lỗi lệch issue thì comment vào issue trước khi code. Trên staging chuẩn bị 1 tòa `approved` có 2 phòng `available` và 1 mẫu HĐ seed (`standard-room-lease-v1`).
 - **Kiểm tra bước:** Apidog `GET /contract-templates` trả ≥ 1 item; `GET /me/rooms?filter[status]=available` trả phòng của tòa.
 
 ### Bước 2 — Tầng dữ liệu `contracts`
@@ -116,7 +116,7 @@ Cột danh sách (`ContractListResponseDto`): `contractCode`, `roomName`, `tenan
 
 ## Blocker
 
-- Không có. (Liên kết tài khoản tenant: `P6-D74`; field chi tiết HĐ: `P6-D71`, BE bổ sung ở P6-01c/d, `api-docs` ở P6-09.)
+- Không có. (Liên kết tài khoản tenant: `P6-D74`; field chi tiết HĐ: `P6-D71`, BE bổ sung ở P6-01c/d và đồng bộ `api-docs` trong cùng PR implementation.)
 
 ## Acceptance
 

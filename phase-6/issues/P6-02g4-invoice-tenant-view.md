@@ -2,10 +2,10 @@
 
 **Epic:** [P6-02](P6-02-tenancy-billing-vertical-slice.md) · cha: [P6-02g](P6-02g-invoice-outline.md)  
 **Trạng thái:** 🟡 Open  
-**Người phụ trách:** huynhtiennhat0403  
+**Người phụ trách:** leminhkhai345  
 **Người review:** baoduong17 (BE Lead, API owner)  
 **Ước lượng:** 2 points · 4–6 giờ  
-**Phụ thuộc:** P6-02g3 (có hóa đơn `issued`), P6-01e2 (quy tắc "HĐ của tôi" — `GET /me/contracts`), P6-01e1 (bảng `contract_members`), P6-09 (`GET /me/invoices`)  
+**Phụ thuộc:** P6-02g3 (có hóa đơn `issued`), P6-01e2 (quy tắc "HĐ của tôi" — `GET /me/contracts`), P6-01e1 (bảng `contract_members`) 
 **Repo / branch:** `Tenancy-Service` · `feature/p6-02g4-invoice-tenant-view`; `api-gateway` · `feature/p6-02g4-me-invoices-route`  
 **Iteration:** It6 (09/11–15/11)  
 **Issue:** `docs#101`
@@ -26,16 +26,16 @@ Tenant (người đại diện hoặc thành viên đang ở) gọi `GET /me/inv
 - `P6-D72` — response không có `vietQrContent`; không hiển thị QR.
 - `P6-D74` — web không liên kết tài khoản tenant; `tenant_id` chỉ có từ seed demo → view này phục vụ mobile + dữ liệu seed.
 
-## Contract (sau P6-09)
+## Contract (đồng bộ cùng implementation theo quyết định đã duyệt)
 
 | Endpoint | operationId | Success | Lỗi riêng |
 |---|---|---|---|
 | `GET /me/invoices` | `getMeInvoices` | `200 INVOICES_MY_FETCHED` + `pagination` | `422 VALIDATION_FAILED` |
 | `GET /invoices/{invoiceId}` (role tenant) | `getInvoicesInvoiceid` | `200 INVOICE_FETCHED` | `404 INVOICE_NOT_FOUND` |
 
-- File: `api-docs/src/paths/invoices/me-invoices.yaml` (P6-09 tạo, cùng kiểu `paths/contracts/me-contracts.yaml`, mã theo mẫu `CONTRACTS_MY_FETCHED`); `api-docs/src/paths/invoices/invoices-invoiceId.yaml`. P6-09 gỡ `invoices-tenant.yaml`.
+- File contract: `api-docs/src/paths/invoices/me-invoices.yaml` cùng kiểu `paths/contracts/me-contracts.yaml`; `api-docs/src/paths/invoices/invoices-invoiceId.yaml`. Trong PR implementation cập nhật cùng spec, bỏ path cũ `invoices-tenant.yaml` nếu còn tồn tại.
 - Role: `GET /me/invoices` chỉ `tenant`. `GET /invoices/{id}`: `landlord` (P6-02g3) **và** `tenant`.
-- Tenant mở hóa đơn không được xem (`pending`, `void`, HĐ khác, đã rời trước) → **`404 INVOICE_NOT_FOUND`** (không `403`, để không lộ hóa đơn tồn tại). P6-09 ghi rõ trong description.
+- Tenant mở hóa đơn không được xem (`pending`, `void`, HĐ khác, đã rời trước) → **`404 INVOICE_NOT_FOUND`** (không `403`, để không lộ hóa đơn tồn tại); ghi rõ trong description của operation và cập nhật cùng PR implementation.
 - Gateway: `api-gateway/src/constants/route-paths.constants.ts` **chưa có** `/me/invoices` → request sẽ rơi vào prefix `/me` của Identity. Phải thêm `'/me/invoices'` vào danh sách Tenancy.
 
 ### Mapping field

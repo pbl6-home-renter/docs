@@ -30,8 +30,8 @@ Quy tắc nghiệp vụ bắt buộc:
 | [P6-01b](P6-01b-contract-create-and-manage-draft.md) | Tạo và quản lý HĐ nháp | `POST /contracts`, `GET /contracts`, `GET /contracts/{id}`, `PATCH /contracts/{id}` | It5 | 5 pts | P6-01a, P5-09b |
 | [P6-01c](P6-01c-contract-template-and-draft-document.md) | Mẫu HĐ, áp mẫu và sinh tài liệu nháp | `GET /contract-templates`, `GET /contract-templates/{key}`, `PUT /contracts/{id}/apply-template`, `POST /contracts/{id}/generate-draft-document` | It5 | 5 pts | P6-01b, P6-04 |
 | [P6-01d](P6-01d-contract-activate-signed-file.md) | Upload bản ký và kích hoạt HĐ | `POST /contracts/{id}/activate-contract` | It5 | 5 pts | P6-01b, P6-04 |
-| [P6-01e](P6-01e-contract-members-and-checkout.md) | Thành viên HĐ, HĐ của tenant, checkout (🔵 Split) | — | It6 | 7 pts | P6-01d, P6-09 |
-| ↳ [P6-01e1](P6-01e1-contract-members.md) | Member: bảng, tự thêm đại diện khi activate, API, `headCount` | `/contract-members*` | It6 | 3 pts | P6-01d, P6-09 |
+| [P6-01e](P6-01e-contract-members-and-checkout.md) | Thành viên HĐ, HĐ của tenant, checkout (🔵 Split) | — | It6 | 7 pts | P6-01d |
+| ↳ [P6-01e1](P6-01e1-contract-members.md) | Member: bảng, tự thêm đại diện khi activate, API, `headCount` | `/contract-members*` | It6 | 3 pts | P6-01d |
 | ↳ [P6-01e2](P6-01e2-tenant-my-contracts.md) | Tenant xem HĐ của mình | `GET /me/contracts` | It6 | 2 pts | P6-01e1 |
 | ↳ [P6-01e3](P6-01e3-contract-checkout.md) | Checkout: `terminated`, member rời, phòng `maintenance` | `POST /contracts/{id}/complete-checkout` | It6 | 3 pts | P6-01e1, P6-02g1 |
 

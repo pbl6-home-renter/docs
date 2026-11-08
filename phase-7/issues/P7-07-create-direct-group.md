@@ -1,7 +1,7 @@
 # P7-07 — Tạo direct/group conversation
 
 **Assignee:** `baoduong17` · **Iteration:** It6 · **Ước lượng:** 3 points
-**Repo:** `community-service` · **Phụ thuộc:** P7-01, P7-04–06 · **Trạng thái:** 🟡 Open
+**Repo:** `community-service` · **Phụ thuộc:** P7-01, P7-04–06 · **Trạng thái:** 🟢 Done
 
 ## Agent brief
 
