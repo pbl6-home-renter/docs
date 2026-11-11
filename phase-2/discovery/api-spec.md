@@ -2,7 +2,7 @@
 
 > **Trạng thái:** hợp đồng API chuẩn cho P2-06 / bàn giao OpenAPI
 > **Base path:** `/api/v1`
-> **Quy mô:** 109 endpoint trong 24 nhóm domain; mục 27 mô tả chi tiết từng endpoint theo tỉ lệ 1:1. *(106/24 sau D49, rồi +3 endpoint theo D50)*
+> **Quy mô:** 112 endpoint trong 24 nhóm domain; mục 27 mô tả chi tiết từng endpoint theo tỉ lệ 1:1. *(110 trước D51, +2 theo D51; mã 111 đã dùng cho bot reminder)*
 > **Nguồn:** `api-conventions.md`, `phase-1/discovery/database-design.md`, các luồng người dùng, `utility-billing-calculations.md`
 > **Phạm vi:** quản lý nhà trọ cho thuê. Tài liệu này không bổ sung tính năng sản phẩm mới.
 
@@ -12,12 +12,14 @@
 
 | Mã | Method & path | Quyền | Mục đích | Lưu ý |
 |---|---|---|---|---|
-| 1 | `POST /auth/register` | `public` | Đăng ký tài khoản tenant hoặc landlord | Body: `email`, `phone`, `password`, `name`, `role`; role không được là `admin`; response đặt refresh cookie. |
+| 1 | `POST /auth/register` | `public` | Đăng ký tài khoản tenant hoặc landlord | Tạo tài khoản `pending_verification`, gửi email xác minh; chưa cấp token phiên. |
 | 2 | `POST /auth/login` | `public` | Bắt đầu phiên làm việc | Body: `identifier`, `password`, `rememberMe`; response chứa access token và đặt refresh cookie. |
 | 3 | `POST /auth/refresh` | `tenant`, `landlord`, `admin` | Xoay vòng phiên refresh | Không có body token; đọc refresh cookie, xoay token, trả access token mới. |
 | 4 | `POST /auth/logout` | `tenant`, `landlord`, `admin` | Thu hồi phiên hiện tại | Thu hồi phiên refresh hiện tại và xoá cookie. |
 | 5 | `POST /auth/password-reset-requests` | `public` | Yêu cầu link đặt lại mật khẩu | Body: `email`; luôn trả kết quả trung tính giống nhau. |
 | 6 | `POST /auth/password-resets` | `public` | Dùng token đặt lại mật khẩu một lần | Body: `token`, `newPassword`; token dùng một lần và có thời hạn. |
+| 112 | `POST /auth/email-verifications` | `public` | Xác minh email đăng ký | Body: `token`; token dùng một lần, TTL 24 giờ; thành công kích hoạt tài khoản. |
+| 113 | `POST /auth/email-verification-requests` | `public` | Gửi lại email xác minh | Body: `email`; response trung tính `202`, chỉ gửi lại khi tài khoản còn pending. |
 
 ---
 
@@ -296,7 +298,9 @@
 
 - **Quyền:** `public`
 - **Body:** `{ "email":"lan@example.com", "phone":"0901234567", "password":"...", "name":"Lê Văn An", "role":"tenant" }`
-- **Success:** `201` `{ "statusCode":201, "code":"REGISTERED", "data":{"id":"<uuid>","role":"tenant","status":"active"} }`; đặt refresh cookie; `Location: /api/v1/me`
+- **Xử lý:** Tạo tài khoản với `status=pending_verification`, lưu token xác minh dạng SHA-256 trong 24 giờ và phát email xác minh qua outbox. Chưa cấp access/refresh token trước khi email được xác minh.
+- **Sự kiện:** Khi xác minh thành công, Identity phát `user.email_verified` qua outbox để Tenancy tiếp tục liên kết hợp đồng theo số điện thoại.
+- **Success:** `201` `{ "statusCode":201, "code":"USER_REGISTERED", "data":{"id":"<uuid>","email":"lan@example.com","role":"tenant","status":"pending_verification","verificationRequired":true} }`
 - **Lỗi:** `409 DUPLICATE EMAIL` · `422 VALIDATION FAILED` · `422 ROLE NOT ALLOWED`
 - **UI:** `4._ng_k_ch_nh_sign_up/code.html` · `4._ng_k_sign_up/code.html` · `5._ng_k_sign_up/code.html`
 
@@ -305,7 +309,7 @@
 - **Quyền:** `public`
 - **Body:** `{ "identifier":"lan@example.com", "password":"...", "rememberMe":true }`
 - **Success:** `200` `{ "statusCode":200, "code":"LOGGED_IN", "data":{"accessToken":"<jwt>","expiresIn":900} }`; đặt refresh cookie
-- **Lỗi:** `401 INVALID TOKEN` · `422 VALIDATION FAILED` (tài khoản `locked` vẫn đăng nhập được, xem #13)
+- **Lỗi:** `401 INVALID CREDENTIALS` · `403 EMAIL_NOT_VERIFIED` · `422 VALIDATION FAILED` (tài khoản `locked` vẫn đăng nhập được, xem #13)
 - **UI:** `1._ng_nh_p_ch_nh_login/code.html` · `1._ng_nh_p_login/code.html` · `1._ng_nh_p_qu_n_tr_vi_n_admin_login/code.html`
 
 #### 3 · `POST /auth/refresh` — Xoay vòng phiên refresh
@@ -339,6 +343,23 @@
 - **Success:** `204`
 - **Lỗi:** `422 VALIDATION FAILED` · `409 TOKEN USED` · `409 TOKEN EXPIRED`
 - **UI:** `3._t_l_i_m_t_kh_u_reset_password_1/code.html` · `4._t_l_i_m_t_kh_u_reset_password/code.html`
+
+#### 112 · `POST /auth/email-verifications` — Xác minh email đăng ký
+
+- **Quyền:** `public`
+- **Body:** `{ "token":"<opaque>" }` — token ngẫu nhiên dùng một lần, hết hạn sau 24 giờ.
+- **Xử lý:** Tìm token theo hash, đánh dấu đã dùng và chuyển user từ `pending_verification` sang `active` trong cùng transaction.
+- **Success:** `204 No Content`; web app hiển thị xác minh thành công rồi dẫn người dùng tới login.
+- **Lỗi:** `400 INVALID_EMAIL_VERIFICATION_TOKEN` · `409 EMAIL_VERIFICATION_TOKEN_EXPIRED`
+- **UI:** Link email mở trang `/verify-email`; người dùng bấm xác nhận để web app gọi endpoint này. Identity render email, Community gửi SMTP.
+
+#### 113 · `POST /auth/email-verification-requests` — Gửi lại email xác minh
+
+- **Quyền:** `public`
+- **Body:** `{ "email":"lan@example.com" }`
+- **Xử lý:** Chỉ tạo token mới và gửi mail nếu tài khoản còn `pending_verification`; token cũ bị vô hiệu hóa. Email không tồn tại hoặc đã xác minh vẫn trả response giống nhau.
+- **Success:** `202` `{ "statusCode":202, "code":"EMAIL_VERIFICATION_REQUESTED", "data":{"accepted":true} }`
+- **UI:** Form gửi lại trên trang `/verify-email`.
 
 ### 27.2 User
 

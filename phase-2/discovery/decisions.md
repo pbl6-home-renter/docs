@@ -21,6 +21,7 @@
 | D47 | 2026-09-25 | Bulk meter-reading deferred and out of API v1: no `MeterReadingBatch` route, only per-room `POST /meter-readings` | Superseded by D60 (`POST /meter-readings/bulk`; no `MeterReadingBatch`) |
 | D48 | 2026-09-25 | Overloaded endpoints split by role and by business action → 108 endpoints in 25 groups; renumbered throughout | ✅ Accepted (số liệu 108/25 đã lỗi thời, xem D49) |
 | D49 | 2026-09-26 | Payout account moved onto `LandlordProfile` (implements Phase 1 D39): `VietQrReceiverConfig` + `PUT/GET /vietqr-configs` removed → 106 endpoints in 24 groups | ✅ Accepted |
+| D51 | 2026-11-11 | Require email verification before account activation | ✅ Accepted |
 
 ---
 
@@ -181,3 +182,12 @@
 - **Consequence:** Hợp đồng lên **109 endpoint trong 24 nhóm**. Số nhóm không đổi vì 3 endpoint rơi vào 3 nhóm đã có. Đánh số chỉ nối thêm, không dịch mã, nên §29, mọi cross-reference `API N` và citation UI giữ nguyên; bảng §29 chuyển từ 3 lên 6 endpoint thuần mới. **Thay đổi xuyên phase:** `phase-1/discovery/database-design.md` §2.20 phải thêm `withdrawn` vào enum `MatchRequest.status`; migration chỉ là `ALTER TYPE`, không thêm cột. Một hệ quả chưa giải quyết: UNIQUE `(requester_id, target_id)` khiến một cặp đã `withdrawn` không gửi lại được, cần PM chốt có bỏ ràng buộc toàn bảng hay đổi thành unique partial trên `status = 'pending'` hay không.
 - **Not decided / left to migration:** UNIQUE `(requester_id, target_id)` và hệ quả gửi lại. Chưa chốt.
 - **Cross-ref:** `api-spec.md` §6, §7, §10, §27.5, §27.6, §27.9, §28.9, §29; `api-conventions.md` §soft-delete; `phase-1/discovery/database-design.md` §2.20; `P2-06-api-spec.md`.
+# D51 - Require email verification before account activation
+
+- **Date:** 2026-11-11
+- **Status:** Accepted
+- **Context:** Register currently creates an active account and returns session tokens. The team requested a real registration email flow alongside password reset; the earlier API contract did not specify email verification.
+- **Decision:** Self-registration creates users with `pending_verification`, sends a single-use verification link via Identity outbox → Community SMTP, and does not issue session tokens. The link expires after 24 hours. The link opens a confirmation page; an explicit user action calls `POST /auth/email-verifications`, which activates the account atomically. `POST /auth/email-verification-requests` replaces an expired or undelivered link with a fresh token and always returns a neutral `202`. Login is rejected until verification succeeds.
+- **Reason:** A confirmation email must establish control of the submitted email address before the account becomes usable.
+- **Consequence:** Register response changes from an authenticated session to an email-verification-pending result. Add an email-verification token table and a PostgreSQL user status enum value. Successful verification emits `user.email_verified` so Tenancy can link phone-matched contracts after activation. Deploy the updated Tenancy consumer before Identity starts emitting pending-registration events. SMTP credentials in Community and `PUBLIC_APP_URL` in Identity must be configured.
+- **Cross-ref:** `api-spec.md` §27.1 APIs 1, 112 and 113; `api-docs/src/paths/auth/register.yaml`; `api-docs/src/paths/auth/email-verifications.yaml`; `api-docs/src/paths/auth/email-verification-requests.yaml`.
