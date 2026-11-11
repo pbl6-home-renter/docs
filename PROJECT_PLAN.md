@@ -139,6 +139,17 @@ See `issues/README.md` for the issue list and coverage map.
 
 > **Phase 8 (dự kiến triển khai trong ba tuần):** Hoàn thiện CRUD Web, vòng đời invoice Tenancy (cập nhật OpenAPI cùng PR implementation), context event/notification qua RabbitMQ, smoke test end-to-end và bộ báo cáo cuối kỳ. Phạm vi chỉ gồm Web; chat P7 đã xong. Xem [`phase-8/README.md`](phase-8/README.md) và [`phase-8/issues/README.md`](phase-8/issues/README.md). Payment/settlement, overdue/reminder/reconciliation và tự liên kết tenant bằng số điện thoại tiếp tục nằm ngoài scope theo P6-D61/D64/D72/D74.
 
+### Phase 9 — Transactional event integration
+
+**Mục tiêu:** Hoàn thiện các luồng event end-to-end từ producer đến consumer: reconcile tenant chưa có account, đồng bộ Building/Contract chat context, phát các thông báo được nêu trong user workflow, và xử lý landlord lock bằng Saga choreography. Mỗi service dùng local transactional outbox/inbox; RabbitMQ giữ queue-per-consumer. Không triển khai distributed transaction.
+
+- **Ownership:** `leminhkhai345` — Tenant/ContractMember linking và lock lifecycle; `huynhtiennhat0403` — Building/Contract context và notification flows. PM là reviewer cho mọi issue/PR.
+- **Event topology:** `tenancy.identity-lifecycle` nhận `user.registered`, `user.updated`, `user.locked`, `user.unlocked`; `community.building-context` nhận `building.created`; `community.contract-context` nhận `contract.activated` và `contract_member.*`; queue `community.notification` hiện có nhận `notification.requested`.
+- **Notifications:** Building approval/rejection, user account restriction/restoration, contract suspend/restore/termination và invoice issued. System notices dùng category `system`; invoice giữ category `invoice`. Issue notification vẫn deferred cùng Issue feature theo P6-D61.
+- **Landlord lock:** Choreography qua `user.locked` → Tenancy suspend hợp đồng/lưu grace deadline → event/notification; unlock trước hạn cho landlord chọn restore/cancel; timer local Tenancy xử lý hết hạn. Không có payment/refund flow trong phase này.
+- **Scope boundary:** Không tạo Payment service, IssueReport module, auto-refund, hoặc event consumer mới ngoài các luồng liệt kê trong [Phase 9 tracker](phase-9/issues/README.md).
+- **Schedule:** PM chốt iteration/date riêng khi giao issue; chưa gán ngày trong plan này.
+
 ### Phase 5 — Hardening, demo & submission (W12–14)
 - Bug-fix pass, seed realistic demo data, final deploy.
 - Demo script + rehearsal; record demo video.

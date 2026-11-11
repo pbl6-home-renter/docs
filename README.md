@@ -13,6 +13,7 @@ PM owns this folder. Docs are grouped by phase (mirrors `PROJECT_PLAN.md`). Crea
 | 6 | `phase-6/` | MVP core: Contract, Billing, Payment, landlord Web screens, demo (It5–It7) | [README](phase-6/README.md), [`issues/`](phase-6/issues/README.md) (template: [`_TEMPLATE.md`](phase-6/issues/_TEMPLATE.md)) |
 | 7 | `phase-7/` | Community Service: generic Chat + Notification (starts It5, parallel track) | [README](phase-7/README.md), [`issues/`](phase-7/issues/README.md), [`discovery/decisions.md`](phase-7/discovery/decisions.md) |
 | 8 | `phase-8/` | Hoàn thiện CRUD Web, tích hợp RabbitMQ và báo cáo cuối kỳ | [README](phase-8/README.md), [`issues/`](phase-8/issues/README.md) |
+| 9 | `phase-9/` | Event integration end-to-end: Tenant linking, chat context, system/account notices, invoice notifications, landlord lock choreography | [README](phase-9/README.md), [`issues/`](phase-9/issues/README.md), [`decisions.md`](phase-9/decisions.md) |
 
 **Source of truth (SoT):** `requirement.md` (scope) and `PROJECT_PLAN.md` (schedule), both at the `pm/` root. Never change scope without PM approval; record changes in Notion decision log.
 
