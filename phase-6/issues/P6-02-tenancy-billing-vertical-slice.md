@@ -1,6 +1,6 @@
 # P6-02 — Billing vertical slice (Epic)
 
-> Nhóm Billing trong `tenancy-service`: đơn giá & phí định kỳ (`RatePolicy`), ngày thu dự kiến (`BillingSetting`), chốt chỉ số điện nước (`MeterReading`), và — ở Iteration 6 — hóa đơn (`Invoice`) và hoàn thiện `MeterReading` theo `P6-D66` (OCR chạy ở `ai-service`, `P6-D67`).
+> Billing in `Tenancy-Service` covers rates, billing settings, manually entered meter readings with optional image evidence, and invoices. P6-D78 supersedes the OCR portions of P6-D66/D67 for the Phase 6 MVP.
 
 **Trạng thái:** 🟡 Open  
 **Người phụ trách:** leminhkhai345  
@@ -32,18 +32,18 @@ Issue này là issue cha. Công việc thực tế giao qua các sub-issue; issu
 | ↳ [P6-02g2](P6-02g2-invoice-generate.md) | Sinh / tính lại `pending` theo tòa + kỳ | `POST /invoices/generate` | It6 | 3 pts | g1, P6-02h, P6-01e1 |
 | ↳ [P6-02g3](P6-02g3-invoice-landlord-manage.md) | Landlord xem, sửa phí khác, phát hành hàng loạt, hủy | `GET/PATCH /invoices…`, `POST /invoices/issue-invoice`, `POST /invoices/{id}/cancel-invoice` | It6 | 3 pts | g2 |
 | ↳ [P6-02g4](P6-02g4-invoice-tenant-view.md) | Tenant xem hóa đơn đã phát hành | `GET /me/invoices`, `GET /invoices/{id}` | It6 | 2 pts | g3, P6-01e2 |
-| [P6-02h](P6-02h-meter-reading-ocr-preview.md) | MeterReading: migration, baseline kỳ đầu, `source`/`ocrValue`, `evidenceMediaId`, `PATCH` có khóa kỳ (`P6-D66`, `P6-D67`, `P6-D70`) | `POST /meter-readings`, `PATCH /meter-readings/{id}` | It6 | 3 pts | P6-02g1 |
+| [P6-02h](P6-02h-meter-reading-ocr-preview.md) | MeterReading: manual entry, migration, first-period baseline, optional image evidence, PATCH with issued-period lock (`P6-D70`, `P6-D78`) | `POST /meter-readings`, `PATCH /meter-readings/{id}`, `PATCH /meter-readings/{id}/evidence` | It6 | 3 pts | P6-02g1 |
 
 Thứ tự It5: `P6-02a → P6-02b → P6-02c → (P6-02d ∥ P6-02e) → P6-02f`.
 
-Thứ tự It6: `P6-02g1 → P6-02h → P6-02g2 → P6-02g3 → P6-02g4`. Mỗi issue backend cập nhật `api-docs` cùng PR implementation. Vòng đời hóa đơn theo `P6-D64`, quy tắc tính theo `P6-D65`/`P6-D72`, MeterReading theo `P6-D66`/`P6-D70` (migration `meter_readings` ở P6-02h merge trước g2), OCR theo `P6-D67` (`ai-service`, Tenancy không gọi AI). Payment ra Stretch (`P6-D61`).
+Iteration 6 implementation order: `P6-02g1 → P6-02h → P6-02g2 → P6-02g3 → P6-02g4`; all Tenancy changes are merged. API documentation is synchronized in a separate PR. Invoice lifecycle follows P6-D64, calculation follows P6-D65/D72, and manual readings and baseline follow P6-D70/D78. Payment remains Stretch (P6-D61).
 
 > **P6-02a phải merge trước** khi code P6-02b/d/e: contract hiện tại của RatePolicy/BillingSetting mâu thuẫn với D39 và giữa các endpoint với nhau (chi tiết trong P6-02a).
 
 ## Ngoài phạm vi epic này (It5)
 
 - Sinh/phát hành hóa đơn, tính tiền (thuộc P6-02g, It6).
-- OCR và ảnh chứng cứ: `evidenceMediaId` giữ nullable, gắn bằng `PATCH` sau khi upload qua Media (`P6-D70`, `P6-D69`); OCR ở `ai-service` (`P6-D67`).
+- Image evidence is optional and can be attached by PATCH after upload through Media. Manual meter values do not require OCR; missing images do not block invoice generation (P6-D78).
 - `GET /invoices/overdue-debts`, `POST /invoices/send-reminder`, hóa đơn quyết toán, reminder SMS/Zalo — gỡ theo `P1-D39`, `P6-D64`.
 - `PUT /buildings/{id}/vietqr-config` — thuộc nhóm Payment.
 

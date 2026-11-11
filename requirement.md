@@ -1,5 +1,7 @@
 # PBL6
 
+> **Phase 6 MVP amendment (P6-D78, P6-D64, P6-D61):** meter values are entered manually and photos provide evidence; OCR is deferred. Landlords explicitly generate invoices by building and period. Payment, deposit settlement and dynamic QR reconciliation are outside the Phase 6 MVP. Earlier draft descriptions below are historical where they conflict with these accepted decisions.
+
 Học theo tuần lẻ (2 tuần lên trường 1 lần)
 
 ## 1. Yêu cầu:

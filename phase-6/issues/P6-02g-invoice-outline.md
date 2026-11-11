@@ -1,12 +1,12 @@
 # P6-02g — Invoice: sinh theo tòa + kỳ, phát hành, hủy, tenant xem (issue cha)
 
 **Epic:** [P6-02](P6-02-tenancy-billing-vertical-slice.md)  
-**Trạng thái:** 🔵 Split — làm qua 4 sub-issue bên dưới, issue này đóng khi cả 4 Done  
+**Trạng thái:** Tenancy implementation merged for g1–g4; gateway route and documentation verification tracked separately
 **Người phụ trách:** leminhkhai345  
 **Người review:** baoduong17 (BE Lead, API owner)  
 **Ước lượng:** 11 points (tổng sub-issue)  
 **Phụ thuộc:** P6-02c, P6-02e, P6-02h (migration `meter_readings`), P6-01e1/P6-01e2 (`contract_members`, quy tắc "HĐ của tôi")
-**Repo:** `Tenancy-Service` (+ 1 dòng ở `api-gateway` trong g4)  
+**Repo:** `Tenancy-Service`; gateway route ownership for g4 awaits PM decision
 **Iteration:** It6 (09/11–15/11)  
 **Issue:** `docs#77`
 
@@ -31,7 +31,7 @@ Landlord chọn Tòa + Kỳ → sinh/tính lại hóa đơn `pending` cho mọi 
 | [P6-02g3](P6-02g3-invoice-landlord-manage.md) | Landlord list/detail/PATCH, phát hành hàng loạt (`Idempotency-Key`), hủy | `GET /invoices`, `GET/PATCH /invoices/{id}`, `POST /invoices/issue-invoice`, `POST /invoices/{id}/cancel-invoice` | 3 pts | g2 |
 | [P6-02g4](P6-02g4-invoice-tenant-view.md) | Tenant xem hóa đơn `issued` | `GET /me/invoices`, `GET /invoices/{id}` | 2 pts | g3, P6-01e2 |
 
-Thứ tự: `g1 → P6-02h → g2 → g3 → g4`. API contract được cập nhật trong PR implementation của từng issue backend, không có dependency P6-09 riêng.
+Implementation order: `g1 → P6-02h → g2 → g3 → g4`. All five Tenancy changes are merged. The API contract is synchronized in a separate `api-doc` PR; P6-09 is not a prerequisite. Gateway routing for `/me/invoices` is a separate pending decision.
 
 ## Đã gỡ khỏi phạm vi (so với outline cũ)
 

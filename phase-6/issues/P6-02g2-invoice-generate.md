@@ -1,7 +1,7 @@
 # P6-02g2 — Invoice: sinh / tính lại hóa đơn `pending` theo tòa + kỳ
 
 **Epic:** [P6-02](P6-02-tenancy-billing-vertical-slice.md) · cha: [P6-02g](P6-02g-invoice-outline.md)  
-**Trạng thái:** 🟡 Open  
+**Trạng thái:** Backend implementation merged; documentation sync in progress
 **Người phụ trách:** leminhkhai345  
 **Người review:** baoduong17 (BE Lead, API owner)  
 **Ước lượng:** 3 points · 8–12 giờ  
@@ -32,7 +32,7 @@ Landlord chọn **Tòa + Kỳ** rồi gọi `POST /invoices/generate { buildingI
 |---|---|---|---|
 | `POST /invoices/generate` | `postInvoicesGenerate` | `200 INVOICES_GENERATED` | `404 BUILDING_NOT_FOUND`, `403 FORBIDDEN`, `422 VALIDATION_FAILED` |
 
-- File contract: `api-docs/src/paths/invoices/invoices-generate.yaml`; request `api-docs/src/requests/invoices/invoice-generate-request-dto.yaml`. Cập nhật operation/schema cùng PR implementation theo P6-D64/D72; bỏ `POST /invoices` settlement (`createSettlementInvoice`) khỏi spec.
+- File contract: `api-doc/src/paths/invoices/invoices-generate.yaml`; request `api-doc/src/requests/invoices/invoice-generate-request-dto.yaml`. The separate API documentation PR aligns the already merged implementation with P6-D64/D72 and removes the obsolete settlement `POST /invoices` operation.
 - Role: `landlord`. Trả `200` (không phải `201`) vì một lần gọi có thể chỉ tính lại.
 - Response `data`:
 

@@ -1,5 +1,7 @@
 # PBL6 — Project Plan (13–14 weeks)
 
+> **Phase 6 scope amendment:** P6-D78 replaces OCR with manual meter entry and optional image evidence. P6-D64 makes invoice generation landlord initiated; P6-D61 defers payment and deposit settlement. Earlier roadmap text below is historical where it conflicts with these decisions.
+
 > Canonical plan owned by the PM. Update this file whenever scope, schedule, or ownership changes.
 > Tooling: Linear (tasks) · GitHub (code) · Notion (wiki/decisions) · Google Drive (official submissions).
 > Note: tools/repos are provisioned **after** boss approves resources (targeted for Phase 1). Until then, Phase 0 runs docs-only.
@@ -127,10 +129,10 @@ See `issues/README.md` for the issue list and coverage map.
 - **Checkpoint W11 (M4):** feature-complete demo on staging.
 
 > **Re-plan 2026-10-26 (W11):** M4 "feature-complete" was not reached — Identity is done and Building/Room are in progress (`phase-5/`). The MVP schedule continues in [`phase-6/README.md`](phase-6/README.md). Community Service is scheduled separately as a parallel track in [`phase-7/README.md`](phase-7/README.md):
-> - **MVP core:** Building/Room → Contract → Meter reading (manual/OCR with confirmation) → Invoice generation/issue → Checkout, delivered across It5–It6 (02/11–15/11). See Phase 6 decisions D61–D74.
+> - **MVP core:** Building/Room → Contract → manual meter reading with image evidence → landlord-initiated invoice generation/issue → Checkout, delivered across It5–It6 (02/11–15/11). See Phase 6 decisions D61–D78.
 > - **Hardening and demo:** It7 (16/11–22/11).
 > - **Stretch:** cash/mock Payment, deposit settlement, Issue, Roommate matching and VietQR reconciliation (P6-D61). Community Chat/Notification is moved to the Phase 7 track; `@issue`, Issue panel, and mention remain out of scope.
-> - **AI:** meter OCR is MVP via a separate NestJS `ai-service` (P6-D67, superseding P3-D51), owned by baoduong17. Auto-Description and Matchmaking remain pending PM verification; this does not approve them for implementation.
+> - **AI:** meter OCR is deferred by P6-D78; P6-D67's AI-service design is historical. Auto-Description and Matchmaking remain pending PM verification; this does not approve them for implementation.
 > - **Ownership:** leminhkhai345 — Contract/members/checkout; huynhtiennhat0403 — Billing/readings/invoices; ThaiBao11125 — landlord Web; baoduong17 — API alignment, internal media/ownership, AI OCR, staging/demo.
 > - **Mobile:** planned separately.
 > - **It6 backlog:** Contract e1–e3 = 8 pts; Invoice g1–g4 = 11 pts + readings h = 3 pts; FE a–d = 12 pts (d may move to It7). Lead prerequisites P6-09/P6-10a/P6-11/P6-12 are planned before It6; delivery remains dependent on these integrations.

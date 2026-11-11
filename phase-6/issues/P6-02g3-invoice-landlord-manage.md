@@ -1,7 +1,7 @@
 # P6-02g3 — Invoice: landlord xem, sửa phí khác, phát hành hàng loạt, hủy
 
 **Epic:** [P6-02](P6-02-tenancy-billing-vertical-slice.md) · cha: [P6-02g](P6-02g-invoice-outline.md)  
-**Trạng thái:** 🟡 Open  
+**Trạng thái:** Backend implementation merged; documentation sync in progress
 **Người phụ trách:** leminhkhai345  
 **Người review:** baoduong17 (BE Lead, API owner)  
 **Ước lượng:** 3 points · 8–12 giờ  
@@ -36,7 +36,7 @@ Landlord xem danh sách/chi tiết hóa đơn theo tòa + kỳ, thêm phí khác
 | `POST /invoices/{invoiceId}/cancel-invoice` | `postInvoicesInvoiceidCancelInvoice` | `200 INVOICE_CANCELLED` | `409 INVOICE_ALREADY_VOIDED`, `422 VALIDATION_FAILED` (thiếu/sai `reason`), `404`, `403` |
 
 - File: `api-docs/src/paths/invoices/invoices.yaml`, `invoices-invoiceId.yaml`, `invoices-issue-invoice.yaml`, `invoices-invoiceId-cancel-invoice.yaml`; request `api-docs/src/requests/invoices/invoice-update-request-dto.yaml`, `invoices-issue-request-dto.yaml`, `invoice-cancel-request-dto.yaml`.
-- Trong cùng PR implementation, đồng bộ spec: PATCH dùng `TOTAL_NEGATIVE`; `otherFees[].amount` là string; cancel bỏ `INVOICE_ALREADY_PAID`/`CANNOT_DELETE`, thêm `INVOICE_ALREADY_VOIDED`; `succeeded[].invoiceStatus` là `issued`; `maxItems` cho `invoiceIds` theo giới hạn đã chốt ở P2-D43; list bỏ `format` xlsx/csv/pdf; bỏ `sendNotification` và `vietQrContent` theo P6-D72. API owner duyệt thay đổi trước merge.
+- The separate API documentation PR aligns PATCH `TOTAL_NEGATIVE`, decimal-string fee amounts, `INVOICE_ALREADY_VOIDED`, `succeeded[].invoiceStatus = issued`, 100 unique IDs, JSON-only list responses, and the removal of `sendNotification` and `vietQrContent`.
 - Role: `landlord` cho cả 5 endpoint (tenant xem ở P6-02g4). Hóa đơn của landlord khác → `403`.
 
 ### Mapping field
@@ -50,6 +50,8 @@ Landlord xem danh sách/chi tiết hóa đơn theo tòa + kỳ, thêm phí khác
 | `invoiceIds[]` | — | `invoices.id` | 1–100, unique |
 | `reason` | `voidReason` | `void_reason text` NULL | bắt buộc, 1–500 ký tự (`P6-D72`); response detail trả `voidReason` |
 | header `Idempotency-Key` | — | `idempotency_keys.key` | UUID, bắt buộc |
+
+PATCH semantics in the merged backend: omitting `otherFees` or `note` preserves that field; `otherFees: []` clears all fees; `note: null` clears the note. `otherFees: null` and an empty `{}` body return `422 VALIDATION_FAILED`. The fee limit is 20 rows; each input amount is a signed decimal string with at most two fractional digits. Stored calculation lines retain four-decimal precision.
 
 ### Bảng `idempotency_keys` (mới, trong `tenancy_db`)
 
@@ -66,6 +68,8 @@ Landlord xem danh sách/chi tiết hóa đơn theo tòa + kỳ, thêm phí khác
 | `created_at` / `expires_at` | timestamptz | `expires_at = created_at + 24h` (contract: "lưu ít nhất 24 giờ") |
 
 UNIQUE `(user_id, operation, key)`. Cùng key + cùng hash → trả lại `response_body` (không phát hành lại); cùng key + hash khác → `409 IDEMPOTENCY_KEY_REUSED`; bản ghi hết hạn coi như không có. Nếu muốn dùng chung cho service khác → đề xuất đưa vào `boilerplate`, không sửa `src/shared` ở đây.
+
+The replay guarantee applies after the batch completes and its response is stored. Concurrent requests with the same key are serialized. If the server stops in the middle of a batch, recovery and exact response replay are not guaranteed. The implementation processes independent items in bounded groups; the earlier sequential-loop description below is historical.
 
 ### Ví dụ số
 
@@ -107,7 +111,7 @@ UNIQUE `(user_id, operation, key)`. Cùng key + cùng hash → trả lại `resp
 
 ### Bước 5 — `POST /invoices/issue-invoice`
 
-- **Cách làm:** handler: kiểm key (hit cùng hash → trả bản lưu; khác hash → `409`). Lặp từng id, **mỗi id một UoW**: không có → `failed {invoiceId, code: INVOICE_NOT_FOUND}`; landlord khác → `failed … FORBIDDEN`; `invoice.issue(now)` lỗi → `failed … INVOICE_NOT_PENDING`; thành công → `succeeded {id, code, status: "issued", issuedAt}` + outbox `invoice.issued`. Cuối cùng ghi `idempotency_keys` (bắt unique → đọc lại bản đã lưu).
+- **As implemented:** handler checks the key (same completed request → stored response; different input → `409`). Items have independent outcomes and transactions; missing, foreign, or non-pending invoices enter `failed[]`, while successful items enter `succeeded[]` and emit `invoice.issued`. The completed response is stored against the key. Processing uses bounded concurrency rather than a single sequential loop.
 - **Kiểm tra bước:**
   - `POST /api/v1/invoices/issue-invoice`, header `Idempotency-Key: 6f1c…`, body `{ "invoiceIds": [P101, P102, "<uuid lạ>"] }` → `200 INVOICES_ISSUE_REQUESTED`, kết quả như bảng Ví dụ số.
   - Gửi lại y nguyên → cùng response; `SELECT issued_at FROM invoices WHERE id=P101` không đổi.

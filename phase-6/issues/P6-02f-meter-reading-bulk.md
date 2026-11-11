@@ -17,7 +17,7 @@ Cuối tháng landlord nhập chỉ số điện/nước cho một tập phòng/
 ## Contract (sau P6-02a)
 
 - Endpoint: `POST /meter-readings/bulk` — `api-doc/src/paths/billing/meter-readings-bulk.yaml` (`postBulkMeterReadings`).
-- Request: `api-doc/src/requests/rooms/bulk-meter-reading-create-request-dto.yaml` — `buildingId`, `recordedMonth` (= `period`), `readings[] { roomId, type, currentReading, source?, ocrValue? } (P6-D66/P6-D70; evidence attaches after creation)` (1–200 dòng). Không nhận `readingMethod`, `previousReading` hoặc baseline.
+- Request: `api-doc/src/requests/rooms/bulk-meter-reading-create-request-dto.yaml` — `buildingId`, `recordedMonth` (= `period`), `readings[] { roomId, type, currentReading }` (1–200 rows). No OCR fields; evidence can be attached after creation under P6-D78. No `readingMethod`, `previousReading` or baseline item.
 - Response: `api-doc/src/responses/dtos/rooms/bulk-meter-reading-response-dto.yaml` — `201 METER_READINGS_BULK_RECORDED`, `results[]` theo phòng (`electricityReadingId`, `electricityUsage`, `waterReadingId`, `waterUsage`, `status=SUCCESS`, `note`), tổng `totalElectricityUsage`, `totalWaterUsage`; `totalRoomsRecorded` đếm `roomId` khác nhau trong request.
 - Lỗi: `404` (building), `403`, `409 DUPLICATE_READING`, `422 CURRENT_READING_INVALID`, `BASELINE_REQUIRED`, `VALIDATION_FAILED`.
 
@@ -60,7 +60,7 @@ Cuối tháng landlord nhập chỉ số điện/nước cho một tập phòng/
 - Không nhận `readingMethod`; không cần trường không ảnh hưởng logic ghi chỉ số.
 - Giới hạn `readings` tối đa 200 phần tử (`@ArrayMaxSize(200)`), tương ứng `maxItems: 200` trong contract.
 - Không trả `ERROR` hoặc `WARNING` bên trong response `201`; dòng không hợp lệ trả lỗi HTTP và rollback. Cảnh báo tiêu thụ bất thường chờ quy tắc riêng.
-- OCR ở P6-02h; media chứng cứ `TODO(media)`.
+- P6-02h implements optional image evidence after manual entry; no OCR dependency remains under P6-D78.
 
 ## Cập nhật `api-doc` (bắt buộc trước khi đóng issue)
 
@@ -83,4 +83,4 @@ Cuối tháng landlord nhập chỉ số điện/nước cho một tập phòng/
 - [ ] PR vào `main` ghi `Closes pbl6-home-renter/docs#76` + link file `api-doc`.
 - [ ] baoduong17 approve.
 
-> **P6-D60 / P6-D70:** Bulk remains atomic as approved in PR #94. A missing baseline returns `BASELINE_REQUIRED` and rolls back every submitted reading. Apply the `source`/`ocrValue` and first-period baseline changes from P6-D66/P6-D70 without changing transaction semantics.
+> **P6-D60 / P6-D70 / P6-D78:** Bulk remains atomic as approved in PR #94. A missing baseline returns `BASELINE_REQUIRED` and rolls back every submitted reading. First-period readings use the same-period baseline; no `source` or `ocrValue` is sent.

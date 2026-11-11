@@ -1,7 +1,7 @@
 # P6-02g1 — Invoice: aggregate, bảng `invoices` và calculator tính tiền thuần
 
 **Epic:** [P6-02](P6-02-tenancy-billing-vertical-slice.md) · cha: [P6-02g](P6-02g-invoice-outline.md)  
-**Trạng thái:** 🟡 Open  
+**Trạng thái:** Backend implementation merged; see the separate documentation sync PR
 **Người phụ trách:** leminhkhai345  
 **Người review:** baoduong17 (BE Lead, API owner)  
 **Ước lượng:** 3 points · 8–12 giờ  

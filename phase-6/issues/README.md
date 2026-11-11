@@ -5,8 +5,8 @@ Use [`_TEMPLATE.md`](_TEMPLATE.md) v2. Each task links to its GitHub issue; assi
 ## Decisions and prerequisites
 
 - [Published P6-D60](../discovery/decisions.md): baseline inputs and **atomic bulk** (PR #94). One invalid reading rolls back the whole request; successful responses contain only `SUCCESS` results.
-- [P6-D61–D75](../decisions.md): Payment/deposit settlement deferred; Contract, Invoice, MeterReading, OCR, media and tenant-linking decisions. P6-D75 defines source precedence.
-- P6-11 và P6-12 được đánh dấu Done theo xác nhận của PM. Mọi thay đổi API được đồng bộ trong cùng PR implementation; P6-10a/b đã được dọn khỏi tracker hoạt động.
+- [P6-D61–D78](../decisions.md): Payment/deposit settlement deferred; Contract, Invoice, manual MeterReading, media and tenant-linking decisions. P6-D75 defines source precedence; P6-D78 removes OCR from the MVP.
+- P6-11 and P6-12 are Done per PM confirmation. The merged P6-02h/g1–g4 backend changes are synchronized with `api-doc` in separate documentation PRs. P6-10a/b were removed from the active tracker.
 - It5: 02/11–08/11. It6: 09/11–15/11. It7: 16/11–22/11. P6-06d may move to It7 only after PM confirmation.
 - Project #3 field synchronization is pending: the current GitHub credentials do not grant Projects access. This table records the intended iterations; it does not claim those fields were applied remotely.
 
@@ -44,15 +44,15 @@ Use [`_TEMPLATE.md`](_TEMPLATE.md) v2. Each task links to its GitHub issue; assi
 | [P6-01e1](P6-01e1-contract-members.md) · [#95](https://github.com/pbl6-home-renter/docs/issues/95) | Thành viên hợp đồng: bảng, tự thêm đại diện khi activate, API thêm/xem/sửa/rời | leminhkhai345 | 3 points | 🟡 Open | P6-01d |
 | [P6-01e2](P6-01e2-tenant-my-contracts.md) · [#96](https://github.com/pbl6-home-renter/docs/issues/96) | Tenant xem hợp đồng của mình (`GET /me/contracts`) | leminhkhai345 | 2 points | 🟡 Open | P6-01e1 |
 | [P6-01e3](P6-01e3-contract-checkout.md) · [#97](https://github.com/pbl6-home-renter/docs/issues/97) | Checkout: kết thúc hợp đồng, member rời, phòng chuyển `maintenance` (+ sửa số xe khi HĐ `active`) | leminhkhai345 | 3 points | 🟡 Open | P6-01e1, P6-01d, P6-02g1 |
-| [P6-02g](P6-02g-invoice-outline.md) · [#77](https://github.com/pbl6-home-renter/docs/issues/77) | Invoice: sinh theo tòa + kỳ, phát hành, hủy, tenant xem (issue cha) | leminhkhai345 | 11 points (tổng sub-issue) | 🟡 Open · split | P6-02c, P6-02e, P6-02h, P6-01e1, P6-01e2 |
-| [P6-02g1](P6-02g1-invoice-domain-calculator.md) · [#98](https://github.com/pbl6-home-renter/docs/issues/98) | Invoice: aggregate, bảng `invoices` và calculator tính tiền thuần | leminhkhai345 | 3 points | 🟡 Open | P6-02c, P6-02e |
-| [P6-02g2](P6-02g2-invoice-generate.md) · [#99](https://github.com/pbl6-home-renter/docs/issues/99) | Invoice: sinh / tính lại hóa đơn `pending` theo tòa + kỳ | leminhkhai345 | 3 points | 🟡 Open | P6-02g1, P6-02h, P6-01e1 |
-| [P6-02g3](P6-02g3-invoice-landlord-manage.md) · [#100](https://github.com/pbl6-home-renter/docs/issues/100) | Invoice: landlord xem, sửa phí khác, phát hành hàng loạt, hủy | leminhkhai345 | 3 points | 🟡 Open | P6-02g2 |
-| [P6-02g4](P6-02g4-invoice-tenant-view.md) · [#101](https://github.com/pbl6-home-renter/docs/issues/101) | Invoice: tenant xem hóa đơn của mình | leminhkhai345 | 2 points | 🟡 Open | P6-02g3, P6-01e2, P6-01e1 |
-| [P6-02h](P6-02h-meter-reading-ocr-preview.md) · [#78](https://github.com/pbl6-home-renter/docs/issues/78) | MeterReading: migration, baseline kỳ đầu, `source`/`ocrValue`, `PATCH` có khóa kỳ | leminhkhai345 | 3 points | 🟡 Open | P6-02g1, P6-02g2 |
+| [P6-02g](P6-02g-invoice-outline.md) · [#77](https://github.com/pbl6-home-renter/docs/issues/77) | Invoice: sinh theo tòa + kỳ, phát hành, hủy, tenant xem (issue cha) | leminhkhai345 | 11 points (tổng sub-issue) | Backend merged; docs/gateway pending | P6-02c, P6-02e, P6-02h, P6-01e1, P6-01e2 |
+| [P6-02g1](P6-02g1-invoice-domain-calculator.md) · [#98](https://github.com/pbl6-home-renter/docs/issues/98) | Invoice: aggregate, bảng `invoices` và calculator tính tiền thuần | leminhkhai345 | 3 points | Backend merged | P6-02c, P6-02e |
+| [P6-02g2](P6-02g2-invoice-generate.md) · [#99](https://github.com/pbl6-home-renter/docs/issues/99) | Invoice: sinh / tính lại hóa đơn `pending` theo tòa + kỳ | leminhkhai345 | 3 points | Backend merged; docs pending | P6-02g1, P6-02h, P6-01e1 |
+| [P6-02g3](P6-02g3-invoice-landlord-manage.md) · [#100](https://github.com/pbl6-home-renter/docs/issues/100) | Invoice: landlord xem, sửa phí khác, phát hành hàng loạt, hủy | leminhkhai345 | 3 points | Backend merged; docs pending | P6-02g2 |
+| [P6-02g4](P6-02g4-invoice-tenant-view.md) · [#101](https://github.com/pbl6-home-renter/docs/issues/101) | Invoice: tenant xem hóa đơn của mình | leminhkhai345 | 2 points | Tenancy merged; gateway pending | P6-02g3, P6-01e2, P6-01e1 |
+| [P6-02h](P6-02h-meter-reading-ocr-preview.md) · [#78](https://github.com/pbl6-home-renter/docs/issues/78) | MeterReading: manual entry, baseline, optional image evidence, PATCH with issued-period lock | leminhkhai345 | 3 points | Backend merged; docs pending | P6-02g1, P6-02g2 |
 | [P6-06](P6-06-fe-contract-invoice-screens.md) · [#86](https://github.com/pbl6-home-renter/docs/issues/86) | Màn Hợp đồng, Chỉ số điện nước và Hóa đơn cho landlord (Web) — Epic | ThaiBao11125 | 12 points | 🟡 Open · split | P6-03c, P6-01b, P6-02e, P6-02g1 |
 | [P6-06a](P6-06a-fe-contract-list-create-activate.md) · [#102](https://github.com/pbl6-home-renter/docs/issues/102) | Danh sách, tạo hợp đồng nháp, áp mẫu và kích hoạt hợp đồng (Web) | ThaiBao11125 | 3 points | 🟡 Open | P6-01b, P6-01c, P6-01d, P6-03c |
-| [P6-06b](P6-06b-fe-meter-reading-entry.md) · [#103](https://github.com/pbl6-home-renter/docs/issues/103) | Nhập chỉ số điện nước theo tòa và kỳ, có OCR gợi ý (Web) | ThaiBao11125 | 3 points | 🟡 Open | P6-02e, P6-02f, P6-02h, P6-03c |
+| [P6-06b](P6-06b-fe-meter-reading-entry.md) · [#103](https://github.com/pbl6-home-renter/docs/issues/103) | Nhập tay chỉ số điện nước theo tòa và kỳ, ảnh minh chứng tùy chọn (Web) | ThaiBao11125 | 3 points | 🟡 Open | P6-02e, P6-02f, P6-02h, P6-03c |
 | [P6-06c](P6-06c-fe-invoice-screens.md) · [#104](https://github.com/pbl6-home-renter/docs/issues/104) | Sinh, xem, sửa phí khác, phát hành và hủy hóa đơn (Web) | ThaiBao11125 | 3 points | 🟡 Open | P6-02g1, P6-06b, P6-06a, P6-01e3 |
 | [P6-06d](P6-06d-fe-contract-members-checkout.md) · [#105](https://github.com/pbl6-home-renter/docs/issues/105) | Thành viên hợp đồng và trả phòng (Web) | ThaiBao11125 | 3 points | 🟡 Open | P6-06a, P6-01e1, P6-01e3, P6-03c |
 | [P6-07](P6-07-demo-seed-and-staging.md) · [#87](https://github.com/pbl6-home-renter/docs/issues/87) | Seed dữ liệu demo, chốt staging, kịch bản demo | baoduong17 | 3 points | 🟡 Open | P6-01e1, P6-02g1, P6-11 |
@@ -68,7 +68,7 @@ Use [`_TEMPLATE.md`](_TEMPLATE.md) v2. Each task links to its GitHub issue; assi
 - Contract: `P6-01a → P6-01b → (P6-01c ∥ P6-01d) → P6-01e1 → (P6-01e2 ∥ P6-01e3)`. Activation prerequisite P6-12 is Done; checkout also requires P6-02g1.
 - Billing It5: `P6-02a → P6-02b → P6-02c → P6-02d`; readings e/f follow the aligned contract and Room API.
 - Web: `P6-06a → P6-06d`; meter entry b and contract a can proceed independently; invoice c follows b and the active-contract update in e3.
-- Demo P6-07 follows the core integrations and includes a manual-input fallback for OCR failure. Payment is not a demo dependency.
+- Demo P6-07 follows the core integrations and uses manual meter input with optional image evidence. Payment is not a demo dependency.
 
 ## Tracking convention
 

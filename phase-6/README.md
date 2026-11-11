@@ -6,7 +6,7 @@
 
 Demo được vòng đời **landlord-solo** (D29) trên staging:
 
-`Building/Room → Hợp đồng (mẫu + upload bản ký tay) → Chốt số điện nước (OCR/nhập tay/bulk) → Hóa đơn (sinh → phát hành) → Checkout`
+`Building/Room → Contract (template + signed-file upload) → Manual meter reading (optional photo evidence/bulk) → Landlord-generated invoice → Issue → Checkout`
 
 Quyết định làm rõ MeterReading baseline và bulk của phase này: [D60](discovery/decisions.md).
 
@@ -15,7 +15,7 @@ Quyết định làm rõ MeterReading baseline và bulk của phase này: [D60](
 | Nhóm | Quyết định |
 |---|---|
 | Building, Room, Contract (+ thành viên, checkout), Rate policy/Billing setting, Meter reading, Invoice (`pending → issued → void`) | **MVP** — làm trong phase này |
-| OCR chốt số qua `ai-service` (Claude vision) | **MVP** It6 — `P6-D67`; fallback nhập tay luôn có |
+| Manual meter entry with optional image evidence | **MVP** It6 — `P6-D78`; no OCR endpoint or OCR fields |
 | Payment tiền mặt/mock, quyết toán cọc | **Stretch** — `P6-D61` (demo dừng ở phát hành hóa đơn) |
 | Property Chat, Issue report, Notification (community-service) | **Stretch** |
 | Roommate profile + match request | **Stretch** |
@@ -27,12 +27,12 @@ Quyết định làm rõ MeterReading baseline và bulk của phase này: [D60](
 
 | Iteration | leminhkhai345 (BE) | huynhtiennhat0403 (BE) | ThaiBao11125 (FE) | baoduong17 (Lead) |
 |---|---|---|---|---|
-| **It4** 26/10–01/11 | P5-08b → P5-08c ∥ P5-08d → P5-08e | P5-09b → P5-09c ∥ P5-09d | Hoàn tất `fe#6` (P5-01…P5-07) | Review, route gateway cho tenancy, chốt OCR |
+| **It4** 26/10–01/11 | P5-08b → P5-08c ∥ P5-08d → P5-08e | P5-09b → P5-09c ∥ P5-09d | Hoàn tất `fe#6` (P5-01…P5-07) | Historical OCR proposal later superseded by P6-D78 |
 | **It5** 02/11–08/11 | P6-01 Contract (a–d) | P6-02 Billing (rate policy, billing setting, meter reading) | P6-03 màn Building/Room + admin duyệt | P6-04 Media upload, P6-08 administrative geography, deploy staging |
-| **It6** 09/11–15/11 | P6-01e1–e3 (members, `/me/contracts`, checkout) | P6-02g1–g4 Invoice, P6-02h | P6-06a–d màn Contract/Meter/Invoice | P6-10b OCR, P6-07 seed demo |
+| **It6** 09/11–15/11 | P6-01e1–e3 (members, `/me/contracts`, checkout) | P6-02g1–g4 Invoice, P6-02h manual readings | P6-06a–d Contract/Meter/Invoice screens | P6-07 seed demo; OCR deferred by P6-D78 |
 | **It7** 16/11–22/11 | Bug fix | Bug fix | Bug fix + polish | Demo script, báo cáo, slide |
 
-Task It5 và It6 đều đã viết step-by-step theo `_TEMPLATE.md` v2. Mọi quyết định nghiệp vụ của phase nằm ở [`decisions.md`](decisions.md) (D61–D75; published D60 remains in `discovery/decisions.md`); trước It6 lead làm thêm P6-09 (đồng bộ `api-docs`), P6-10a (scaffold `ai-service`), P6-11 (endpoint ownership nội bộ), P6-12 (internal media lookup).
+Task It5 and It6 use `_TEMPLATE.md` v2. Phase decisions are in [`decisions.md`](decisions.md) (D61–D78; published D60 remains in `discovery/decisions.md`). This documentation sync records the merged P6-02h/g2/g3/g4 implementation; the old P6-09 and OCR prerequisites are no longer part of the billing implementation sequence. Gateway ownership for `/me/invoices` remains a separate decision.
 
 P6-08 (administrative geography) is assigned to `baoduong17` in Iteration 5 and is intentionally kept separate from geocoding.
 

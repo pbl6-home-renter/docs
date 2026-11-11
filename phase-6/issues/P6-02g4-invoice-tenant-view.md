@@ -1,12 +1,12 @@
 # P6-02g4 — Invoice: tenant xem hóa đơn của mình
 
 **Epic:** [P6-02](P6-02-tenancy-billing-vertical-slice.md) · cha: [P6-02g](P6-02g-invoice-outline.md)  
-**Trạng thái:** 🟡 Open  
+**Trạng thái:** Tenancy backend merged; gateway routing awaits PM ownership decision
 **Người phụ trách:** leminhkhai345  
 **Người review:** baoduong17 (BE Lead, API owner)  
 **Ước lượng:** 2 points · 4–6 giờ  
 **Phụ thuộc:** P6-02g3 (có hóa đơn `issued`), P6-01e2 (quy tắc "HĐ của tôi" — `GET /me/contracts`), P6-01e1 (bảng `contract_members`) 
-**Repo / branch:** `Tenancy-Service` · `feature/p6-02g4-invoice-tenant-view`; `api-gateway` · `feature/p6-02g4-me-invoices-route`  
+**Repo / branch:** `Tenancy-Service` · `feature/p6-02g4-invoice-tenant-view` (merged); `api-gateway` route ownership pending PM decision
 **Iteration:** It6 (09/11–15/11)  
 **Issue:** `docs#101`
 
@@ -33,10 +33,10 @@ Tenant (người đại diện hoặc thành viên đang ở) gọi `GET /me/inv
 | `GET /me/invoices` | `getMeInvoices` | `200 INVOICES_MY_FETCHED` + `pagination` | `422 VALIDATION_FAILED` |
 | `GET /invoices/{invoiceId}` (role tenant) | `getInvoicesInvoiceid` | `200 INVOICE_FETCHED` | `404 INVOICE_NOT_FOUND` |
 
-- File contract: `api-docs/src/paths/invoices/me-invoices.yaml` cùng kiểu `paths/contracts/me-contracts.yaml`; `api-docs/src/paths/invoices/invoices-invoiceId.yaml`. Trong PR implementation cập nhật cùng spec, bỏ path cũ `invoices-tenant.yaml` nếu còn tồn tại.
+- File contract: `api-doc/src/paths/invoices/me-invoices.yaml` and `api-doc/src/paths/invoices/invoices-invoiceId.yaml`. The separate API documentation PR removes the former `invoices-tenant.yaml` path.
 - Role: `GET /me/invoices` chỉ `tenant`. `GET /invoices/{id}`: `landlord` (P6-02g3) **và** `tenant`.
 - Tenant mở hóa đơn không được xem (`pending`, `void`, HĐ khác, đã rời trước) → **`404 INVOICE_NOT_FOUND`** (không `403`, để không lộ hóa đơn tồn tại); ghi rõ trong description của operation và cập nhật cùng PR implementation.
-- Gateway: `api-gateway/src/constants/route-paths.constants.ts` **chưa có** `/me/invoices` → request sẽ rơi vào prefix `/me` của Identity. Phải thêm `'/me/invoices'` vào danh sách Tenancy.
+- Gateway: the inspected `api-gateway/main` lacks `/me/invoices`, so its `/me` prefix currently routes this request to Identity. PM will decide who owns the gateway route change; the Tenancy implementation and this documentation sync do not modify that repository.
 
 ### Mapping field
 
@@ -74,9 +74,9 @@ Không có tính toán mới. Kịch bản dữ liệu:
 - **Cách làm:** từ dữ liệu P6-02g3: liên kết HĐ X với `tenant_id = T1` bằng SQL/seed (web không có ô chọn tài khoản, `P6-D74`), thêm member T2, T3 (`left_at = 2026-09-30`) qua API P6-01e1 (body có `tenantId` — API vẫn nhận); phát hành 2 hóa đơn, để 1 `pending`. Lấy token T1–T4 từ Identity.
 - **Kiểm tra bước:** `SELECT period, status FROM invoices WHERE contract_id = '<X>'` → 2 `issued`, 1 `pending`.
 
-### Bước 2 — Gateway route `/me/invoices`
+### Bước 2 — Gateway route `/me/invoices` (pending separate owner decision)
 
-- **File sửa:** `api-gateway/src/constants/route-paths.constants.ts` — thêm `'/me/invoices'` vào mảng `GatewayService.Tenancy` (PR riêng ở repo `api-gateway`, reviewer baoduong17).
+- **Pending work for the assigned owner:** add `'/me/invoices'` to the Tenancy route list in `api-gateway/src/constants/route-paths.constants.ts` in a separate PR.
 - **Kiểm tra bước:** chạy gateway local, `GET http://localhost:3000/api/v1/me/invoices` có log proxy tới Tenancy (port 3002), không phải Identity.
 
 ### Bước 3 — `GET /me/invoices`
@@ -101,7 +101,7 @@ Không có tính toán mới. Kịch bản dữ liệu:
 
 ## Blocker
 
-- Không có, nếu P6-01e2 merge trước. Chưa merge → không tự viết điều kiện truy cập riêng; chờ.
+- The Tenancy backend uses the shared P6-01e2 access rule and is merged. Gateway routing and the end-to-end gateway check remain pending PM ownership assignment.
 
 ## Cập nhật `api-docs` (bắt buộc trước khi đóng issue)
 
@@ -120,4 +120,4 @@ Không có tính toán mới. Kịch bản dữ liệu:
 
 - [ ] Mọi bước qua phần Kiểm tra bước; mọi ô Acceptance được **tick bởi người làm**, kèm export Apidog trong PR.
 - [ ] `npm run build` + `npm run lint` pass; không có file test, không sửa `src/shared`.
-- [ ] PR `Tenancy-Service` + PR `api-gateway` ghi `Closes pbl6-home-renter/docs#<số issue>`, baoduong17 approve.
+- [x] Tenancy-Service implementation merged. The gateway PR and end-to-end verification remain separate pending work under PM ownership.
