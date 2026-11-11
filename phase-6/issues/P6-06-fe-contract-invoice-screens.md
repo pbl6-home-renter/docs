@@ -29,7 +29,7 @@ Thứ tự: `P6-06a → P6-06d`; `P6-06b → P6-06c` (link sửa `READING_MISSIN
 
 ## Quyết định chi phối
 
-`P6-D61` (không thu tiền, không quyết toán cọc) · `P6-D62` (checkout) · `P6-D63` (thành viên) · `P6-D64` (vòng đời hóa đơn) · `P6-D65` (tiền là string, làm tròn tổng) · `P6-D66` (MeterReading) · `P6-D67` (OCR qua ai-service) · `P6-D68` (field tạo HĐ) · `P6-D69` (tạo trước, upload sau) · `P6-D70` (reading: `evidenceMediaId`, `PATCH` mới nhất, bulk `BASELINE_REQUIRED`) · `P6-D71` (sửa số xe khi `active`, rule ngày/trùng member, field chi tiết HĐ) · `P6-D72` (hủy có lý do, không QR/`sendNotification`) · `P6-D74` (không chọn tài khoản tenant) · `P1-D39` (trạng thái hóa đơn `pending|issued|void`).
+`P6-D61` (no payment/deposit settlement) · `P6-D62` (checkout) · `P6-D63` (members) · `P6-D64` (invoice lifecycle) · `P6-D65` (decimal-string money) · `P6-D68` (contract fields) · `P6-D69` (create before Media upload) · `P6-D70` (baseline, latest PATCH, atomic bulk) · `P6-D71` (contract/member rules) · `P6-D72` (void reason, no QR) · `P6-D74` (tenant account linking deferred) · `P6-D78` (manual readings, optional image evidence; supersedes OCR parts of D66/D67) · `P1-D39` (invoice statuses).
 
 ## Phạm vi đã bỏ so với outline cũ và UI Screen Outline v0.1
 
@@ -43,7 +43,7 @@ Thứ tự: `P6-06a → P6-06d`; `P6-06b → P6-06c` (link sửa `READING_MISSIN
 | Trường `rentalType`, CCCD, `paymentDueDay` khi tạo HĐ (LL-11) | `P6-D68` |
 | CCCD/ảnh CCCD/cờ đại diện của thành viên, "xóa" thành viên (LL-16, LL-17) | `P6-D63` (rời = `leftAt`) |
 | Toggle "Có xe" từng thành viên (LL-16/LL-54) | `P1-D32`, `P6-D65` — số xe ở HĐ |
-| OCR preview trong Tenancy | Chưa có endpoint được công bố trong phạm vi issue hiện tại |
+| OCR preview in Tenancy | Removed from the Phase 6 MVP by P6-D78; manual entry is the supported flow |
 | Phòng `pending_cleanup` sau trả phòng | `P6-D62` — dùng `maintenance` + `mark-ready` |
 | Ô chọn tài khoản tenant khi tạo HĐ/thêm thành viên | `P6-D74` — Stretch |
 | VietQR trên hóa đơn (LL-22), checkbox gửi thông báo khi phát hành | `P6-D72` |

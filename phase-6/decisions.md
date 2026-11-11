@@ -30,6 +30,8 @@
 | D74 | 2026-11-01 | Liên kết tài khoản tenant trên web để Stretch; form chỉ nhập họ tên + SĐT | ✅ Accepted |
 | D75 | 2026-11-01 | Thứ tự ưu tiên nguồn khi mâu thuẫn + mọi câu hỏi mở phải có D-ID trước khi giao việc | ✅ Accepted |
 | D76 | 2026-11-02 | Snapshot display name trên ConversationMember và Message | ✅ Accepted |
+| D77 | 2026-11-02 | Payload system message khi thêm thành viên nhóm | ✅ Accepted |
+| D78 | 2026-11-11 | Meter readings are entered manually; images are evidence, not OCR input | ✅ Accepted |
 
 ---
 
@@ -89,6 +91,8 @@
 
 ## D66 — MeterReading
 
+> The `source`/`ocrValue` fields and mandatory-evidence wording below are superseded by P6-D78. The baseline, bulk and issued-period rules remain in force.
+
 - **Bối cảnh:** `P2-D47` (Pending) nói không làm bulk, nhưng P6-02f đã giao trong It5. Nhánh `feature/p6-02e-meter-reading` có `buildingId`, `evidenceMediaId`, thiếu migration; `api-docs` có `readingDate` mà code không có. Media `meter_reading_evidence` đòi `ownerId` = id của reading (D69), nên không thể có `evidenceMediaId` lúc tạo.
 - **Quyết định:**
   - **Giữ bulk** (`POST /meter-readings/bulk`, P6-02f) — quyết định này ghi đè `P2-D47`.
@@ -98,6 +102,8 @@
   - Reading của một phòng/kỳ **chỉ sửa/xóa được khi kỳ đó chưa có hóa đơn `issued`** cho HĐ của phòng (`409 PERIOD_ALREADY_INVOICED`).
 
 ## D67 — OCR qua `ai-service`
+
+> Superseded for the Phase 6 meter-reading flow by P6-D78. No OCR endpoint or AI suggestion is required for this MVP.
 
 - **Bối cảnh:** `P3-D51` (Pending) bỏ AI, dự định chạy Tesseract trong Tenancy. Tesseract đọc kém số công tơ cơ (bánh xe số) và 7 đoạn. Lead chốt làm OCR trong It6 bằng một AI service riêng.
 - **Quyết định:**
@@ -122,6 +128,8 @@
   - Tenancy thêm `GET /internal/ownership/{ownerType}/{ownerId}` (`@InternalOnly()`), trả `{ landlordId, participantUserIds, status }` cho `building`, `room`, `contract`, `contract_member`, `meter_reading`; không tìm thấy → `404`. Giao ở **P6-11**.
 
 ## D70 — MeterReading: baseline, sửa reading, ảnh minh chứng
+
+> P6-D78 removes the OCR requirement and allows a reading to be created without an image. The merged Tenancy implementation stores `evidenceMediaIds` and supports attaching uploaded images after creation; the singular `evidenceMediaId` remains a PATCH input.
 
 - **Bối cảnh:** P6-02e (merged `6251329`) lưu baseline với `previous = current` và UNIQUE `(room_id, type, period)` → kỳ có baseline không nhập thêm được reading, điện/nước kỳ đầu luôn 0, trái calc §8. `api-docs` và code chưa có `PATCH`/`DELETE`. FE không biết reading đã có ảnh sau khi tải lại vì D66 bỏ `evidenceMediaId` và Media không có API liệt kê theo owner. Bulk chưa định nghĩa trường hợp phòng chưa có baseline. Bảng `meter_readings` chưa có migration.
 - **Quyết định:**
@@ -197,3 +205,9 @@
   - `senderMemberId` trỏ tới system participant của conversation; `senderNameSnapshot` lấy từ `ConversationMember.displayName` của system participant.
   - `POST /conversations/{conversationId}/members` trả danh sách member vừa thêm hoặc kích hoạt lại. Success code là `CONVERSATION_MEMBERS_ADDED`; GET dùng `CONVERSATION_MEMBERS_FETCHED`.
   - Membership thay đổi và system message phải commit cùng transaction. Không gửi FCM cho system message; Socket được triển khai ở task realtime.
+
+## D78 — Manual meter readings with image evidence
+
+- **Context:** Phase 6 originally planned OCR suggestions in P6-D66/D67. The approved P6-02h implementation uses manual values and uploaded photos solely as evidence.
+- **Decision:** The user enters and confirms each meter value manually. No OCR endpoint, `source`, or `ocrValue` is required in the Phase 6 MVP. An image may be uploaded after a reading exists and attached with PATCH; its absence does not block invoice generation. Keep the first-period baseline, latest-reading and issued-period update restrictions, and atomic bulk behavior from P6-D60/D70.
+- **Effect:** This decision supersedes only the OCR and mandatory-image portions of P6-D66/D67. P6-10a/b and OCR UI are removed from the Phase 6 meter-reading dependency chain. P6-02h, the Phase 6 roadmap, and the API contract must describe the manual flow. The merged Tenancy response uses `evidenceMediaIds`/`evidenceMediaUrls` arrays; `PATCH /meter-readings/{id}` also accepts a singular `evidenceMediaId` to attach one image.
