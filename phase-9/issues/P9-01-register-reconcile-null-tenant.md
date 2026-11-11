@@ -17,7 +17,7 @@ Khi tenant đăng ký sau khi landlord đã khai báo số điện thoại trong
 
 | Producer | Routing key | Queue | Field payload sử dụng | Consumer xử lý |
 |---|---|---|---|---|
-| Identity | `user.registered` | `tenancy.identity-lifecycle` | Envelope hiện có; payload `userId`, `role`, `phone`, `status` | Tenancy dedup, so khớp phone tenant chính xác sau chuẩn hóa, cập nhật `tenantId=NULL`, lưu projection user-phone và ghi event linked vào outbox. |
+| Identity | `user.registered`, `user.email_verified` | `tenancy.identity-lifecycle` | `userId`, `role`, `phone`, `status` | Pending registration is acknowledged without linking; verified active tenant triggers phone reconciliation and linked outbox event. |
 | Tenancy | `contract_member.linked` | `community.contract-context` | `contractId`, `contractMemberId`, `tenantUserId` | Community thêm user vào contract conversation idempotent. Không gửi phone sang Community. |
 
 Dùng lại producer `user.registered` và hạ tầng Building/outbox hiện có. Không tạo publisher trùng và không để Community tự tra Identity.
