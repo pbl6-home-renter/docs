@@ -8,6 +8,7 @@
 > **Backlog chi tiết:** [Community implementation backlog](../phase-6/discovery/community-service-implementation-backlog.md).
 > **Web Chat v1 đã chốt:** [Phạm vi và hành vi FE](discovery/web-chat-v1-decisions.md); mục khảo sát/API nháp trong tài liệu là ảnh chụp lịch sử ngày 03/11, không phải backlog hiện tại.
 > **Trạng thái hiện tại:** [Rà soát sau demo Web Chat v1](discovery/web-chat-v1-current-status.md) đối chiếu quyết định với mã nguồn và liệt kê các bước tiếp theo. Bản khảo sát ban đầu ngày 04/11 cũng chỉ là ảnh chụp lịch sử.
+> **Web Chat v2 đã chốt:** [Đã xem, đang nhập, tìm tin, trả lời trích dẫn](discovery/web-chat-v2-decisions.md) (P7-D83); [bàn giao backend cho FE](discovery/web-chat-v2-backend-handoff.md).
 > **Giao việc độc lập:** [Prompt bàn giao cho Claude](discovery/web-chat-v1-claude-handoff.md) chia contract và các API còn thiếu theo thứ tự phụ thuộc.
 
 ## Mục tiêu
