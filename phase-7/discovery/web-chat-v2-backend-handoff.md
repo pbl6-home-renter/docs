@@ -91,14 +91,14 @@ Tin gốc đã xóa:
 
 ## Migration
 
-`src/database/migrations/1794496738151-AddMessageReplyTo.ts` (sinh bằng `npm run migration:generate`): thêm cột `messages.reply_to_message_id uuid NULL` và FK `FK_messages_reply_to_message_id` → `messages(id)` `ON DELETE RESTRICT`. **Chưa chạy** `migration:run` trên DB dùng chung; cần chạy trước khi test tích hợp, nếu không `GET /messages` và search sẽ lỗi vì thiếu cột.
+`src/database/migrations/1794496738151-AddMessageReplyTo.ts` (sinh bằng `npm run migration:generate`): thêm cột `messages.reply_to_message_id uuid NULL` và FK `FK_messages_reply_to_message_id` → `messages(id)` `ON DELETE RESTRICT`. **Đã chạy** `migration:run` trên DB dev dùng chung ngày 12/11/2026 (`migration:show` báo 7/7 đã áp dụng). Service nào chạy code cũ vẫn tương thích vì cột mới cho phép `NULL`.
 
 ## Kết quả kiểm tra
 
 - `community-service`: `npm run build` sạch; `oxlint src/ test/` sạch; Prettier sạch trên các file đã sửa; `npx jest` 19 suite / 79 test pass (thêm test cho mark-read → member-read, `maxSequence` + giới hạn read-only, search quyền, reply hợp lệ/khác hội thoại/system/đã xóa/không tồn tại, retry idempotent, typing gateway: chưa join, bị loại, payload sai). Ba lệnh grep dependency rule không có kết quả mới (một dòng có sẵn ở `conversation-create.command.handler.ts`).
 - SQL tìm kiếm được kiểm tra bằng cách sinh câu lệnh TypeORM (không kết nối DB): gấp dấu bằng `TRANSLATE` như tìm hội thoại, `%`/`_` được escape.
 - `api-docs`: `npm run lint` hợp lệ (14 warning có sẵn, không thêm), `npm run bundle` đã chạy. `GET /messages/search` để `x-apidog-status: designing` cho tới khi thử tay trên service.
-- **Chưa kiểm tra end-to-end** với DB/Socket thật (chưa chạy migration). Việc tích hợp hai tài khoản, nhóm ba người, reconnect, người bị loại thuộc phần Codex.
+- **Chưa kiểm tra end-to-end** với DB/Socket thật (migration đã chạy, nhưng chưa thử tay API/Socket trên service). Việc tích hợp hai tài khoản, nhóm ba người, reconnect, người bị loại thuộc phần Codex.
 
 ## Giới hạn đã biết
 
