@@ -1,5 +1,12 @@
 # Phase 7 decisions
 
+## P7-D83 — Phạm vi Web Chat v2 (2026-11-12)
+
+- Chat v2 bổ sung trạng thái đã xem cho người gửi, đang nhập, tìm nội dung tin trong một hội thoại, mở tin tìm được (`maxSequence`) và trả lời trích dẫn. Chi tiết tại [web-chat-v2-decisions.md](web-chat-v2-decisions.md).
+- Đây là quyết định mới, không sửa P7-D80: Web Chat v1 vẫn ghi đúng việc typing và trạng thái đã xem từng tin nằm ngoài mốc đầu.
+- Không thêm trạng thái “Đã nhận”. Reaction, thu hồi, ghim, tắt tiếng và chia sẻ file để đợt sau.
+- Trạng thái đã xem luôn hiển thị; chỉ thành viên `active` được tính.
+
 ## P7-D81 — Trạng thái sau demo và chia backlog Web (2026-11-07)
 
 - Web Chat v1 đã được user demo và xác nhận ổn định; readiness audit ngày 04/11 chỉ là ảnh chụp lịch sử, không còn phản ánh trạng thái hiện tại.
