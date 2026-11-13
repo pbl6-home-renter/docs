@@ -26,7 +26,7 @@ Dùng lại producer `user.registered` và hạ tầng Building/outbox hiện c�
 
 1. Tạo consumer Tenancy trên queue `tenancy.identity-lifecycle`, dùng inbox/transaction pattern hiện có.
 2. Trong một transaction Tenancy, tìm các Contract/ContractMember chưa xóa có `tenantId IS NULL` và phone khớp chính xác; gán `tenantId`, ghi/cập nhật projection user-phone và append `contract_member.linked` vào outbox.
-3. Tạo subscriber Community trên `community.contract-context`; tìm conversation theo contract context và thêm/kích hoạt membership idempotent.
+3. Community consumes `contract_member.linked` idempotently. If activation has not created the contract conversation, it stores the event durably and applies it after `contract.activated`; it does not create a conversation without the landlord admin (P9-D85).
 4. Dùng một tenant/member mẫu để xác nhận account xuất hiện trong contract chat.
 
 ## Acceptance

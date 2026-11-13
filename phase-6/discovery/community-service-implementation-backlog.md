@@ -231,10 +231,10 @@ Contract/building chat phụ thuộc event producer và đồng bộ membership.
 **Acceptance criteria:**
 
 - [ ] Building.created tạo một building conversation và owner admin; mỗi contract có một contract conversation.
-- [ ] ContractMember add/kick được phản ánh idempotent; kick chỉ làm read-only ở contract chat; checkout/contract end không tự kick; building membership thay đổi theo đúng decision.
+- [ ] ContractMember add/link/leave is reflected idempotently in contract chat. Individual leave and checkout retain membership as read-only with a history cutoff at event `occurredAt`; contract termination alone does not remove the conversation. Member events before activation are stored until activation creates the conversation and landlord admin (P9-D85). Building membership remains a separate integration decision.
 - [ ] Event consumer dùng payload thật; nếu sự kiện thiếu building/tenant/member IDs thì producer được bổ sung trong Tenancy cùng outbox transaction.
 
-**Verification:** Replay building/contract/member events, kiểm tra unique context, membership trùng, kick boundary và contract/building chat separation.
+**Verification:** Replay building/contract/member events, including member-before-activation and duplicate delivery; check unique context, the leave read boundary and contract/building chat separation.
 
 **Dependencies:** CB-02, CB-03, CB-04; phụ thuộc các luồng Tenancy ContractMember liên quan, gồm P6-01e khi còn mở. Domain event producer là task tích hợp giai đoạn này, không phải prerequisite cho chat direct/group.
 

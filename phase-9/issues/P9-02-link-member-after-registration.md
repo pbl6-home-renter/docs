@@ -26,8 +26,9 @@ Khi account tenant tồn tại trước lúc landlord tạo hoặc sửa Contrac
 
 1. Tái sử dụng projection/consumer từ P9-01; cập nhật phone khi `user.updated`, bỏ mapping tra cứu khi `user.deleted` nhưng giữ liên kết lịch sử.
 2. Trong transaction add/update ContractMember, tra phone đã chuẩn hóa trong projection. Không khớp thì giữ `tenantId = NULL`.
+   An explicit `tenantId` takes precedence over projection matching. Without it, only an exact normalized-phone match to an active tenant account may fill the ID. The operation does not call Identity over HTTP; an unmatched member stays null for P9-01. These are P9-02 requirements, not a claim that the current add handler already implements the projection (P9-D85).
 3. Lưu member change và outbox event trong cùng transaction.
-4. Tái sử dụng handler `community.contract-context` từ P9-01/P9-04 để thêm user idempotent.
+4. Reuse Community's `community.contract-context` consumer. It receives resolved IDs/context, never phone; if member events precede activation it stores them durably and applies them after the conversation and landlord admin exist (P9-D85).
 
 ## Acceptance
 
