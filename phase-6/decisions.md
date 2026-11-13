@@ -175,6 +175,8 @@
 - **Bối cảnh:** `P6-D63` nói landlord chọn user có sẵn (`tenantId`), nhưng landlord không có API tìm user (`GET /users` chỉ cho admin).
 - **Quyết định:** Phase 6 web **không** có ô chọn tài khoản tenant; form HĐ và member chỉ nhập họ tên + SĐT, `tenantId = NULL` (`P0-D29`). `tenantId` chỉ có từ seed demo. Tự liên kết theo SĐT (qua Identity `GET /internal/users`) là Stretch. `GET /me/contracts`, `/me/invoices` vẫn làm cho mobile và dữ liệu seed.
 
+> **Phase 9 addendum (P9-D85, 2026-11-13):** D74 records the Phase 6 scope. P9-02 specifies a later local Identity-event phone projection for exact tenant matching when `tenantId` is absent; it does not use the synchronous Identity HTTP lookup contemplated here. Explicit `tenantId` remains authoritative. This addendum does not assert that P9-02 has been deployed.
+
 > **Bổ sung D71 (2026-11-01):** giới hạn `leftOn ≤ end_date` chỉ áp dụng cho `leave-contract`; checkout sau `end_date` vẫn hợp lệ và set `left_at = completedOn` cho mọi member.
 
 

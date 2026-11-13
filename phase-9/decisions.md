@@ -29,3 +29,12 @@
 - **Reason:** D51 delays account activation until email ownership is confirmed, so tenant linking must wait for the activation transition too.
 - **Consequence:** Deploy the Tenancy consumer binding before Identity publishes pending-registration events. Keep the phone field on the Identity-to-Tenancy event only; do not forward it to Community.
 - **Cross-ref:** P2-D51, P9-D83, P9-01, Identity-Service user lifecycle events, Tenancy-Service identity lifecycle consumer.
+
+## P9-D85 — Contract chat lifecycle and tenant linking (2026-11-13)
+
+- **Status:** Accepted for Phase 9; P9-02 phone projection remains a dependency, not a claim of current deployment.
+- **Conversation creation:** Only `contract.activated` creates the contract conversation and landlord admin. Community stores earlier `contract_member.added`, `.linked`, and `.left` events durably, acknowledges them after the local transaction, and replays them after activation. A member event alone must not create an incomplete conversation. The store deduplicates by envelope event ID; pending events remain pending if activation never arrives.
+- **Ordering:** Replay uses envelope `occurredAt`, then event ID as a tie-breaker. The activation snapshot supplies linked tenant IDs; member events before activation time are covered by that snapshot and are not replayed. A stale add/link must not reactivate a user after a later leave. A leave for a user who was never a chat member does not create a read-only membership.
+- **Leaving:** Individual leave and checkout produce `contract_member.left` for affected members. Community retains the conversation and membership, changes the member to `read_only`, and computes `leftSequence` from messages at or before envelope `occurredAt`. The domain `leftAt` remains a date. Read-only members cannot send or receive later messages; REST history ends at `leftSequence`. Event delivery can delay revocation. P9-04 does not schedule chat revocation for future-dated departures.
+- **Tenant linking:** An explicit `tenantId` takes precedence. Under P9-02, if absent, Tenancy uses an exact normalized-phone match against its local Identity-event projection for an active tenant account. No match leaves `tenantId` null for P9-01 reconciliation. The add operation does not call Identity over HTTP; Community receives IDs/context without phone and does not resolve tenant identity.
+- **Cross-ref:** P9-D83, P9-D84, P9-01, P9-02, P9-04, P6-D74.

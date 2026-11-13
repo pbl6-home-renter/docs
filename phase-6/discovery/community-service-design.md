@@ -78,7 +78,7 @@ Các quy tắc trong mục này được đưa ra để chốt lần lượt. Tr
 | BL-01 | Ai được tạo chat tự do 1:1 hoặc nhóm? | Mọi user đã đăng nhập có thể bắt đầu chat 1:1 hoặc tạo nhóm; người tạo nhóm là admin ban đầu. | Đã chốt |
 | BL-02 | Quyền của admin nhóm | Thêm/xóa thành viên, đổi vai trò, sửa tên/ảnh nhóm và chỉ định thêm admin; thay đổi thành viên được ghi thành system message. | Đã chốt |
 | BL-03 | Thành viên rời hoặc bị xóa khỏi chat tự do | Không gửi được tin mới; chỉ xem message tới lúc rời/bị xóa. Khi được thêm lại, xem toàn bộ history. | Đã chốt |
-| BL-04 | Thành viên chat theo hợp đồng | ContractMember được thêm/bị landlord loại thì đồng bộ vào/ra chat; kết thúc hợp đồng không tự đóng chat. | Đã chốt |
+| BL-04 | Thành viên chat theo hợp đồng | ContractMember added/linked joins the contract chat; individual leave or checkout makes that member read-only. The conversation remains available for history within the member's `leftSequence` boundary (P9-D85). | Đã chốt |
 | BL-05 | Thành viên chat tòa nhà | Tạo chat khi tạo tòa; chủ tòa là admin; người có contract trong tòa được thêm; checkout không tự xóa khỏi chat. | Đã chốt |
 | BL-06 | Business notification | Service nguồn cung cấp recipient; Community lưu inbox và phân phối Socket/push theo preference. | Đã chốt |
 | BL-07 | Chat và notification history | Lưu message chat trong lịch sử chat; chỉ notification nghiệp vụ được lưu trong inbox. | Đã chốt |
@@ -121,7 +121,7 @@ Các quy tắc business trong bảng trên đã được xác nhận. Những l�
 |---|---|
 | Thêm member hợp đồng | Khi landlord thêm ContractMember, Tenancy phát event; adapter tìm chat theo contract và thêm user. Xử lý event lặp không tạo membership trùng. Thành viên mới xem được toàn bộ lịch sử. |
 | Landlord kick member khỏi chat hợp đồng | Khi landlord chủ động loại ContractMember, adapter đánh dấu membership read-only và ghi `leftSequence`; người đó không gửi tin mới, chỉ đọc đến message cuối tại thời điểm bị kick. |
-| Kết thúc hợp đồng | Tự kết thúc/checkout không kick member và không khóa chat. Các bên tiếp tục xem/gửi tin trong conversation sau khi hợp đồng kết thúc. |
+| Kết thúc hợp đồng | Checkout emits `contract_member.left` for remaining members. They remain in the contract conversation as read-only, cannot send, and can read only through `leftSequence` calculated from the event's `occurredAt`. Contract termination itself does not delete the conversation or create a leave event; see P9-D85. |
 | Tạo chat hợp đồng | Tạo/resolution một conversation cho mỗi contract; hợp đồng mới trong cùng phòng có conversation và lịch sử riêng. |
 | Chat tự do | Hỗ trợ direct 1:1 và nhóm, không gắn context domain. Người tạo là admin ban đầu; admin có thể thêm/xóa thành viên, đổi vai trò, sửa tên/ảnh nhóm và chỉ định thêm admin. Thay đổi thành viên được lưu thành system message để thành viên thấy lịch sử. Người bị xóa hoặc tự rời không gửi được tin mới nhưng vẫn xem lịch sử; người mới được thêm xem toàn bộ lịch sử hiện có. Nếu admin cuối cùng rời/bị xóa, quyền admin chuyển cho thành viên còn lại tham gia sớm nhất. Mỗi cặp user chỉ có một direct conversation, được mở lại khi cần; MatchRequest không bắt buộc. |
 | Tạo tòa và chat tòa | Event tạo tòa khởi tạo conversation building. Chủ sở hữu tòa được gán vai trò quản trị chat; thành viên có ContractMember trong tòa được đồng bộ qua adapter. Kết thúc hợp đồng không tự xóa thành viên khỏi chat tòa; landlord/admin có thể chủ động kick. Người bị kick chỉ đọc tới message cuối tại thời điểm bị kick. Nếu service triển khai sau khi tòa đã tồn tại, cần bootstrap conversation một lần. |
@@ -280,9 +280,9 @@ Mọi event RabbitMQ có envelope chung `eventId`, `eventType`, `schemaVersion`,
 | Event (tên minh họa, cần map với outbox hiện có) | Producer gửi tối thiểu | Community xử lý |
 |---|---|---|
 | `building.created` | `buildingId`, `ownerUserId` | Tạo conversation context `building`; owner là admin. |
-| `contract.created` | `contractId`, `buildingId`, `roomId`, `landlordUserId`, `memberUserIds[]` | Tạo conversation context `contract`; thêm landlord và ContractMember hiện có vào contract chat, đồng thời thêm họ vào building chat đã có. |
-| `contract.member.added` | `contractId`, `buildingId`, `roomId`, `userId` | Thêm vào contract chat và building chat; active membership trùng được bỏ qua. |
-| `contract.member.kicked` | `contractId`, `userId`, `actorUserId`, `removedAt`, `reason=landlord_kick` | Chuyển member contract chat sang read-only, đóng băng `leftSequence`; không tự xóa khỏi building chat. Checkout/kết thúc hợp đồng không phát sự kiện kick. |
+| `contract.activated` | `contractId`, `buildingId`, `roomId`, `landlordId`, `tenantUserIds[]` | Create one contract conversation with the landlord admin and linked tenants from the snapshot; then apply stored member events. |
+| `contract_member.added` / `contract_member.linked` | `contractId`, `contractMemberId`, `tenantUserId` (nullable for added) | Add a resolved tenant to the contract chat. Before activation, store the event; do not create a conversation without its admin. |
+| `contract_member.left` | `contractId`, `contractMemberId`, `tenantUserId` nullable, date-only `leftAt` | Keep an existing member read-only. Compute `leftSequence` at envelope `occurredAt`; individual leave and checkout use this event. No separate kick event is emitted by checkout. |
 | `notification.requested` | `recipientUserIds[]`, `notification.type/title/body/deepLink/data` | Lưu một snapshot inbox cho mỗi recipient/event; tạo delivery tới session Socket và PushDevice theo preference. |
 
 Tên event/payload cuối cùng phải khớp code outbox của Tenancy và từng service producer. Community không truy vấn domain DB và không tự suy ra recipient business notification.
