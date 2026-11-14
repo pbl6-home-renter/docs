@@ -1,6 +1,6 @@
 # P10-12 — Gửi bot reminder thủ công vào hội thoại
 
-**Loại:** Backend · **Trạng thái:** ⚪ Blocked — chốt template/resource contract
+**Loại:** Backend · **Trạng thái:** 🔵 In progress — PR code chờ review/merge
 
 **Owner đề xuất:** `baoduong17` · **Reviewer:** BE Lead / PM · **Repo:** `community-service`, `api-docs`
 
@@ -14,19 +14,21 @@ Là chủ nhà, tôi muốn chủ động gửi thông báo theo mẫu vào hộ
 
 - Theo CB-15, chỉ gửi khi landlord chủ động yêu cầu; lưu bot message vào history, phát realtime và push theo preference; retry theo `clientMessageId` không tạo bản sao.
 - `api-docs/src/paths/chat/conversation-bot-reminders.yaml` đang `designing`, nhận `templateType`, `resourceId`, `clientMessageId`, dự kiến `201 BOT_REMINDER_SENT`. Schema hiện có `ocr_result`, `invoice`, `contract_expiring`.
-- **Blocker:** PM/API owner chốt template được phép, nội dung snapshot, dữ liệu nguồn và quyền resource/context. P6-D78 hoãn OCR; không triển khai `ocr_result` bằng dữ liệu giả hoặc tự sửa enum. Những template cần notification/payment ngoài scope cũng phải được xác nhận.
+- **Quyết định 14/11/2026:** Người yêu cầu cho phép tự thiết kế nội dung thông báo và sử dụng notification/payment khi cần. Phạm vi đợt này, nguồn dữ liệu và quyền được ghi bên dưới. P6-D78 hoãn OCR; không triển khai `ocr_result` bằng dữ liệu giả.
 
 ## Rà soát triển khai 14/11/2026
 
-Đã đối chiếu Community, Tenancy và API contract; chưa có quyết định mới cho mẫu được phép nên trạng thái vẫn Blocked. Không coi `designing` là endpoint đã triển khai.
+Đã đối chiếu Community, Tenancy và API contract. Ngày 14/11/2026, người yêu cầu cho phép tự chọn nội dung thông báo và sử dụng notification/payment khi cần. Đợt này triển khai hai mẫu thông báo `invoice` và `contract_expiring`, theo dữ liệu thật; không khẳng định trạng thái thanh toán khi nguồn chưa cung cấp. OCR vẫn deferred. Không coi `designing` là endpoint đã triển khai.
+
+[Community #36](https://github.com/pbl6-home-renter/community-service/pull/36) đang chờ review/merge; [API contract ca8253a](https://github.com/pbl6-home-renter/api-doc/commit/ca8253a) đã được push lên main, endpoint vẫn `designing`. Backend build/lint và 87 unit tests đạt. Gateway, Socket hai client, PostgreSQL cạnh tranh đồng thời và FCM với dữ liệu thật chưa được kiểm tra.
 
 | Mẫu | Dữ liệu có thể đối chiếu | Điểm cần chốt |
 |---|---|---|
-| `invoice` | `GET /invoices/{id}` đã kiểm tra chủ sở hữu; response có `contractId`, `period`, `totalAmount`, `invoiceStatus`. Danh sách landlord có filter `contractId`. | Có chỉ cho hóa đơn `issued` trong chat theo hợp đồng đó không? Nội dung nào được gửi? `issued` không phải bằng chứng chưa thanh toán. |
-| `contract_expiring` | `GET /contracts/{id}` kiểm tra chủ sở hữu; response có `id`, `status`, `endDate`. Chat context có `contractId`. | Có chỉ cho hợp đồng active trong chat theo hợp đồng đó không? Định nghĩa “sắp hết hạn” và nội dung nào được gửi? |
+| `invoice` | `GET /invoices/{id}` kiểm tra chủ sở hữu; response có `contractId`, `period`, `totalAmount`, `invoiceStatus`. | Hóa đơn `issued`, đúng hợp đồng; nêu kỳ và tổng. `issued` không phải bằng chứng chưa thanh toán. |
+| `contract_expiring` | `GET /contracts/{id}` kiểm tra chủ sở hữu; response có `id`, `status`, `endDate`. | Hợp đồng active, đúng hội thoại; nêu ngày kết thúc. Chủ nhà tự chọn thời điểm gửi. |
 | `ocr_result` | OCR đã deferred theo P6-D78. | Không triển khai nếu chưa có quyết định thay đổi phạm vi. |
 
-Đường đọc chéo service phải kiểm tra quyền và thất bại an toàn khi nguồn lỗi; Tenancy hiện chưa có internal endpoint riêng cho hai resource này. Cần thống nhất contract trước khi chọn cách gọi, công khai hóa các lỗi và triển khai. Message hiện có transaction, sequence, Socket/push và khóa chống trùng theo sender; cần thiết kế cho bot và kiểm thử đồng thời để không phát trùng.
+Trong đợt này, chỉ gửi từ hội thoại hợp đồng đúng resource; yêu cầu landlord là thành viên active và Tenancy xác thực quyền bằng token người dùng. Hóa đơn phải `issued`; hợp đồng phải `active`. Nội dung nêu kỳ và tổng hóa đơn hoặc ngày kết thúc hợp đồng, không tự suy đoán đã/chưa thanh toán. Tin nhắn được gửi thủ công, không có scheduler. Message cần lưu snapshot, transaction, sequence, Socket/push và chống trùng khi retry.
 
 ## Các bước triển khai
 

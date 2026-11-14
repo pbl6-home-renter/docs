@@ -1,6 +1,6 @@
 # P10-13 — Chủ nhà gửi reminder từ Web Chat
 
-**Loại:** Frontend · **Trạng thái:** ⚪ Blocked — P10-12 và nội dung template
+**Loại:** Frontend · **Trạng thái:** 🔵 In progress — PR code chờ review/merge, phụ thuộc P10-12
 
 **Owner đề xuất:** `ThaiBao11125` · **Reviewer:** FE Lead / Community owner · **Repo:** `fe`
 
@@ -12,7 +12,9 @@ Là chủ nhà đang ở hội thoại liên quan, tôi muốn chọn một mẫ
 
 ## Rà soát triển khai 14/11/2026
 
-Chat đã có `contextType`/`contextId`, lịch sử message và đồng bộ Socket. FE có client hợp đồng và hóa đơn thật; danh sách hóa đơn hỗ trợ filter theo hợp đồng. Chưa có endpoint gửi reminder và chưa chốt template/quyền từ P10-12, vì vậy vẫn Blocked; không thêm action giả hoặc diễn giải hóa đơn `issued` là chưa thanh toán.
+Chat đã có `contextType`/`contextId`, lịch sử message và đồng bộ Socket. FE có client hợp đồng và hóa đơn thật; danh sách hóa đơn hỗ trợ filter theo hợp đồng. Theo xác nhận của người yêu cầu ngày 14/11/2026, triển khai hai mẫu `invoice` và `contract_expiring` cho hội thoại hợp đồng, phụ thuộc API P10-12; không diễn giải hóa đơn `issued` là chưa thanh toán.
+
+[FE #46](https://github.com/pbl6-home-renter/fe/pull/46) đang chờ review/merge và phụ thuộc [Community #36](https://github.com/pbl6-home-renter/community-service/pull/36). FE build/lint/i18n và kiểm tra trình duyệt bằng API giả lập đạt; chưa nghiệm thu Gateway và Socket/FCM thật.
 
 ## Triển khai
 
