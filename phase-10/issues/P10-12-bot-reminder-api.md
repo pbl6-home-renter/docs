@@ -20,7 +20,7 @@ Là chủ nhà, tôi muốn chủ động gửi thông báo theo mẫu vào hộ
 
 Đã đối chiếu Community, Tenancy và API contract. Ngày 14/11/2026, người yêu cầu cho phép tự chọn nội dung thông báo và sử dụng notification/payment khi cần. Đợt này triển khai hai mẫu thông báo `invoice` và `contract_expiring`, theo dữ liệu thật; không khẳng định trạng thái thanh toán khi nguồn chưa cung cấp. OCR vẫn deferred. Không coi `designing` là endpoint đã triển khai.
 
-[Community #36](https://github.com/pbl6-home-renter/community-service/pull/36) đang chờ review/merge; [API contract ca8253a](https://github.com/pbl6-home-renter/api-doc/commit/ca8253a) đã được push lên main, endpoint vẫn `designing`. Backend build/lint và 87 unit tests đạt. Gateway, Socket hai client, PostgreSQL cạnh tranh đồng thời và FCM với dữ liệu thật chưa được kiểm tra.
+[Community #36](https://github.com/pbl6-home-renter/community-service/pull/36) đang chờ review/merge; [API contract 1c2189c](https://github.com/pbl6-home-renter/api-doc/commit/1c2189c) đã được push lên main, endpoint vẫn `designing`. Backend lưu mã thông báo tiếng Anh và snapshot tham số, frontend dịch; push cho client chưa hỗ trợ dùng nội dung dự phòng tiếng Anh và kèm mã/dữ liệu. Backend build/lint và 88 unit tests đạt. Gateway, Socket hai client, PostgreSQL cạnh tranh đồng thời và FCM với dữ liệu thật chưa được kiểm tra.
 
 | Mẫu | Dữ liệu có thể đối chiếu | Điểm cần chốt |
 |---|---|---|

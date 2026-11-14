@@ -14,7 +14,7 @@ Là chủ nhà đang ở hội thoại liên quan, tôi muốn chọn một mẫ
 
 Chat đã có `contextType`/`contextId`, lịch sử message và đồng bộ Socket. FE có client hợp đồng và hóa đơn thật; danh sách hóa đơn hỗ trợ filter theo hợp đồng. Theo xác nhận của người yêu cầu ngày 14/11/2026, triển khai hai mẫu `invoice` và `contract_expiring` cho hội thoại hợp đồng, phụ thuộc API P10-12; không diễn giải hóa đơn `issued` là chưa thanh toán.
 
-[FE #46](https://github.com/pbl6-home-renter/fe/pull/46) đang chờ review/merge và phụ thuộc [Community #36](https://github.com/pbl6-home-renter/community-service/pull/36). FE build/lint/i18n và kiểm tra trình duyệt bằng API giả lập đạt; chưa nghiệm thu Gateway và Socket/FCM thật.
+[FE #46](https://github.com/pbl6-home-renter/fe/pull/46) đang chờ review/merge và phụ thuộc [Community #36](https://github.com/pbl6-home-renter/community-service/pull/36). FE dịch mã thông báo và tham số sang `vi/en`; build/lint/i18n và kiểm tra trình duyệt bằng API giả lập đạt. Chưa nghiệm thu Gateway và Socket/FCM thật; mobile cần hỗ trợ payload mới để dịch push.
 
 ## Triển khai
 
