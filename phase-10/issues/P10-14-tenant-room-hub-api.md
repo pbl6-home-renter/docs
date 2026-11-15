@@ -1,6 +1,7 @@
 # P10-14 — Cung cấp dữ liệu phòng của tenant qua API
 
-**Loại:** Backend · **Trạng thái:** ⚪ Blocked — chốt response và access rule  
+**Loại:** Backend · **Trạng thái:** 🔵 In progress — đã triển khai local, chờ kiểm thử tích hợp
+
 **Owner đề xuất:** `leminhkhai345` · **Reviewer:** API owner / PM · **Repo:** `Tenancy-Service`, `api-docs`  
 **Phụ thuộc:** P6-01e1/e2, P6-02g4, P10-11 · **Ước lượng:** chưa chốt · **Issue:** `docs#TBD`
 
@@ -11,6 +12,10 @@ Tenant flow có trang phòng hiện tại. OpenAPI `GET /me/room-hub` đang `des
 ## User story và blocker
 
 Là tenant có hợp đồng được liên kết, tôi muốn xem thông tin phòng thuộc quyền của mình. PM/API owner cần chốt: khi có nhiều hợp đồng đang có quyền thì chọn hoặc trả danh sách thế nào; các field được hiển thị, trạng thái `không có phòng` và dữ liệu được phép truy cập. Chỉ sau khi contract được chốt mới triển khai phần phụ thuộc; không tự gán payment, issue hay số công nợ.
+
+## Thiết kế và triển khai 15/11/2026
+
+Theo [P10-D87](../decisions.md), endpoint trả danh sách phân trang các hợp đồng active và phòng tương ứng, rỗng khi không có kết quả. Quyền tenant và thành viên dùng chung điều kiện `/me/contracts`; bỏ bản ghi phòng, tòa hoặc hợp đồng đã xóa mềm. Response dùng dữ liệu thật trong Tenancy, không suy đoán thanh toán hoặc sự cố. Đã triển khai local và cập nhật OpenAPI; còn kiểm thử PostgreSQL/Gateway và review trước khi nghiệm thu.
 
 ## Các bước triển khai
 
