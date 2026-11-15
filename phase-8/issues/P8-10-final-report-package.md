@@ -2,81 +2,89 @@
 
 **Epic:** Phase 8  
 **Trạng thái:** 🟡 Open  
-**Người phụ trách:** PM/người được PM giao viết  
-**Người review:** PM  
+**Người phụ trách:** `ThaiBao11125` (Võ Hoàng Thái Bảo — Lead Report Author)  
+**Người review:** `baoduong17` / PM  
 **Ước lượng:** 3 points · 12 giờ (**tối đa 3 points và khoảng 15 file mỗi PR**)  
-**Phụ thuộc:** P8-09 và bằng chứng các issue trước  
-**Repo / branch:** `pm/` · `docs/p8-10-final-report`  
+**Phụ thuộc:** P8-09, [P8-10a](P8-10a-report-architecture-infrastructure.md), [P8-10b](P8-10b-report-class-diagrams-database.md), [P8-10c](P8-10c-report-sequence-diagrams-backend.md), [P8-10d](P8-10d-report-use-case-diagrams-mobile.md)  
+**Repo / branch:** `docs/` · `docs/p8-10-final-report`  
 **Issue:** `docs#TBD`
 
-> **Phạm vi người viết:** thành viên được giao viết báo cáo theo mẫu. Assistant chỉ chuẩn bị issue và không viết báo cáo thay thành viên.
+> **Phạm vi tổ chức:** `ThaiBao11125` là người phụ trách chính báo cáo, chủ trì viết toàn văn nội dung học thuật, tiếp nhận các sơ đồ kỹ thuật từ 4 sub-issue hỗ trợ, tổng hợp và định dạng tệp báo cáo hoàn chỉnh.
 
 ## Mục tiêu
 
-Hoàn thiện báo cáo cuối kỳ theo `MauBaoCao_PBL6_Final.doc`, giữ cấu trúc và yêu cầu của mẫu, bàn giao bản DOCX và PDF trên Google Drive team folder.
+Hoàn thiện toàn bộ báo cáo tốt nghiệp đồ án chuyên ngành PBL6 theo mẫu `Report/PBL6Report.docx`, bám sát khung đề cương `Report/khungbaocao.md` và quy chuẩn `Report/AGENTS.md`, tích hợp toàn bộ sơ đồ kỹ thuật và kết quả kiểm thử, bàn giao bản DOCX và PDF chính thức trên Google Drive của nhóm.
 
-## Quyết định áp dụng
+## Cấu trúc phân rã sub-issue hỗ trợ kỹ thuật
 
-- Mẫu gốc là nguồn chuẩn cho thứ tự chương, heading, layout và mục bắt buộc; không ghi đè file mẫu.
-- Nội dung chỉ dựa trên implementation, issue/PR, sơ đồ và smoke evidence đã được owner xác nhận.
-- Ghi rõ chức năng chưa hoàn thành, giới hạn và N/A có lý do; không tự tạo số liệu, ảnh hoặc kết quả kiểm thử.
-- Giữ P8-07/08 chưa mô tả cho tới khi PM cung cấp flow; báo cáo không được trình bày các flow này như đã triển khai.
+Để đảm bảo tiến độ và chất lượng chuyên môn sâu cho từng phân hệ, công việc chuẩn bị sơ đồ và thông số kỹ thuật được phân rã thành 4 sub-issue tương ứng với các thành viên phát triển:
 
-## Contract đầu vào và mapping bằng chứng
+| Mã sub-issue | Tên nhiệm vụ | Người phụ trách | Nội dung bàn giao cho Lead Author |
+|---|---|---|---|
+| [P8-10a](P8-10a-report-architecture-infrastructure.md) | Sơ đồ kiến trúc và hạ tầng triển khai | `baoduong17` | Sơ đồ kiến trúc vi dịch vụ (1.2), các mục 4.1 đến 4.5 của Chương 4, cấu hình biến môi trường (5.2), đóng gói Docker Compose (5.7) |
+| [P8-10b](P8-10b-report-class-diagrams-database.md) | Sơ đồ lớp, ERD và cơ sở dữ liệu | `leminhkhai345` | Toàn bộ 3 sơ đồ lớp hệ thống (1.4.1, 1.4.2, 1.4.3), mô hình ERD, hướng dẫn di chuyển cơ sở dữ liệu (5.3) |
+| [P8-10c](P8-10c-report-sequence-diagrams-backend.md) | Sơ đồ tuần tự và vận hành backend | `huynhtiennhat0403` | Toàn bộ 7 sơ đồ tuần tự hệ thống (1.5.1 đến 1.5.7), hướng dẫn cài đặt và vận hành dịch vụ máy chủ (5.4) |
+| [P8-10d](P8-10d-report-use-case-diagrams-mobile.md) | Sơ đồ use case, thông báo đẩy và vận hành mobile | `tphuongin` | Toàn bộ 5 sơ đồ use case hệ thống (1.3.1 đến 1.3.5), dịch vụ thông báo đẩy Firebase Cloud Messaging (4.6), bộ ảnh chụp màn hình ứng dụng di động Android (2.4), hướng dẫn biên dịch Android (5.6) |
 
-| Nội dung báo cáo | Nguồn kiểm chứng | Quy tắc |
-|---|---|---|
-| Chức năng/kiến trúc | repo, issue gốc P5/P6/P7, PR đã merge | phân biệt thiết kế với phần chạy thật |
-| API/DB | OpenAPI, migration, sơ đồ DB được duyệt | khớp implementation hiện tại |
-| RabbitMQ/context/notification | P8-06, P8-07/08 nếu được chốt, event evidence | chỉ ghi đúng producer/consumer và retry đã kiểm chứng |
-| Kết quả smoke | P8-09 evidence | giữ run ID, role và giới hạn; không suy rộng từ một case |
-| Hình/bảng | screenshot/sơ đồ có nguồn | che secrets/PII, có caption và tham chiếu |
+## Nhiệm vụ trực tiếp của người phụ trách chính (`ThaiBao11125`)
+
+- **Chủ trì biên soạn toàn văn học thuật:**
+  - Phần mở đầu: Lời cảm ơn (0.2), Thông tin tài liệu (0.5), Lời mở đầu (0.4), Giới thiệu đề tài (0.6, 0.7, 0.8).
+  - Chương 1: Phân tích các tác nhân trong hệ thống (1.1) và viết lời dẫn giải chi tiết cho tất cả các sơ đồ kỹ thuật từ 1.2 đến 1.5.
+  - Chương 2: Mô tả chi tiết toàn bộ các phân hệ chức năng từ 2.1 đến 2.4, trực tiếp chụp và chèn hình ảnh giao diện web React do mình phát triển, kết hợp bộ ảnh chụp màn hình di động từ `tphuongin`.
+  - Chương 3: Trình bày toàn bộ các yêu cầu phi chức năng từ 3.1 đến 3.6 (hiệu năng, bảo mật, tính sẵn sàng, tính toàn vẹn dữ liệu, trải nghiệm người dùng, ràng buộc kỹ thuật).
+  - Chương 5: Yêu cầu môi trường phát triển chung (5.1) và cài đặt vận hành giao diện web React (5.5).
+  - Chương 6: Mục tiêu, phạm vi, công cụ kiểm thử và bộ kịch bản kiểm thử chi tiết từ 6.1 đến 6.4; tổng kết kết quả kiểm thử (6.5).
+  - Chương 7: Kết luận (7.1), Hướng phát triển (7.2) và chuẩn hóa danh mục tài liệu tham khảo (7.3).
+- **Tổng hợp và hoàn thiện tệp báo cáo:**
+  - Căn chỉnh định dạng Word (`Report/PBL6Report.docx`): căn lề trang, chuẩn hóa font chữ, heading style, danh mục hình ảnh, danh mục bảng biểu và cập nhật mục lục tự động.
+  - Rà soát chính tả, kiểm tra quy tắc viết hoa chuẩn tiếng Việt và quy tắc tuyệt đối không dùng dấu ngoặc đơn trong tên đề mục.
+  - Xuất bản PDF và tải bộ tài liệu lên Google Drive của nhóm.
 
 ## Tham chiếu tài liệu
 
-- Mẫu: `MauBaoCao_PBL6_Final.doc` ở workspace root.
-- Source evidence: issue files và PR liên quan trong `pm/phase-8/issues/`, tracker P5/P6/P7, thư mục/Drive evidence của team.
+- Mẫu chuẩn: `Report/PBL6Report.docx`.
+- Khung đề cương chuẩn: `Report/khungbaocao.md`.
+- Hướng dẫn và quy chuẩn báo cáo: `Report/AGENTS.md`.
+- Kế hoạch phân công chi tiết: `Report/phancong.md`.
+- Bằng chứng kiểm thử: `docs/phase-8/issues/P8-09-e2e-smoke.md`.
 
 ## Các bước triển khai
 
-### Bước 1 — Phân tích mẫu
+### Bước 1 — Tiếp nhận tư liệu từ các sub-issue (P8-10a, P8-10b, P8-10c, P8-10d)
+- **Cách làm:** Theo dõi tiến độ nộp sơ đồ và tài liệu của các thành viên; kiểm tra tính đầy đủ, độ sắc nét và tính khớp nối với mã nguồn thực tế.
+- **Kiểm tra bước:** Toàn bộ 4 gói tư liệu đã được bàn giao đầy đủ file sơ đồ và thuyết minh.
 
-- **Cách làm:** mở mẫu gốc, lập checklist heading, bảng/hình, phụ lục, tài liệu tham khảo và yêu cầu định dạng.
-- **Kiểm tra bước:** checklist phủ toàn bộ mục bắt buộc theo đúng thứ tự mẫu.
+### Bước 2 — Biên soạn các chương nội dung còn lại
+- **Cách làm:** Viết hoàn chỉnh các mục do mình trực tiếp phụ trách vào các file tương ứng trong thư mục `Report/` (`00_modau.md`, `01_chuong1.md`, `02_chuong2.md`, `03_chuong3.md`, `05_chuong5.md`, `06_chuong6.md`, `07_ketluan.md`).
+- **Kiểm tra bước:** Mỗi chương có lập luận chặt chẽ, đầy đủ hình ảnh chụp giao diện và bảng biểu minh họa.
 
-### Bước 2 — Thu thập evidence
+### Bước 3 — Ráp toàn văn và định dạng tệp Word
+- **Cách làm:** Ráp toàn bộ nội dung văn bản và sơ đồ vào tệp `Report/PBL6Report.docx`. Áp dụng đúng các style `heading`, `demuc`, `demucon`, `tieude`, `stt` và căn chỉnh bảng biểu ngay ngắn.
+- **Kiểm tra bước:** Cập nhật trường mục lục tự động, danh mục hình và danh mục bảng chính xác số trang.
 
-- **Cách làm:** xin owner xác nhận từng phần; lưu link PR, API/DB/diagram, screenshots và P8-09 smoke report.
-- **Kiểm tra bước:** mỗi claim trong outline có source và owner; nội dung chưa có source được gắn TBD thay vì tự suy ra.
-
-### Bước 3 — Viết và review
-
-- **Cách làm:** điền nội dung theo mẫu; thống nhất tên service/thuật ngữ; kiểm tra số liệu, caption, mục lục và references.
-- **Kiểm tra bước:** PM/owner rà tính đúng đắn; mọi nội dung chưa hoàn thành được mô tả trung thực.
-
-### Bước 4 — Xuất và bàn giao
-
-- **Cách làm:** lưu DOCX mới, xuất PDF, mở kiểm tra từng trang, tải cả hai lên Drive và cấp quyền team.
-- **Kiểm tra bước:** DOCX mở được, PDF không vỡ trang, Drive link truy cập được bằng account thành viên.
+### Bước 4 — Xuất PDF và bàn giao
+- **Cách làm:** Xuất file PDF từ Word, kiểm tra từng trang để đảm bảo không bị lỗi ngắt trang hay lệch lề; tải cả hai tệp DOCX và PDF lên Google Drive của nhóm.
+- **Kiểm tra bước:** File DOCX và PDF mở được bình thường, liên kết Drive hoạt động tốt và cấp quyền đầy đủ cho các thành viên.
 
 ## Ngoài phạm vi
 
-- Viết nội dung chưa được owner xác nhận; tạo kết quả test hoặc hình minh họa giả.
-- Thay đổi mẫu gốc hoặc nộp báo cáo thay người được giao.
+- Viết nội dung kỹ thuật chưa được kiểm chứng trong mã nguồn thực tế.
+- Làm thay các sơ đồ thuộc phạm vi của các sub-issue P8-10a, P8-10b, P8-10c, P8-10d.
 
 ## Blocker
 
-- Thiếu template/evidence/owner response thì ghi mục còn thiếu, người cần cung cấp và ngày cần; không tự hoàn thiện bằng dữ liệu phỏng đoán.
+- Chờ kết quả smoke test từ P8-09 để hoàn thiện số liệu đánh giá kiểm thử tại mục 6.5.
 
 ## Acceptance
 
-- [ ] Mọi mục bắt buộc trong mẫu được điền hoặc ghi N/A có lý do.
-- [ ] Claim kỹ thuật và số liệu truy được tới source/evidence đã xác nhận.
-- [ ] P8-07/08 chỉ được mô tả nếu PM đã cung cấp flow và implementation có bằng chứng.
-- [ ] DOCX/PDF mở được, hình/bảng đọc rõ, không lộ secrets/PII; Drive link hoạt động.
+- [ ] Toàn bộ 4 sub-issue (P8-10a, P8-10b, P8-10c, P8-10d) hoàn tất và được nghiệm thu.
+- [ ] Mọi đề mục trong `Report/khungbaocao.md` được viết đầy đủ, không bỏ sót mục nào.
+- [ ] Sơ đồ và ảnh chụp giao diện rõ ràng, có chú thích bảng hình đầy đủ.
+- [ ] Tệp Word và PDF chuẩn định dạng, không vỡ trang, không lỗi font.
+- [ ] Đã upload bản hoàn chỉnh lên Google Drive của nhóm.
 
 ## Definition of Done
 
-- [ ] PM duyệt nội dung và hình thức; checklist mục mẫu hoàn tất.
-- [ ] DOCX và PDF nằm trên Drive team folder; issue có link, tên file, người review và ngày bàn giao.
-- [ ] Không ghi đè mẫu gốc; báo cáo không tuyên bố hoàn tất phần chưa có evidence.
+- [ ] PM và các thành viên duyệt thông qua toàn văn báo cáo.
+- [ ] Tệp `Report/PBL6Report.docx` và bản PDF lưu trữ an toàn; issue được đóng kèm link Google Drive.
