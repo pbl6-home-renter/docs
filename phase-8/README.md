@@ -23,7 +23,11 @@
 | P8-07 | Chờ PM viết flow Community | Chưa giao | Chưa chốt |
 | P8-08 | Chờ PM viết flow notification invoice | Chưa giao | Chưa chốt |
 | P8-09 | Smoke xuyên hệ thống và lưu bằng chứng | FE `ThaiBao11125`; BE `leminhkhai345`, `baoduong17` | P8-02–P8-06 và issue P5/P6 dùng lại; thêm P8-07/08 sau khi chốt flow |
-| P8-10 | Báo cáo cuối kỳ theo mẫu, DOCX/PDF trên Google Drive | PM/người được giao viết | P8-09 |
+| P8-10 | Báo cáo cuối kỳ theo mẫu, DOCX/PDF trên Google Drive (Epic tổng hợp) | `ThaiBao11125` | P8-09, P8-10a, P8-10b, P8-10c, P8-10d |
+| P8-10a | Báo cáo: Sơ đồ kiến trúc vi dịch vụ và tài liệu hạ tầng triển khai | `baoduong17` | P8-01, P8-09 |
+| P8-10b | Báo cáo: Sơ đồ lớp hệ thống, ERD và khởi tạo cơ sở dữ liệu | `leminhkhai345` | P8-01, P8-06 |
+| P8-10c | Báo cáo: Toàn bộ sơ đồ tuần tự hệ thống và vận hành backend | `huynhtiennhat0403` | P8-01, P8-06 |
+| P8-10d | Báo cáo: Sơ đồ use case, thông báo đẩy và vận hành mobile | `tphuongin` | P8-01, P8-09 |
 
 Chi tiết xem [tracker và nội dung issue](issues/README.md). Mỗi PR tối đa 3 points và khoảng 15 file.
 

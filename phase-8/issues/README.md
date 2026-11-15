@@ -1,6 +1,6 @@
 # Tracker issue Phase 8
 
-Copy các file issue P8-01–P8-06 và P8-09–P8-10 lên GitHub khi PM tạo issue; sau đó thay `docs#TBD` bằng số issue được cấp. P8-07/08 được giữ làm mã chờ flow PM, hiện không có file issue, owner hoặc assignee.
+Copy các file issue P8-01–P8-06 và P8-09–P8-10 (kèm các sub-issue P8-10a–P8-10d) lên GitHub khi PM tạo issue; sau đó thay `docs#TBD` bằng số issue được cấp. P8-07/08 được giữ làm mã chờ flow PM, hiện không có file issue, owner hoặc assignee.
 
 ## Issue Phase 8 mới
 
@@ -15,7 +15,11 @@ Copy các file issue P8-01–P8-06 và P8-09–P8-10 lên GitHub khi PM tạo is
 | P8-07 | **Chờ PM viết flow Community** | Chưa giao | — | Chưa tạo issue | — |
 | P8-08 | **Chờ PM viết flow notification invoice** | Chưa giao | — | Chưa tạo issue | — |
 | P8-09 | [Kiểm chứng smoke xuyên hệ thống](P8-09-e2e-smoke.md) | FE `ThaiBao11125`; BE `leminhkhai345`, `baoduong17` | 3 points · 12 giờ | 🟡 Open | P8-02–P8-06 và issue carry-over; thêm P8-07/08 sau khi chốt flow |
-| P8-10 | [Báo cáo cuối kỳ DOCX/PDF](P8-10-final-report-package.md) | PM/người được giao viết | 3 points · 12 giờ | 🟡 Open | P8-09 |
+| P8-10 | [Báo cáo cuối kỳ DOCX/PDF](P8-10-final-report-package.md) (Epic tổng hợp) | `ThaiBao11125` | 3 points · 12 giờ | 🟡 Open · split | P8-09, P8-10a, P8-10b, P8-10c, P8-10d |
+| P8-10a | [Báo cáo: Kiến trúc vi dịch vụ và hạ tầng](P8-10a-report-architecture-infrastructure.md) | `baoduong17` | 2 points · 8 giờ | 🟡 Open | P8-01, P8-09 |
+| P8-10b | [Báo cáo: Sơ đồ lớp, ERD và cơ sở dữ liệu](P8-10b-report-class-diagrams-database.md) | `leminhkhai345` | 2 points · 8 giờ | 🟡 Open | P8-01, P8-06 |
+| P8-10c | [Báo cáo: Sơ đồ tuần tự và vận hành backend](P8-10c-report-sequence-diagrams-backend.md) | `huynhtiennhat0403` | 2 points · 8 giờ | 🟡 Open | P8-01, P8-06 |
+| P8-10d | [Báo cáo: Sơ đồ use case, thông báo đẩy và vận hành mobile](P8-10d-report-use-case-diagrams-mobile.md) | `tphuongin` | 2 points · 8 giờ | 🟡 Open | P8-01, P8-09 |
 
 ## Dùng lại issue P5/P6/P7 đã có
 
