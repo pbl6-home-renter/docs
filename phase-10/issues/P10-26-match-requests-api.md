@@ -1,7 +1,9 @@
 # P10-26 — API yêu cầu và phản hồi tìm bạn ở ghép
 
-**Loại:** Backend · **Trạng thái:** ⏪ Deferred — matching là Stretch  
-**Owner đề xuất:** BE Lead / người được giao · **Reviewer:** PM / API owner · **Repo:** service owner sau khi chốt, `api-docs`  
+**Loại:** Backend · **Trạng thái:** 🔵 In progress — approved by P10-D89
+
+**Owner đề xuất:** BE Lead / người được giao · **Reviewer:** PM / API owner · **Repo:** `Tenancy-Service`, `api-docs`, `community-service` (integration test)
+
 **Phụ thuộc:** P10-25, P10-11, P1-13 · **Ước lượng:** chưa chốt · **Issue:** `docs#TBD`
 
 ## Bối cảnh và contract
@@ -19,3 +21,23 @@ OpenAPI đang designing cho `GET/POST /match-requests` và `POST /match-requests
 
 - Chỉ actor được phép gửi, chấp nhận, từ chối hoặc rút theo state machine được phê duyệt; trường hợp đồng thời và retry không làm trạng thái mâu thuẫn.
 - Không phụ thuộc tenant thụ động phải tạo account; notification/AI ngoài phần được duyệt không được giả lập.
+
+## Approved contract (P10-D89, 2026-11-16 UTC)
+
+The user approved direct tenant-to-tenant requests with notifications and UUID `Idempotency-Key` reuse semantics. Tenancy Service owns persistence and the four public operations; Community consumes the match request domain events. The target must be an active tenant with a currently discoverable roommate profile when a new request is created. The requester must be an active tenant. Existing requests remain actionable if the target profile later becomes hidden or the room becomes full; an account that is locked cannot act while locked. The recipient never needs an account for any landlord-only rental workflow under D29.
+
+| State | Actor / action | Result | Retry / invalid actor |
+|---|---|---|---|
+| none | active requester sends to another eligible tenant with a new key | `pending`; notify target | same key and target returns current request without notification; wrong target for key is 409 |
+| pending | target accepts | `accepted`; notify requester | repeated accept returns current request; requester/third party gets 403 |
+| pending | target rejects | `rejected`; notify requester | repeated reject returns current request; requester/third party gets 403 |
+| pending | requester withdraws | `withdrawn`; notify target | repeated withdraw returns current request; target/third party gets 403 |
+| pending | either party sends another new request for the same unordered pair | 409 `DUPLICATE_MATCH_REQUEST` | database unique index resolves concurrent attempts |
+| accepted / rejected / withdrawn | different action | 409 `MATCH_REQUEST_NOT_PENDING` | the completed action is idempotent |
+| rejected / withdrawn | requester sends with a new key | new `pending` request | same old key replays the old request |
+
+Lists include only requests involving the caller and omit phone, AI scores, and conversation IDs. Each transition locks the request row; creation uses database uniqueness for the pending pair and request key. The outbox row is committed with the state change. Tenancy emits `match_request.created`, `match_request.accepted`, `match_request.rejected`, or `match_request.withdrawn`, with `matchRequestId` and the source-selected `recipientUserId`. Community creates the notification, deduplicates event replay, and delivers through its existing notification pipeline. Deploy Community before enabling the Tenancy producer. P10-27 Web UI, AI, chat, and contact disclosure are outside this slice.
+
+Match notification title and body in the inbox and socket payload are stable codes; `data.messageKey` identifies the event so clients can translate. Web provides Vietnamese and English translations. Community sends the same codes through FCM; device-side translation remains to be implemented before enabling these push messages for end users.
+
+New match events include `actorUserId` and the active actor's Identity display-name snapshot: requester for create/withdraw, target for accept/reject. Community passes them into notification `data` and push data; Web interpolates the name in its toast and inbox. The consumer also accepts older events without these additive fields. Notifications use `/roommates?matchRequestId=<id>` as the Web deep link. `/roommates` currently renders a placeholder, so opening a specific request and mobile deep link handling require the deferred P10-27 UI.
