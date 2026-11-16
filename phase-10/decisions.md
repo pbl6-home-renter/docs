@@ -1,5 +1,13 @@
 # Phase 10 decisions
 
+## P10-D89 — Tenant match requests and notifications (2026-11-16 UTC)
+
+The user approved P10-26 with notifications. Tenancy Service owns direct tenant-to-tenant match requests; this approval supersedes the P10-D88 deferral for P10-26 only. P10-27 Web UI, AI scoring/advice, matched-roommate chat, and contact-detail disclosure remain deferred. Account-holding active tenants may send requests to another active tenant whose roommate profile is currently discoverable under P10-D88. No landlord approval is part of this flow, and passive tenants are not required to create accounts.
+
+Only the recipient may accept or reject a pending request; only the requester may withdraw it. A repeat of the same completed action returns the current request without another event; a different action after the request leaves pending returns `MATCH_REQUEST_NOT_PENDING`. At most one pending request is allowed for an unordered tenant pair. After rejection or withdrawal, a new request is allowed. `POST /match-requests` requires a UUID `Idempotency-Key` scoped to the requester: replay with the same target returns the existing request and creates no notification, including when that request has since changed status; reuse with a different target returns `IDEMPOTENCY_KEY_REUSED`. A different key while a pair is pending returns `DUPLICATE_MATCH_REQUEST`. Request creation and transitions persist their state and a match request domain event (`match_request.created`, `match_request.accepted`, `match_request.rejected`, or `match_request.withdrawn`) in the outbox in one transaction. The event identifies its recipient in Tenancy: the target on creation and withdrawal, the requester on acceptance and rejection. Community's existing inbox deduplicates replayed events and delivers its normal in-app, socket, and push notification. Request lists expose only the caller's incoming/outgoing requests and do not expose phone, AI fields, or conversation IDs.
+
+An existing pending request remains actionable if the target profile later becomes hidden or the room becomes full; the acting account must still be active. P1-13 remains a design reference only where it does not conflict with P10-D88/P10-D89. Update the OpenAPI draft to match this contract before marking operations released.
+
 ## P10-D88 — Basic roommate profiles in Phase 10 (2026-11-16 UTC)
 
 The user approved P10-25 for Phase 10. This slice covers account-holding tenants saving their own roommate profile and browsing basic profiles. Match requests (P10-26), AI scores/advice, and Web UI (P10-27) remain deferred. This narrows the older D28 Stretch classification for profile CRUD/search only; it does not approve the rest of matching.
