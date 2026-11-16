@@ -1,5 +1,7 @@
 # PBL6 — Project Plan (13–14 weeks)
 
+> **Phase 10 amendment (P10-D88):** Implement the basic roommate profile API in Tenancy Service under P10-25. Match requests (P10-26), AI scoring and Web UI (P10-27) remain deferred; scope and delivery details are in `phase-10/decisions.md`.
+
 > **Phase 10 amendment (P10-D86):** Implement IssueReport in Community Service with private photos, localized notifications, and Web flows under P10-28/29. The `@issue` chat command remains out of scope.
 
 > **Phase 6 scope amendment:** P6-D78 replaces OCR with manual meter entry and optional image evidence. P6-D64 makes invoice generation landlord initiated; P6-D61 defers payment and deposit settlement. Earlier roadmap text below is historical where it conflicts with these decisions.
