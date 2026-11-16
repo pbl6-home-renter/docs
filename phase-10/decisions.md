@@ -12,6 +12,8 @@ The basic profile has `isVisible`, a nonempty `bio` when visible, optional `gend
 
 This is a Phase 10 scope boundary, not a decision to discard future matching or AI work. P1-13 remains the design reference for that later work except where P10-D88 explicitly supersedes it. A future AI score or advice result needs a separately approved contract because it can depend on the viewer, candidate and matching context; it should not be treated as a permanent attribute of the basic roommate profile. Future profile inputs such as `personality` may be added through an approved additive API and storage change without requiring existing basic profiles to contain them.
 
+The existing `api-doc` draft stays unchanged while P10-25 is pending. Align its OpenAPI contract after the basic profile feature is complete and verified.
+
 ## P10-D87 — Tenant room hub (2026-11-15 UTC)
 
 The user requested P10-14 and delegated the design. The endpoint returns a paginated list with one item per active contract, including room and building identifiers, names, address, room area, contract dates and contract rent. No matching contract returns an empty list. Multiple contracts are returned in descending start-date order with contract ID as a tie-breaker. The named tenant and currently linked members have the same access as `/me/contracts`; soft-deleted contracts, rooms and buildings are excluded. Payment, invoice payment state, issue counts and contact details are not inferred. This decision enables the API independently of the P10-15 lite web flow, which continues to use its existing endpoints. The response replaces the old unimplemented draft schema.
