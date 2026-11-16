@@ -1,5 +1,7 @@
 # P10-11 — Phân loại và chốt phạm vi các API còn ở thiết kế
 
+> **P10-D88 update (2026-11-16):** P10-25 basic roommate profile save/search is approved for Phase 10 in Tenancy Service. P10-26 match requests, AI scoring and P10-27 Web UI remain deferred. The earlier blanket roommate/matching deferral below is historical for the profile slice.
+
 **Loại:** Discovery / scope decision · **Ưu tiên đề xuất:** Medium · **Trạng thái:** ⚪ Blocked chờ PM  
 **Owner đề xuất:** PM / API owner · **Repo:** `pm`, `api-docs` · **Ước lượng:** chưa chốt · **Issue:** `docs#TBD`
 

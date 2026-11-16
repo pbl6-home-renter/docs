@@ -1,5 +1,7 @@
 # PBL6
 
+> **Phase 10 amendment (P10-D88):** Basic roommate profile save and search for tenants with accounts are in scope for P10-25. An active contract alone does not hide a profile; a full room temporarily excludes it from search without changing the tenant's `isVisible` choice. Match requests, AI scoring and Web UI remain deferred. This supersedes the older automatic hide-on-active-contract rule for this slice.
+
 > **Phase 10 amendment (P10-D86):** Issue reporting, private photos, and issue notifications are in scope for P10-28/29. The `@issue` chat command remains out of scope.
 
 > **Phase 6 MVP amendment (P6-D78, P6-D64, P6-D61):** meter values are entered manually and photos provide evidence; OCR is deferred. Landlords explicitly generate invoices by building and period. Payment, deposit settlement and dynamic QR reconciliation are outside the Phase 6 MVP. Earlier draft descriptions below are historical where they conflict with these accepted decisions.
