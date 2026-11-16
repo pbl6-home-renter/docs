@@ -34,10 +34,10 @@ Only active tenant accounts may use these operations. A tenant can read their ow
 
 ## Implementation and verification
 
-1. Align OpenAPI request/response DTOs, visibility/error behavior and examples with P10-D88; keep `x-apidog-status: designing` until the endpoint is implemented and verified. Lint and bundle `api-doc`.
-2. Add Tenancy profile persistence, generated migration, owner-only PUT/GET, and list/detail queries. Use Identity internal lookup only for required user display/status data. Validate `bio` when visible, budget range, date and optional lifestyle shape.
-3. Apply one eligibility rule to list and detail. Verify a tenant with no contract, a room with one open place, a full room, `maxOccupancy=null`, multiple active contracts, unlinked members, scheduled joins/leaves, and lead/member duplication. Check that changing capacity or membership affects search without overwriting `isVisible`.
-4. Verify role and privacy: tenant cannot edit another profile; landlord/admin/locked account cannot access; hidden/full profile cannot be opened by ID; Identity failure does not reveal or fabricate data. Run build/lint/tests and smoke all four operations through Gateway with real data.
+1. Add Tenancy profile persistence, generated migration, owner-only PUT/GET, and list/detail queries. Use Identity internal lookup only for required user display/status data. Validate `bio` when visible, budget range, date and optional lifestyle shape.
+2. Apply one eligibility rule to list and detail. Verify a tenant with no contract, a room with one open place, a full room, `maxOccupancy=null`, multiple active contracts, unlinked members, scheduled joins/leaves, and lead/member duplication. Check that changing capacity or membership affects search without overwriting `isVisible`.
+3. Verify role and privacy: tenant cannot edit another profile; landlord/admin/locked account cannot access; hidden/full profile cannot be opened by ID; Identity failure does not reveal or fabricate data. Run build/lint/tests and smoke all four operations through Gateway with real data.
+4. After the feature is complete and verified, align OpenAPI request/response DTOs, visibility/error behavior and examples with P10-D88. Lint and bundle `api-doc`; do not mark operations `released` before implementation and verification. Until then, leave the existing `api-doc` draft unchanged.
 
 ## Acceptance
 
