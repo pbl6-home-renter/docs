@@ -1,5 +1,7 @@
 # PBL6
 
+> **Phase 10 amendment (P10-D90, 2026-11-18):** The user approved mobile backend fixes and the tenant favorite-room backend/API slice. Tenancy owns each authenticated tenant's saved rooms; no extra tenant profile is required. See Phase 10 decisions for availability, uniqueness and removal rules. This does not include a tenant account picker, payment features, or acceptance of a mobile build that is not present in the workspace.
+
 > **Phase 10 amendments (P10-D88, P10-D89):** Basic roommate profile save/search (P10-25) and direct tenant-to-tenant match requests with notifications (P10-26) are in scope for account-holding tenants. An active contract alone does not hide a profile; a full room temporarily excludes it from search without changing the tenant's `isVisible` choice. AI scoring and Web UI remain deferred. These decisions supersede the older automatic hide-on-active-contract rule for this slice.
 
 > **Phase 10 amendment (P10-D86):** Issue reporting, private photos, and issue notifications are in scope for P10-28/29. The `@issue` chat command remains out of scope.

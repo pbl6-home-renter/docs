@@ -1,10 +1,12 @@
 # P10-33 — Trả địa chỉ và tên tòa trong API phòng
 
-**Trạng thái:** 🟡 Open — plan ngày 18/11/2026  
+**Trạng thái:** 🔵 Code/spec local + serialization/SQL pass — chờ deploy/mobile
 **Ưu tiên:** P0 · **Repo:** Tenancy-Service, api-docs · **Owner đề xuất:** BE Room / API owner  
 **Phụ thuộc:** Không · **Scope:** M mỗi slice; chia list/detail và cập nhật spec cùng slice
 
 ## Mục tiêu và cách sửa
+
+Đã sửa query/read-model/DTO và OpenAPI source/bundle. Unit serialization và SQL regression xác nhận ward/buildingName list và địa chỉ detail. [Evidence](../discovery/mobile-backend-implementation.md).
 
 A1 được xác nhận bằng API live và source. List đã query ward nhưng DTO không trả; buildingName chưa select. Detail thiếu cả query và mapping address/ward/province. Lấy các trường từ building ngay trong truy vấn phòng, không buộc mobile tải danh sách tòa để ghép. Sửa list read-model/DTO cho ward/buildingName; sửa detail read-model/query/DTO cho address/ward/province. Loại district khỏi schema địa chỉ phòng và ví dụ liên quan; không đổi district của domain khác.
 

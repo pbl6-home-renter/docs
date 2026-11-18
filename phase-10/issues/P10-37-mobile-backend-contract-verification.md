@@ -1,11 +1,13 @@
 # P10-37 — Nghiệm thu Backend bằng đúng bản mobile tenant
 
-**Trạng thái:** 🟡 Open — chuẩn bị matrix; kiểm tra app chờ source/build đang dùng  
+**Trạng thái:** ⚪ Backend code/tests/spec local đã kiểm tra; chờ deploy và source/build mobile đúng để nghiệm thu
 **Ưu tiên:** P0 cho phòng đang thuê; P1 cho vòng smoke đầy đủ  
 **Repo:** mobile, api-docs, pm · **Owner đề xuất:** Mobile / BE / API owner  
 **Phụ thuộc:** P10-31/32/33/35/36; favorite theo trạng thái P10-24 · **Scope:** M cho test/evidence, sửa app là PR riêng nếu có lỗi
 
 ## Mục tiêu và cách sửa
+
+Backend đã có unit/SQL regression và OpenAPI đã lint/bundle; [evidence](../discovery/mobile-backend-implementation.md). Chưa có source màn mobile thật trong local checkout, chưa nghiệm thu live hoặc sửa app scaffold.
 
 Người dùng xác nhận lỗi trên mobile. Bản local chỉ có MainActivity mẫu nên chưa thấy endpoint/DTO/cache thật. Ghi branch/build được dùng, đối chiếu màn phòng đang thuê với `/me/room-hub` hoặc `/me/contracts` đã lọc active; không dùng `/rooms` (available công khai) hoặc `/me/rooms` (landlord). Kiểm tra envelope data/pagination, filter status, DTO và refresh sau kích hoạt/link. Khác biệt giữa API rỗng và parse/cache phải có bằng chứng riêng.
 

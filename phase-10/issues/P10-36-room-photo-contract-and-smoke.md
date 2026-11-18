@@ -1,10 +1,12 @@
 # P10-36 — Đồng bộ contract ảnh phòng và kiểm tra ảnh thật
 
-**Trạng thái:** 🟡 Open — plan ngày 18/11/2026  
+**Trạng thái:** 🔵 Spec/URL filtering local đã kiểm tra — còn smoke upload ảnh thật
 **Ưu tiên:** P1 · **Repo:** api-docs, Tenancy-Service/Identity-Service nếu smoke phát hiện lỗi  
 **Owner đề xuất:** API / Media owner · **Phụ thuộc:** Không · **Scope:** M; sửa lỗi runtime phát hiện thêm bằng PR riêng
 
 ## Mục tiêu và cách sửa
+
+Đã đồng bộ photoUrls/photoMediaIds, giữ thumbnailUrl deprecated alias cho client cũ theo P10-D90. Chỉ trả URL ảnh uploaded đúng room/purpose; bỏ metadata-path fallback. Unit kiểm tra lọc owner/status/purpose/URL và thứ tự ảnh. Chưa upload/seed ảnh lên live; [evidence](../discovery/mobile-backend-implementation.md).
 
 A2: list runtime dùng photoMediaIds/photoUrls, spec list còn thumbnailUrl; cả 4 phòng public chưa gắn media. Chốt photoUrls list/detail theo yêu cầu, cập nhật source schema/ví dụ và bundle. Đối chiếu client trước khi loại thumbnailUrl. Chuẩn bị phòng test có ảnh thật qua presign → PUT bytes → complete → attach photoMediaIds; owner phải là phòng tồn tại và landlord đúng quyền. Đọc URL do Media cấp, không tự ghép URL storage.
 

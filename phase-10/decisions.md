@@ -1,5 +1,23 @@
 # Phase 10 decisions
 
+## P10-D91 — Remove fallback/repair scripts (2026-11-18 UTC)
+
+The user explicitly requested removing the scripts added to handle RabbitMQ fallback/missed messages. Remove P10-32's maintenance CLI, dry-run/apply/bootstrap flow, shared maintenance-only helper, Identity snapshot endpoint and its supporting types/queries, dedicated tests and runbooks. Restore the original Identity lifecycle consumer implementation. The existing outbox/inbox, normal RabbitMQ retry behavior and previously existing tools are unchanged.
+
+This supersedes the maintenance/bootstrap portion of P10-D90 and the original plan. Keep the create/activate tenant linking fixes, room address/contact/photo responses, favorite API/migration and their regression tests. No new replay, fallback or historical-data repair script is required for this work.
+
+## P10-D90 — Mobile backend fixes and tenant favorite rooms (2026-11-18 UTC)
+
+The user approved implementing the audited mobile-backend plan (P10-31–37 and existing P10-24). This supersedes the favorite-room implementation deferral for the backend/API slice only. It does not approve a tenant picker, payment work, unrelated roommate features, or claim deployment/mobile acceptance. See [implementation evidence](discovery/mobile-backend-implementation.md).
+
+Contract creation resolves an absent tenantId from the local active-tenant Identity phone projection; activation retries for NULL drafts before representative creation and activation context. Exact normalized phone matching, explicit-ID precedence, local transactions/outbox and Identity lifecycle inbox remain in force. Existing NULL contract/member links may be repaired with an explicit dry-run/apply maintenance command. Historical links must not be transferred. Because account snapshots and Tenancy writes cannot be atomic across services, applying a bootstrap snapshot requires temporarily pausing Identity account mutations and draining lifecycle events; the command documents and requires that operator assertion rather than silently assuming a snapshot is current.
+
+Tenancy owns favorites keyed by authenticated tenant user ID and room ID, with a unique composite key. No additional tenant profile is required. GET returns an empty paginated 200 for no eligible favorites. Only available rooms in approved, undeleted buildings may be added/listed. Hidden, occupied or deleted rooms are omitted from the list while their saved links remain removable; becoming eligible again restores list visibility. POST of an existing eligible favorite returns 409 ALREADY_FAVORITED; DELETE removes only the caller's row, returns 204, and returns 404 RESOURCE_NOT_FOUND when absent. Public room search returns viewer-specific isFavorited only with a verified token and varies caching by Authorization.
+
+Room list/detail return building address fields directly. Detail resolves the owner's id/name/phone from Identity and never forwards email. A missing/deleted/non-landlord owner makes detail unavailable (404); Identity outage remains 503 rather than successful null contact. photoUrls is the primary display contract; nullable deprecated thumbnailUrl remains as a compatibility alias on lists. Display URLs must belong to uploaded room cover/gallery media; metadata endpoints are not image fallbacks. Favorite/public-room lists support JSON only until an export feature is implemented.
+
+Acceptance still requires review/deployment, migration, actual-account repair, real photo upload and the correct Android source/build. Local PostgreSQL WASM tests verify SQL/rollback, not independent connection races, RabbitMQ delivery or the user's actual mobile screen.
+
 ## P10-D89 — Tenant match requests and notifications (2026-11-16 UTC)
 
 The user approved P10-26 with notifications. Tenancy Service owns direct tenant-to-tenant match requests; this approval supersedes the P10-D88 deferral for P10-26 only. P10-27 Web UI, AI scoring/advice, matched-roommate chat, and contact-detail disclosure remain deferred. Account-holding active tenants may send requests to another active tenant whose roommate profile is currently discoverable under P10-D88. No landlord approval is part of this flow, and passive tenants are not required to create accounts.
