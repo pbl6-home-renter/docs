@@ -1,0 +1,19 @@
+sequenceDiagram
+  autonumber
+  participant C as Client (Web/Android)
+  participant G as API Gateway
+  participant I as Identity (Media)
+  participant DB as PostgreSQL Identity
+  participant R2 as Cloudflare R2
+  C->>G: Yêu cầu upload (purpose, kích thước)
+  G->>I: Chuyển tiếp (JWT đã kiểm tra)
+  I->>I: Kiểm tra policy theo purpose, giới hạn 10 MB
+  I->>DB: Lưu metadata Media
+  I-->>C: Presigned PUT URL (TTL 900 s)
+  C->>R2: PUT tệp trực tiếp lên bucket public/private
+  Note over C,R2: Tệp private (hợp đồng, công tơ, giấy tờ sở hữu, CCCD, sự cố)
+  C->>G: Yêu cầu tải tệp private
+  G->>I: Chuyển tiếp
+  I->>I: Kiểm tra quyền truy cập
+  I-->>C: URL tải có thời hạn (TTL 300 s)
+  C->>R2: GET tệp

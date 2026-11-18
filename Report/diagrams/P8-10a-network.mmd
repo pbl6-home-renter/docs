@@ -1,0 +1,26 @@
+flowchart LR
+  inet(["Internet"])
+  admin(["IP quản trị"])
+  subgraph edge["Edge EC2"]
+    caddy["Caddy"]
+    gw["api-gateway:3000"]
+    web["web:5173"]
+    mq[("rabbitmq<br/>:5672 · :15672")]
+  end
+  subgraph internal["Internal EC2"]
+    svc["identity :3001<br/>tenancy :3002<br/>community :3004"]
+    pay["payment :3003<br/>THIẾT KẾ"]
+  end
+  ext[("Supabase PostgreSQL<br/>Cloudflare R2")]
+  inet -- ":80 API" --> caddy
+  inet -- ":5173 Web" --> caddy
+  admin -- ":15672" --> caddy
+  caddy --> gw
+  caddy --> web
+  caddy --> mq
+  gw -- "3001/3002/3004<br/>Security Group nội bộ" --> svc
+  gw -. "3003" .-> pay
+  svc -- "5672 AMQP" --> mq
+  svc -- "kết nối đi ra" --> ext
+  classDef design fill:#FFF4E5,stroke:#C2410C,stroke-dasharray:6 4,color:#7C2D12
+  class pay design

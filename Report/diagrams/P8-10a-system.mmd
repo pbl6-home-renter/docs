@@ -1,0 +1,38 @@
+flowchart LR
+  web["Web React/Vite"]
+  android["Android Kotlin"]
+  subgraph edge["Máy edge · Docker network rentify-edge"]
+    caddy["Caddy :80 / :5173 / :15672"]
+    gateway["API Gateway :3000"]
+    webcontainer["Web container :5173"]
+    rabbit[("RabbitMQ :5672")]
+  end
+  subgraph internal["Máy internal · Docker network rentify-internal"]
+    identity["Identity :3001"]
+    tenancy["Tenancy :3002"]
+    community["Community :3004"]
+    payment["Payment :3003 · THIẾT KẾ"]
+  end
+  subgraph managed["Dịch vụ dữ liệu bên ngoài Compose"]
+    iddb[("PostgreSQL Identity")]
+    tendb[("PostgreSQL Tenancy")]
+    comdb[("PostgreSQL Community")]
+    paydb[("PostgreSQL Payment · THIẾT KẾ")]
+    r2[("Cloudflare R2 · public/private buckets")]
+  end
+  web --> caddy
+  android --> caddy
+  caddy --> gateway
+  caddy --> webcontainer
+  caddy -- "quản trị :15672" --> rabbit
+  gateway -- "private IP" --> identity
+  gateway -- "private IP" --> tenancy
+  gateway -- "private IP" --> community
+  gateway -. "route đã có; service chưa có" .-> payment
+  identity --> iddb
+  tenancy --> tendb
+  community --> comdb
+  payment -.-> paydb
+  identity --> r2
+  identity & tenancy & community --> rabbit
+  payment -. "tích hợp sự kiện dự kiến, chưa có contract" .-> rabbit

@@ -2,6 +2,8 @@
 
 Mục tiêu: xử lý các khoảng trống đã xác minh trong quản lý phòng, số liệu tòa, hợp đồng và tài khoản Web; đồng thời phân loại các API chưa có đủ bằng chứng triển khai. Xem [báo cáo rà soát](discovery/audit.md) và [kiểm kê operation](discovery/api-inventory.md); không thay thế backlog Phase 5–9.
 
+**Audit mobile 18/11/2026:** đã lập [plan sửa Backend](../tasks/plan.md) cho tenant không thấy phòng sau khi landlord nhập đúng SĐT, response địa chỉ/chủ trọ/ảnh và xác minh favorite. Task mới P10-31–37 nằm trong [tracker](issues/README.md); dùng lại P10-24 cho favorite, chưa đổi trạng thái deferred hoặc khẳng định code đã deploy. Ưu tiên P10-31 → P10-32 rồi nghiệm thu đúng bản mobile; không phụ thuộc picker P10-23.
+
 Thứ tự: P10-01 độc lập; P10-02 trước P10-03; backend P10-04 đã merge, FE search còn lại; P10-05/07 phụ thuộc API hiện có; P10-06 cần kiểm tra hợp đồng nháp end-to-end; P10-08/09 đã merge và chờ nghiệm thu; P10-10/11 chờ quyết định. Xem [tracker](issues/README.md). Các owner là đề xuất theo tracker trước, chưa phải phân công đã xác nhận. Mỗi PR tối đa 3 points và khoảng 15 file; tách PR nếu cần. PM review trước merge; lịch và ước lượng chờ xác nhận.
 
 Các task bổ sung: P10-12 → P10-13 (reminder), P10-15 lite theo D7 dùng hợp đồng tenant thay cho P10-14, P10-16 → P10-17 (khách thuê), P10-10 → P10-19/20 → P10-21/22 (admin); P10-18 kiểm chứng Chat v2 và P10-23 chờ chốt rule chọn tenant. P10-28/29 được đưa vào phạm vi theo P10-D86. P10-25 (hồ sơ roommate và tìm kiếm cơ bản) được duyệt theo P10-D88; P10-26/27, AI matching, favorite và VietQR tiếp tục deferred hoặc chờ quyết định. Payment/settlement tiếp tục theo P6-05 và decision hiện hành.

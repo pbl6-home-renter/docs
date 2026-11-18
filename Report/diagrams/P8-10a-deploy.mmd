@@ -1,0 +1,17 @@
+flowchart LR
+  subgraph cicd["CI/CD"]
+    direction TB
+    repo["Repo service<br/>(push nhánh triển khai)"] --> ci["GitHub Actions<br/>build image linux/amd64"] --> hub[("Docker Hub")]
+  end
+  subgraph host["Trên mỗi EC2 host"]
+    direction TB
+    env[".deploy.env<br/>env/*.env"] --> sh["scripts/deploy.sh"] --> pull["docker compose pull"] --> up["docker compose up -d<br/>--remove-orphans"]
+  end
+  subgraph stacks["Kết quả"]
+    direction TB
+    e["Edge: Caddy · Web<br/>Gateway · RabbitMQ"]
+    i["Internal: Identity<br/>Tenancy · Community"]
+  end
+  hub --> pull
+  up --> e
+  up --> i

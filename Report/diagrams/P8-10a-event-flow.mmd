@@ -1,0 +1,10 @@
+flowchart LR
+  command["Lệnh nghiệp vụ"] --> tx["Transaction: dữ liệu + outbox_messages"]
+  tx --> relay["Outbox relay"]
+  relay --> exchange["RabbitMQ topic exchange: pbl6.events"]
+  exchange --> queue["Durable consumer queue"]
+  queue --> handler["Consumer: kiểm tra event ID"]
+  handler --> inbox["Transaction: inbox_messages + dữ liệu đích"]
+  queue --> retry["queue.retry · TTL"]
+  retry --> queue
+  queue --> dlq["queue.dlq sau số lần thử tối đa"]
