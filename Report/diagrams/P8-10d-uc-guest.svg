@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1650" height="920" viewBox="0 0 1650 920" font-family="Arial, sans-serif">
+<rect width="100%" height="100%" fill="white"/>
+<rect x="530.0" y="28.0" width="1080.0" height="852.0" fill="none" stroke="black" stroke-width="2"/>
+<text x="1070.0" y="54.0" font-size="24" font-weight="bold" text-anchor="middle" dominant-baseline="central">Hệ thống Rentify</text>
+<rect x="580.0" y="116.0" width="980.0" height="372.0" fill="none" stroke="black" stroke-width="2"/>
+<rect x="1375.0" y="90.0" width="185.0" height="26.0" fill="none" stroke="black" stroke-width="2"/>
+<text x="1467.5" y="103.0" font-size="16" font-weight="bold" text-anchor="middle" dominant-baseline="central">Khám phá phòng trọ</text>
+<rect x="580.0" y="560.0" width="980.0" height="284.0" fill="none" stroke="black" stroke-width="2"/>
+<rect x="1364.0" y="534.0" width="196.0" height="26.0" fill="none" stroke="black" stroke-width="2"/>
+<text x="1462.0" y="547.0" font-size="16" font-weight="bold" text-anchor="middle" dominant-baseline="central">Tài khoản và xác thực</text>
+<ellipse cx="810.0" cy="170.0" rx="170.0" ry="32.0" fill="white" stroke="black" stroke-width="2"/>
+<text x="810.0" y="170.0" font-size="19" text-anchor="middle" dominant-baseline="central">Tìm kiếm phòng trọ</text>
+<ellipse cx="810.0" cy="258.0" rx="170.0" ry="32.0" fill="white" stroke="black" stroke-width="2"/>
+<text x="810.0" y="258.0" font-size="19" text-anchor="middle" dominant-baseline="central">Tìm kiếm tòa nhà</text>
+<ellipse cx="810.0" cy="346.0" rx="170.0" ry="32.0" fill="white" stroke="black" stroke-width="2"/>
+<text x="810.0" y="346.0" font-size="19" text-anchor="middle" dominant-baseline="central">Xem chi tiết phòng</text>
+<ellipse cx="810.0" cy="434.0" rx="170.0" ry="32.0" fill="white" stroke="black" stroke-width="2"/>
+<text x="810.0" y="434.0" font-size="19" text-anchor="middle" dominant-baseline="central">Xem chi tiết tòa nhà</text>
+<ellipse cx="1335.0" cy="214.0" rx="165.0" ry="32.0" fill="white" stroke="black" stroke-width="2"/>
+<text x="1335.0" y="214.0" font-size="19" text-anchor="middle" dominant-baseline="central">Chọn khu vực</text>
+<line x1="136.0" y1="422.0" x2="640.0" y2="170.0" stroke="black" stroke-width="2"/>
+<line x1="136.0" y1="422.0" x2="640.0" y2="258.0" stroke="black" stroke-width="2"/>
+<line x1="136.0" y1="422.0" x2="640.0" y2="346.0" stroke="black" stroke-width="2"/>
+<line x1="136.0" y1="422.0" x2="640.0" y2="434.0" stroke="black" stroke-width="2"/>
+<line x1="965.3" y1="183.0" x2="1183.5" y2="201.3" stroke="black" stroke-width="2" stroke-dasharray="9 7"/>
+<line x1="1183.5" y1="201.3" x2="1169.5" y2="206.5" stroke="black" stroke-width="2"/>
+<line x1="1183.5" y1="201.3" x2="1170.5" y2="193.9" stroke="black" stroke-width="2"/>
+<rect x="1034.4" y="180.2" width="80.0" height="24.0" fill="white"/>
+<text x="1074.4" y="192.2" font-size="16" text-anchor="middle" dominant-baseline="central">«include»</text>
+<line x1="965.3" y1="245.0" x2="1183.5" y2="226.7" stroke="black" stroke-width="2" stroke-dasharray="9 7"/>
+<line x1="1183.5" y1="226.7" x2="1170.5" y2="234.1" stroke="black" stroke-width="2"/>
+<line x1="1183.5" y1="226.7" x2="1169.5" y2="221.5" stroke="black" stroke-width="2"/>
+<rect x="1034.4" y="223.8" width="80.0" height="24.0" fill="white"/>
+<text x="1074.4" y="235.8" font-size="16" text-anchor="middle" dominant-baseline="central">«include»</text>
+<ellipse cx="810.0" cy="614.0" rx="170.0" ry="32.0" fill="white" stroke="black" stroke-width="2"/>
+<text x="810.0" y="614.0" font-size="19" text-anchor="middle" dominant-baseline="central">Đăng ký tài khoản</text>
+<ellipse cx="810.0" cy="702.0" rx="170.0" ry="32.0" fill="white" stroke="black" stroke-width="2"/>
+<text x="810.0" y="702.0" font-size="19" text-anchor="middle" dominant-baseline="central">Đăng nhập</text>
+<ellipse cx="810.0" cy="790.0" rx="170.0" ry="32.0" fill="white" stroke="black" stroke-width="2"/>
+<text x="810.0" y="790.0" font-size="19" text-anchor="middle" dominant-baseline="central">Quên mật khẩu</text>
+<ellipse cx="1335.0" cy="614.0" rx="165.0" ry="32.0" fill="white" stroke="black" stroke-width="2"/>
+<text x="1335.0" y="614.0" font-size="19" text-anchor="middle" dominant-baseline="central">Xác thực email</text>
+<ellipse cx="1335.0" cy="702.0" rx="165.0" ry="32.0" fill="white" stroke="black" stroke-width="2"/>
+<text x="1335.0" y="702.0" font-size="19" text-anchor="middle" dominant-baseline="central">Gửi lại email xác thực</text>
+<ellipse cx="1335.0" cy="790.0" rx="165.0" ry="32.0" fill="white" stroke="black" stroke-width="2"/>
+<text x="1335.0" y="790.0" font-size="19" text-anchor="middle" dominant-baseline="central">Đặt lại mật khẩu</text>
+<line x1="136.0" y1="422.0" x2="640.0" y2="614.0" stroke="black" stroke-width="2"/>
+<line x1="136.0" y1="422.0" x2="640.0" y2="702.0" stroke="black" stroke-width="2"/>
+<line x1="136.0" y1="422.0" x2="640.0" y2="790.0" stroke="black" stroke-width="2"/>
+<line x1="980.0" y1="614.0" x2="1170.0" y2="614.0" stroke="black" stroke-width="2" stroke-dasharray="9 7"/>
+<line x1="1170.0" y1="614.0" x2="1156.4" y2="620.3" stroke="black" stroke-width="2"/>
+<line x1="1170.0" y1="614.0" x2="1156.4" y2="607.7" stroke="black" stroke-width="2"/>
+<text x="1075.0" y="600.0" font-size="16" text-anchor="middle" dominant-baseline="central">«include»</text>
+<line x1="1210.2" y1="681.1" x2="937.0" y2="635.3" stroke="black" stroke-width="2" stroke-dasharray="9 7"/>
+<line x1="937.0" y1="635.3" x2="951.4" y2="631.3" stroke="black" stroke-width="2"/>
+<line x1="937.0" y1="635.3" x2="949.3" y2="643.8" stroke="black" stroke-width="2"/>
+<rect x="1035.6" y="646.2" width="76.0" height="24.0" fill="white"/>
+<text x="1073.6" y="658.2" font-size="16" text-anchor="middle" dominant-baseline="central">«extend»</text>
+<line x1="980.0" y1="790.0" x2="1170.0" y2="790.0" stroke="black" stroke-width="2" stroke-dasharray="9 7"/>
+<line x1="1170.0" y1="790.0" x2="1156.4" y2="796.3" stroke="black" stroke-width="2"/>
+<line x1="1170.0" y1="790.0" x2="1156.4" y2="783.7" stroke="black" stroke-width="2"/>
+<text x="1075.0" y="776.0" font-size="16" text-anchor="middle" dominant-baseline="central">«include»</text>
+<circle cx="110.0" cy="396.0" r="13" fill="white" stroke="black" stroke-width="2"/>
+<line x1="110" y1="409.0" x2="110" y2="448.0" stroke="black" stroke-width="2"/>
+<line x1="86" y1="422.0" x2="134" y2="422.0" stroke="black" stroke-width="2"/>
+<line x1="110" y1="448.0" x2="88" y2="482.0" stroke="black" stroke-width="2"/>
+<line x1="110" y1="448.0" x2="132" y2="482.0" stroke="black" stroke-width="2"/>
+<text x="110" y="506.0" font-size="19" font-weight="bold" text-anchor="middle" dominant-baseline="central">Khách</text>
+<text x="110" y="528.0" font-size="19" font-weight="bold" text-anchor="middle" dominant-baseline="central">vãng lai</text>
+</svg>

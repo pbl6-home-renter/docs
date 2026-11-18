@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1050" height="1140" viewBox="0 0 1050 1140" font-family="Arial, sans-serif">
+<rect width="100%" height="100%" fill="white"/>
+<rect x="280.0" y="28.0" width="460.0" height="1072.0" fill="none" stroke="black" stroke-width="2"/>
+<text x="510.0" y="54.0" font-size="24" font-weight="bold" text-anchor="middle" dominant-baseline="central">Hệ thống Rentify</text>
+<rect x="330.0" y="110.0" width="360.0" height="54.0" fill="none" stroke="black" stroke-width="2"/>
+<rect x="330.0" y="96.0" width="70.0" height="14.0" fill="none" stroke="black" stroke-width="2"/>
+<text x="510.0" y="137.0" font-size="19" text-anchor="middle" dominant-baseline="central">1. Tài khoản và xác thực</text>
+<rect x="330.0" y="208.0" width="360.0" height="54.0" fill="none" stroke="black" stroke-width="2"/>
+<rect x="330.0" y="194.0" width="70.0" height="14.0" fill="none" stroke="black" stroke-width="2"/>
+<text x="510.0" y="235.0" font-size="19" text-anchor="middle" dominant-baseline="central">2. Trò chuyện và thông báo</text>
+<rect x="330.0" y="306.0" width="360.0" height="54.0" fill="none" stroke="black" stroke-width="2"/>
+<rect x="330.0" y="292.0" width="70.0" height="14.0" fill="none" stroke="black" stroke-width="2"/>
+<text x="510.0" y="333.0" font-size="19" text-anchor="middle" dominant-baseline="central">3. Quản trị hệ thống</text>
+<rect x="330.0" y="404.0" width="360.0" height="54.0" fill="none" stroke="black" stroke-width="2"/>
+<rect x="330.0" y="390.0" width="70.0" height="14.0" fill="none" stroke="black" stroke-width="2"/>
+<text x="510.0" y="431.0" font-size="19" text-anchor="middle" dominant-baseline="central">4. Khám phá phòng trọ</text>
+<rect x="330.0" y="502.0" width="360.0" height="54.0" fill="none" stroke="black" stroke-width="2"/>
+<rect x="330.0" y="488.0" width="70.0" height="14.0" fill="none" stroke="black" stroke-width="2"/>
+<text x="510.0" y="529.0" font-size="19" text-anchor="middle" dominant-baseline="central">5. Quản lý tòa nhà và phòng</text>
+<rect x="330.0" y="600.0" width="360.0" height="54.0" fill="none" stroke="black" stroke-width="2"/>
+<rect x="330.0" y="586.0" width="70.0" height="14.0" fill="none" stroke="black" stroke-width="2"/>
+<text x="510.0" y="627.0" font-size="19" text-anchor="middle" dominant-baseline="central">6. Hợp đồng và thành viên</text>
+<rect x="330.0" y="698.0" width="360.0" height="54.0" fill="none" stroke="black" stroke-width="2"/>
+<rect x="330.0" y="684.0" width="70.0" height="14.0" fill="none" stroke="black" stroke-width="2"/>
+<text x="510.0" y="725.0" font-size="19" text-anchor="middle" dominant-baseline="central">7. Biểu giá và chỉ số điện nước</text>
+<rect x="330.0" y="796.0" width="360.0" height="54.0" fill="none" stroke="black" stroke-width="2"/>
+<rect x="330.0" y="782.0" width="70.0" height="14.0" fill="none" stroke="black" stroke-width="2"/>
+<text x="510.0" y="823.0" font-size="19" text-anchor="middle" dominant-baseline="central">8. Hóa đơn và thanh toán</text>
+<rect x="330.0" y="894.0" width="360.0" height="54.0" fill="none" stroke="black" stroke-width="2"/>
+<rect x="330.0" y="880.0" width="70.0" height="14.0" fill="none" stroke="black" stroke-width="2"/>
+<text x="510.0" y="921.0" font-size="19" text-anchor="middle" dominant-baseline="central">9. Sự cố và tệp đính kèm</text>
+<rect x="330.0" y="992.0" width="360.0" height="54.0" fill="none" stroke="black" stroke-width="2"/>
+<rect x="330.0" y="978.0" width="70.0" height="14.0" fill="none" stroke="black" stroke-width="2"/>
+<text x="510.0" y="1019.0" font-size="19" text-anchor="middle" dominant-baseline="central">10. Tìm bạn ở ghép</text>
+<line x1="146.0" y1="232.0" x2="330.0" y2="129.0" stroke="black" stroke-width="2"/>
+<line x1="146.0" y1="232.0" x2="330.0" y2="423.0" stroke="black" stroke-width="2"/>
+<line x1="146.0" y1="811.0" x2="330.0" y2="145.0" stroke="black" stroke-width="2"/>
+<line x1="146.0" y1="811.0" x2="330.0" y2="235.0" stroke="black" stroke-width="2"/>
+<line x1="146.0" y1="811.0" x2="330.0" y2="439.0" stroke="black" stroke-width="2"/>
+<line x1="146.0" y1="811.0" x2="330.0" y2="627.0" stroke="black" stroke-width="2"/>
+<line x1="146.0" y1="811.0" x2="330.0" y2="823.0" stroke="black" stroke-width="2"/>
+<line x1="146.0" y1="811.0" x2="330.0" y2="921.0" stroke="black" stroke-width="2"/>
+<line x1="146.0" y1="811.0" x2="330.0" y2="1019.0" stroke="black" stroke-width="2"/>
+<line x1="904.0" y1="713.0" x2="690.0" y2="129.0" stroke="black" stroke-width="2"/>
+<line x1="904.0" y1="713.0" x2="690.0" y2="227.0" stroke="black" stroke-width="2"/>
+<line x1="904.0" y1="713.0" x2="690.0" y2="529.0" stroke="black" stroke-width="2"/>
+<line x1="904.0" y1="713.0" x2="690.0" y2="627.0" stroke="black" stroke-width="2"/>
+<line x1="904.0" y1="713.0" x2="690.0" y2="725.0" stroke="black" stroke-width="2"/>
+<line x1="904.0" y1="713.0" x2="690.0" y2="823.0" stroke="black" stroke-width="2"/>
+<line x1="904.0" y1="713.0" x2="690.0" y2="921.0" stroke="black" stroke-width="2"/>
+<line x1="904.0" y1="203.0" x2="690.0" y2="145.0" stroke="black" stroke-width="2"/>
+<line x1="904.0" y1="203.0" x2="690.0" y2="243.0" stroke="black" stroke-width="2"/>
+<line x1="904.0" y1="203.0" x2="690.0" y2="333.0" stroke="black" stroke-width="2"/>
+<circle cx="120.0" cy="206.0" r="13" fill="white" stroke="black" stroke-width="2"/>
+<line x1="120" y1="219.0" x2="120" y2="258.0" stroke="black" stroke-width="2"/>
+<line x1="96" y1="232.0" x2="144" y2="232.0" stroke="black" stroke-width="2"/>
+<line x1="120" y1="258.0" x2="98" y2="292.0" stroke="black" stroke-width="2"/>
+<line x1="120" y1="258.0" x2="142" y2="292.0" stroke="black" stroke-width="2"/>
+<text x="120" y="316.0" font-size="19" font-weight="bold" text-anchor="middle" dominant-baseline="central">Khách</text>
+<text x="120" y="338.0" font-size="19" font-weight="bold" text-anchor="middle" dominant-baseline="central">vãng lai</text>
+<circle cx="120.0" cy="785.0" r="13" fill="white" stroke="black" stroke-width="2"/>
+<line x1="120" y1="798.0" x2="120" y2="837.0" stroke="black" stroke-width="2"/>
+<line x1="96" y1="811.0" x2="144" y2="811.0" stroke="black" stroke-width="2"/>
+<line x1="120" y1="837.0" x2="98" y2="871.0" stroke="black" stroke-width="2"/>
+<line x1="120" y1="837.0" x2="142" y2="871.0" stroke="black" stroke-width="2"/>
+<text x="120" y="895.0" font-size="19" font-weight="bold" text-anchor="middle" dominant-baseline="central">Người</text>
+<text x="120" y="917.0" font-size="19" font-weight="bold" text-anchor="middle" dominant-baseline="central">thuê trọ</text>
+<circle cx="930.0" cy="687.0" r="13" fill="white" stroke="black" stroke-width="2"/>
+<line x1="930" y1="700.0" x2="930" y2="739.0" stroke="black" stroke-width="2"/>
+<line x1="906" y1="713.0" x2="954" y2="713.0" stroke="black" stroke-width="2"/>
+<line x1="930" y1="739.0" x2="908" y2="773.0" stroke="black" stroke-width="2"/>
+<line x1="930" y1="739.0" x2="952" y2="773.0" stroke="black" stroke-width="2"/>
+<text x="930" y="797.0" font-size="19" font-weight="bold" text-anchor="middle" dominant-baseline="central">Chủ trọ</text>
+<circle cx="930.0" cy="177.0" r="13" fill="white" stroke="black" stroke-width="2"/>
+<line x1="930" y1="190.0" x2="930" y2="229.0" stroke="black" stroke-width="2"/>
+<line x1="906" y1="203.0" x2="954" y2="203.0" stroke="black" stroke-width="2"/>
+<line x1="930" y1="229.0" x2="908" y2="263.0" stroke="black" stroke-width="2"/>
+<line x1="930" y1="229.0" x2="952" y2="263.0" stroke="black" stroke-width="2"/>
+<text x="930" y="287.0" font-size="19" font-weight="bold" text-anchor="middle" dominant-baseline="central">Quản trị viên</text>
+</svg>

@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1650" height="1280" viewBox="0 0 1650 1280" font-family="Arial, sans-serif">
+<rect width="100%" height="100%" fill="white"/>
+<rect x="530.0" y="28.0" width="1080.0" height="1212.0" fill="none" stroke="black" stroke-width="2"/>
+<text x="1070.0" y="54.0" font-size="24" font-weight="bold" text-anchor="middle" dominant-baseline="central">Hệ thống Rentify</text>
+<rect x="580.0" y="116.0" width="980.0" height="108.0" fill="none" stroke="black" stroke-width="2"/>
+<rect x="1457.0" y="90.0" width="103.0" height="26.0" fill="none" stroke="black" stroke-width="2"/>
+<text x="1508.5" y="103.0" font-size="16" font-weight="bold" text-anchor="middle" dominant-baseline="central">Tài khoản</text>
+<rect x="580.0" y="296.0" width="980.0" height="284.0" fill="none" stroke="black" stroke-width="2"/>
+<rect x="1351.0" y="270.0" width="209.0" height="26.0" fill="none" stroke="black" stroke-width="2"/>
+<text x="1455.5" y="283.0" font-size="16" font-weight="bold" text-anchor="middle" dominant-baseline="central">Phê duyệt bất động sản</text>
+<rect x="580.0" y="652.0" width="980.0" height="372.0" fill="none" stroke="black" stroke-width="2"/>
+<rect x="1400.0" y="626.0" width="160.0" height="26.0" fill="none" stroke="black" stroke-width="2"/>
+<text x="1480.0" y="639.0" font-size="16" font-weight="bold" text-anchor="middle" dominant-baseline="central">Quản trị hệ thống</text>
+<rect x="580.0" y="1096.0" width="980.0" height="108.0" fill="none" stroke="black" stroke-width="2"/>
+<rect x="1449.0" y="1070.0" width="111.0" height="26.0" fill="none" stroke="black" stroke-width="2"/>
+<text x="1504.5" y="1083.0" font-size="16" font-weight="bold" text-anchor="middle" dominant-baseline="central">Thông báo</text>
+<ellipse cx="810.0" cy="170.0" rx="170.0" ry="32.0" fill="white" stroke="black" stroke-width="2"/>
+<text x="810.0" y="170.0" font-size="19" text-anchor="middle" dominant-baseline="central">Đăng nhập và đổi mật khẩu</text>
+<line x1="136.0" y1="602.0" x2="640.0" y2="170.0" stroke="black" stroke-width="2"/>
+<ellipse cx="810.0" cy="350.0" rx="170.0" ry="32.0" fill="white" stroke="black" stroke-width="2"/>
+<text x="810.0" y="350.0" font-size="19" text-anchor="middle" dominant-baseline="central">Duyệt bất động sản</text>
+<ellipse cx="1335.0" cy="350.0" rx="165.0" ry="32.0" fill="white" stroke="black" stroke-width="2"/>
+<text x="1335.0" y="350.0" font-size="19" text-anchor="middle" dominant-baseline="central">Xem hàng đợi và chi tiết</text>
+<ellipse cx="1335.0" cy="438.0" rx="165.0" ry="32.0" fill="white" stroke="black" stroke-width="2"/>
+<text x="1335.0" y="438.0" font-size="19" text-anchor="middle" dominant-baseline="central">Phê duyệt</text>
+<ellipse cx="1335.0" cy="526.0" rx="165.0" ry="32.0" fill="white" stroke="black" stroke-width="2"/>
+<text x="1335.0" y="526.0" font-size="19" text-anchor="middle" dominant-baseline="central">Từ chối</text>
+<line x1="136.0" y1="602.0" x2="640.0" y2="350.0" stroke="black" stroke-width="2"/>
+<line x1="980.0" y1="350.0" x2="1170.0" y2="350.0" stroke="black" stroke-width="2" stroke-dasharray="9 7"/>
+<line x1="1170.0" y1="350.0" x2="1156.4" y2="356.3" stroke="black" stroke-width="2"/>
+<line x1="1170.0" y1="350.0" x2="1156.4" y2="343.7" stroke="black" stroke-width="2"/>
+<text x="1075.0" y="336.0" font-size="16" text-anchor="middle" dominant-baseline="central">«include»</text>
+<line x1="1210.2" y1="417.1" x2="937.0" y2="371.3" stroke="black" stroke-width="2" stroke-dasharray="9 7"/>
+<line x1="937.0" y1="371.3" x2="951.4" y2="367.3" stroke="black" stroke-width="2"/>
+<line x1="937.0" y1="371.3" x2="949.3" y2="379.8" stroke="black" stroke-width="2"/>
+<rect x="1035.6" y="382.2" width="76.0" height="24.0" fill="white"/>
+<text x="1073.6" y="394.2" font-size="16" text-anchor="middle" dominant-baseline="central">«extend»</text>
+<line x1="1252.4" y1="498.3" x2="893.2" y2="377.9" stroke="black" stroke-width="2" stroke-dasharray="9 7"/>
+<line x1="893.2" y1="377.9" x2="908.1" y2="376.2" stroke="black" stroke-width="2"/>
+<line x1="893.2" y1="377.9" x2="904.1" y2="388.2" stroke="black" stroke-width="2"/>
+<rect x="1034.8" y="426.1" width="76.0" height="24.0" fill="white"/>
+<text x="1072.8" y="438.1" font-size="16" text-anchor="middle" dominant-baseline="central">«extend»</text>
+<ellipse cx="810.0" cy="706.0" rx="170.0" ry="32.0" fill="white" stroke="black" stroke-width="2"/>
+<text x="810.0" y="706.0" font-size="19" text-anchor="middle" dominant-baseline="central">Quản lý tài khoản</text>
+<ellipse cx="810.0" cy="882.0" rx="170.0" ry="32.0" fill="white" stroke="black" stroke-width="2"/>
+<text x="810.0" y="882.0" font-size="19" text-anchor="middle" dominant-baseline="central">Xem nhật ký kiểm toán</text>
+<ellipse cx="810.0" cy="970.0" rx="170.0" ry="32.0" fill="white" stroke="black" stroke-width="2"/>
+<text x="810.0" y="970.0" font-size="19" text-anchor="middle" dominant-baseline="central">Xem thống kê hệ thống</text>
+<ellipse cx="1335.0" cy="706.0" rx="165.0" ry="32.0" fill="white" stroke="black" stroke-width="2"/>
+<text x="1335.0" y="706.0" font-size="19" text-anchor="middle" dominant-baseline="central">Khóa, mở khóa tài khoản</text>
+<ellipse cx="1335.0" cy="794.0" rx="165.0" ry="32.0" fill="white" stroke="black" stroke-width="2"/>
+<text x="1335.0" y="794.0" font-size="19" text-anchor="middle" dominant-baseline="central">Xóa mềm tài khoản</text>
+<line x1="136.0" y1="602.0" x2="640.0" y2="706.0" stroke="black" stroke-width="2"/>
+<line x1="136.0" y1="602.0" x2="640.0" y2="882.0" stroke="black" stroke-width="2"/>
+<line x1="136.0" y1="602.0" x2="640.0" y2="970.0" stroke="black" stroke-width="2"/>
+<line x1="1170.0" y1="706.0" x2="980.0" y2="706.0" stroke="black" stroke-width="2" stroke-dasharray="9 7"/>
+<line x1="980.0" y1="706.0" x2="993.6" y2="699.7" stroke="black" stroke-width="2"/>
+<line x1="980.0" y1="706.0" x2="993.6" y2="712.3" stroke="black" stroke-width="2"/>
+<text x="1075.0" y="692.0" font-size="16" text-anchor="middle" dominant-baseline="central">«extend»</text>
+<line x1="1210.2" y1="773.1" x2="937.0" y2="727.3" stroke="black" stroke-width="2" stroke-dasharray="9 7"/>
+<line x1="937.0" y1="727.3" x2="951.4" y2="723.3" stroke="black" stroke-width="2"/>
+<line x1="937.0" y1="727.3" x2="949.3" y2="735.8" stroke="black" stroke-width="2"/>
+<rect x="1035.6" y="738.2" width="76.0" height="24.0" fill="white"/>
+<text x="1073.6" y="750.2" font-size="16" text-anchor="middle" dominant-baseline="central">«extend»</text>
+<ellipse cx="810.0" cy="1150.0" rx="170.0" ry="32.0" fill="white" stroke="black" stroke-width="2"/>
+<text x="810.0" y="1150.0" font-size="19" text-anchor="middle" dominant-baseline="central">Nhận thông báo hệ thống</text>
+<line x1="136.0" y1="602.0" x2="640.0" y2="1150.0" stroke="black" stroke-width="2"/>
+<circle cx="110.0" cy="576.0" r="13" fill="white" stroke="black" stroke-width="2"/>
+<line x1="110" y1="589.0" x2="110" y2="628.0" stroke="black" stroke-width="2"/>
+<line x1="86" y1="602.0" x2="134" y2="602.0" stroke="black" stroke-width="2"/>
+<line x1="110" y1="628.0" x2="88" y2="662.0" stroke="black" stroke-width="2"/>
+<line x1="110" y1="628.0" x2="132" y2="662.0" stroke="black" stroke-width="2"/>
+<text x="110" y="686.0" font-size="19" font-weight="bold" text-anchor="middle" dominant-baseline="central">Quản trị viên</text>
+</svg>
