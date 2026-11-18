@@ -1,10 +1,12 @@
 # P10-35 — Điền chủ trọ vào response chi tiết phòng
 
-**Trạng thái:** 🟡 Open — plan ngày 18/11/2026  
+**Trạng thái:** 🔵 Code/spec local + unit pass — chờ deploy/mobile
 **Ưu tiên:** P0 · **Repo:** Tenancy-Service, api-docs nếu đổi semantics  
 **Owner đề xuất:** BE Room · **Phụ thuộc:** P10-34 · **Scope:** M, khoảng 4–5 file chức năng/test
 
 ## Mục tiêu và cách sửa
+
+Đã map contact sau visibility check; unit regression xác nhận anonymous response có landlord và địa chỉ, 404 khi thiếu owner, 503 khi Identity unavailable. [Evidence](../discovery/mobile-backend-implementation.md). Chưa kiểm tra nút gọi/nhắn tin trên mobile thật.
 
 Detail DTO hiện luôn mặc định landlord null, controller chỉ gọi fromReadModel. Sau kiểm tra quyền phòng, dùng contact port P10-34 và map contact vào result/DTO. Cập nhật Swagger để khớp contract `id/name/phone`. Dùng lỗi phụ thuộc chuẩn khi Identity tạm unavailable; không coi outage là chủ trọ không tồn tại. Không điền thêm currentContract/currentMembers cho public chỉ để xử lý contact.
 

@@ -1,10 +1,12 @@
 # P10-24 — Phòng yêu thích: API và giao diện tenant
 
-**Loại:** Backend + FE · **Trạng thái:** ⏪ Deferred — chờ PM chốt scope qua P10-11  
+**Loại:** Backend + client · **Trạng thái:** 🔵 BE/API được duyệt theo P10-D90, code local + SQL pass; chưa migration/deploy/client
 **Owner đề xuất:** BE / `ThaiBao11125` · **Reviewer:** PM / API owner · **Repo:** service owner sau khi chốt, `api-docs`, `fe`  
 **Phụ thuộc:** P10-11, P5-09d · **Ước lượng:** chưa chốt · **Issue:** `docs#TBD`
 
 ## Bối cảnh và mục tiêu
+
+**Implementation 18/11/2026:** người dùng duyệt triển khai toàn bộ plan, supersede deferral cho BE/API. Tenancy đã có GET/POST/DELETE, migration composite key, query isFavorited theo user; room unavailable/không public được ẩn nhưng vẫn bỏ lưu được. POST trùng 409; DELETE không có bản ghi 404; list trống 200 không cần profile. [Evidence](../discovery/mobile-backend-implementation.md). FE/mobile integration và live acceptance chưa hoàn thành; audit bên dưới ghi lại thời điểm trước implementation.
 
 **Audit 18/11/2026:** người dùng yêu cầu kiểm tra A6 và lập plan sửa. Local gateway đã route `/me/favorite-rooms` tới Tenancy, nhưng chưa có favorite controller/persistence trong `Tenancy-Service/src`; room list hiện gán cứng `isFavorited = false`. Vì vậy không có bằng chứng cần tạo tenant profile để khắc phục. Chưa tự tái hiện HTTP authenticated trên server. Giữ nguyên trạng thái implementation deferred/designing; yêu cầu audit/plan không được hiểu là tính năng đã release. Xem [plan](../../tasks/plan.md).
 

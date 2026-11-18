@@ -162,6 +162,10 @@ See `issues/README.md` for the issue list and coverage map.
 - Final report + PPT (Vietnamese, in Google Drive); update all docs.
 - **W14:** buffer / final submission & defense.
 
+### Phase 10 amendment — mobile backend fixes (2026-11-18)
+
+The user approved implementing the audited mobile backend fixes and the P10-24 favorite backend/API slice (P10-D90). Work covers P10-31, address/contact P10-33–35, photo contract P10-36, favorite P10-24 and mobile/backend acceptance P10-37. The user subsequently removed P10-32 and its maintenance/bootstrap scripts and Identity snapshot API (P10-D91); the existing RabbitMQ consumer is preserved. This amends the earlier favorite deferral only for this slice; no new deadline or owner allocation is committed. Local code/test completion is tracked separately from merge, deployment, migration and Android acceptance. See [plan](tasks/plan.md), [tracker](phase-10/issues/README.md) and [evidence](phase-10/discovery/mobile-backend-implementation.md).
+
 ## 6. Risks
 
 | Risk | Mitigation |

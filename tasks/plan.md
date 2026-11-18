@@ -1,6 +1,8 @@
 # Plan sửa Backend cho mobile tenant — 18/11/2026
 
-Trạng thái: đã kiểm tra code và một số API công khai; đây là plan, chưa sửa code ứng dụng hoặc dữ liệu server. Task được theo dõi tại [Phase 10](../phase-10/issues/README.md), không tạo `tasks/todo.md` trùng tracker.
+**Điều chỉnh theo yêu cầu người dùng:** bỏ P10-32 và toàn bộ CLI maintenance/bootstrap, API snapshot, dry-run/apply cùng hướng dẫn sửa dữ liệu cũ. Giữ consumer RabbitMQ hiện có và các sửa lỗi create/activate, response phòng, ảnh, favorite. P10-D91 thay thế phạm vi script của plan gốc.
+
+Trạng thái cập nhật 18/11/2026: người dùng đã duyệt triển khai. Backend và OpenAPI đã có code local, có test unit/SQL PostgreSQL; chưa merge/deploy hoặc sửa dữ liệu server. Xem [bằng chứng triển khai và phần cần nghiệm thu](../phase-10/discovery/mobile-backend-implementation.md). Các phát hiện bên dưới giữ lại baseline audit trước khi sửa. Task theo dõi tại [Phase 10](../phase-10/issues/README.md), không tạo `tasks/todo.md` trùng tracker. Favorite backend/API được duyệt theo P10-D90, thay thế trạng thái deferred của plan gốc cho slice này.
 
 ## Phạm vi và bối cảnh
 
@@ -47,7 +49,7 @@ Phân nhánh debug: draft → chưa phải phòng đang thuê; active + ID NULL 
 - Tái sử dụng `TenantPhone` và projection active tenant hiện có. `0...` và `+84...` cùng chuẩn; không fuzzy match hoặc tự gán account khi phone khác. `tenantId` đã chỉ định được giữ theo contract hiện hành, không tự chuyển liên kết lịch sử.
 - Resolve ở create; activate kiểm tra lại khi ID vẫn NULL để hỗ trợ draft cũ và projection đến muộn. Gán ID trước khi tạo representative và activation snapshot. Không gọi HTTP Identity trong transaction create/activate.
 - Đồng bộ thứ tự khóa phone → contract → room/member với consumer/member mutation. Activate cần đọc snapshot phone trước khóa và re-read/validate dưới khóa; không thêm phone lock sau khi đã khóa contract gây đảo thứ tự với consumer.
-- Sửa dữ liệu cũ bằng maintenance flow có dry-run, chia batch và kiểm tra nguồn Identity hiện tại. Replay event đã inbox-dedup sẽ không tự sửa record, nên không lấy việc requeue làm giải pháp duy nhất. Không sửa DB thủ công bỏ qua event cho Community.
+- Không bổ sung maintenance/bootstrap/replay script cho dữ liệu cũ. Liên kết tenant tiếp tục qua create/activate và consumer lifecycle hiện có theo P10-D91.
 - Response phòng lấy địa chỉ/tên tòa từ building, contact từ Identity qua internal GET. Chỉ map contact `id/name/phone` theo spec; không đưa email/full internal response ra public API. Lỗi Identity không được che thành contact giả.
 - Chốt `photoUrls` làm contract ảnh list/detail theo yêu cầu đầu vào; đối chiếu consumer còn dùng thumbnailUrl trước khi xóa field cũ. Bỏ district ở các schema địa chỉ phòng liên quan, không xóa trường district của domain khác như roommate chỉ do trùng tên.
 - Favorite dùng lại P10-24. Việc lập plan không tự đổi trạng thái deferred/designing thành đã triển khai. Thống nhất rule với API owner trong task trước code; không giả lập thành công hoặc trả 200 rỗng để che module chưa có.
@@ -57,7 +59,7 @@ Phân nhánh debug: draft → chưa phải phòng đang thuê; active + ID NULL 
 | Thứ tự | Task | Phụ thuộc | Mục tiêu |
 |---|---|---|---|
 | 1 | [P10-31](../phase-10/issues/P10-31-contract-representative-phone-link.md) | P9-01/02 hiện có | Link representative ở create/activate, kiểm thử thứ tự event và cạnh tranh |
-| 2 | [P10-32](../phase-10/issues/P10-32-tenant-link-reconciliation.md) | P10-31 | Kiểm tra projection triển khai và chuẩn bị reconcile dữ liệu cũ |
+| — | [P10-32](../phase-10/issues/P10-32-tenant-link-reconciliation.md) | — | Đã bỏ theo yêu cầu người dùng; không có script fallback/repair |
 | 3 | [P10-33](../phase-10/issues/P10-33-room-address-response.md) | Độc lập | Trả địa chỉ và tên tòa cho list/detail |
 | 4 | [P10-34](../phase-10/issues/P10-34-landlord-contact-lookup.md) | Internal users API đã có | Port/adapter contact chủ trọ |
 | 5 | [P10-35](../phase-10/issues/P10-35-room-landlord-response.md) | P10-34 | Điền landlord vào detail và kiểm tra response |
@@ -69,13 +71,13 @@ Mỗi thay đổi API kèm YAML nguồn và bundle trong cùng đợt giao tươ
 
 ## Checkpoint và nghiệm thu
 
-- [ ] Sau P10-31/32: tenant đã có account → tạo draft → ký/activate → API trả phòng; hợp đồng cũ được reconcile đúng cả representative/member và chat, chạy lại không nhân đôi.
+- [ ] Sau P10-31: tenant đã có account → tạo draft → ký/activate → API trả phòng; consumer lifecycle hiện có tiếp tục liên kết representative/member và chat theo nghiệp vụ gốc. Không có bước chạy script repair.
 - [ ] Sau P10-33/35: list có `buildingName/ward`, detail có `address/ward/province/landlord`; lỗi phụ thuộc và phòng không tồn tại được kiểm tra; không lộ thêm field Identity.
 - [ ] Sau P10-36/24: ảnh đã complete và attach tải được bằng GET nội dung ảnh; favorite lưu/xóa/list theo đúng user, tenant mới chưa lưu nhận 200 rỗng sau khi tính năng đã triển khai.
 - [ ] P10-37: đúng mobile branch/build; parse response thật; tenant khác không thấy phòng/hợp đồng của ca thử; empty/error phân biệt; refetch sau activate/reconcile hiển thị dữ liệu; spec bundle khớp server.
 - [ ] PM review các PR theo quy ước repo; chỉ đánh dấu Done khi có evidence, không dùng unit test thay cho nghiệm thu deploy.
 
-Ma trận liên kết bắt buộc: account trước hợp đồng; hợp đồng trước account đã verify; account verify trước/sau activation; event Identity đã consume trước deploy; `0`/`+84`; ID tường minh; phone không khớp; account pending/locked/deleted/sai role; event trùng; chạy reconcile lại; hai tenant khác phòng; draft và active. Với member đã rời, kiểm tra rule truy cập hiện hành riêng, không nhân tiện đổi rule đại diện trong bản sửa phone-link.
+Ma trận liên kết bắt buộc: account trước hợp đồng; hợp đồng trước account đã verify; account verify trước/sau activation; event Identity đã consume trước deploy; `0`/`+84`; ID tường minh; phone không khớp; account pending/locked/deleted/sai role; event trùng; hai tenant khác phòng; draft và active. Với member đã rời, kiểm tra rule truy cập hiện hành riêng, không nhân tiện đổi rule đại diện trong bản sửa phone-link.
 
 ## Kiểm tra đã chạy
 
@@ -93,8 +95,8 @@ Kết quả: **4 suite, 33 test pass**. Activation fixture hiện dùng tenantId
 |---|---|---|
 | Chưa có contract/account cụ thể | Không thể khẳng định nguyên nhân cho chính record được báo | Thu thập ID và GET có quyền trong P10-32/37; không cần chia sẻ password/token trong tài liệu |
 | Mobile source khác bản local | Không kiểm tra được endpoint, DTO hoặc cache đang dùng | Ghi branch/build dùng nghiệm thu; chỉ điều chỉnh app sau khi xem source đúng |
-| Account cũ chưa có event projection | Sửa create/activate vẫn không tìm được account | Bootstrap có kiểm chứng từ Identity, rồi reconcile NULL theo batch |
-| Projection stale hoặc xung đột số điện thoại | Có thể gán nhầm ID nếu chỉ tin snapshot cũ | Xác minh status/phone hiện tại trước repair; bỏ qua conflict; không ghi đè link có sẵn |
+| Account cũ chưa có event projection | Sửa create/activate vẫn không tìm được account | Kiểm tra chuỗi event/projection hiện có; không bổ sung bootstrap/repair script theo P10-D91 |
+| Projection stale hoặc xung đột số điện thoại | Có thể gán nhầm ID nếu event chưa đồng bộ | Kiểm tra nguồn Identity và consumer lifecycle hiện có; không ghi đè link có sẵn |
 | Race giữa activate/consumer/reconcile | Có thể mất link, deadlock hoặc chat thiếu tenant | Thứ tự khóa chung, snapshot activation sau resolve, outbox/inbox và test concurrency |
 | Identity contact không có hoặc lỗi | Detail không thể đáp ứng contact bắt buộc như spec | Phân biệt not-found/outage; nếu có dữ liệu hợp lệ nhưng tạm unavailable thì trả lỗi phụ thuộc chuẩn; không trả object giả. Trường hợp chủ trọ đã xóa cần chốt policy trước khi release |
 | Favorite đang deferred trong PM | Không thể hứa lỗi đã hết chỉ vì có route gateway | Giữ task P10-24 với plan cụ thể; xác nhận rule trước implementation, chưa đổi released |
