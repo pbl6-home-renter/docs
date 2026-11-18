@@ -1,6 +1,6 @@
 # PBL6 — Project Plan (13–14 weeks)
 
-> **Phase 10 amendment (P10-D88):** Implement the basic roommate profile API in Tenancy Service under P10-25. Match requests (P10-26), AI scoring and Web UI (P10-27) remain deferred; scope and delivery details are in `phase-10/decisions.md`.
+> **Phase 10 amendments (P10-D88, P10-D89):** Implement the basic roommate profile API (P10-25) and direct match requests with notifications (P10-26) in Tenancy Service. AI scoring and Web UI (P10-27) remain deferred; scope and delivery details are in `phase-10/decisions.md`.
 
 > **Phase 10 amendment (P10-D86):** Implement IssueReport in Community Service with private photos, localized notifications, and Web flows under P10-28/29. The `@issue` chat command remains out of scope.
 
