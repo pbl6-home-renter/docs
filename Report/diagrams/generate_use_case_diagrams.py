@@ -288,6 +288,18 @@ def general_diagram(filename):
         "9. Sự cố và tệp đính kèm",
         "10. Tìm bạn ở ghép",
     ]
+    summary = [
+        "Đăng ký, đăng nhập, quên mật khẩu, hồ sơ cá nhân",
+        "Trò chuyện, thông báo đẩy, tùy chỉnh thông báo",
+        "Duyệt bất động sản, quản lý tài khoản, nhật ký, thống kê",
+        "Tìm và xem phòng, tòa nhà theo khu vực",
+        "Quản lý tòa nhà và phòng, đánh dấu sẵn sàng cho thuê",
+        "Lập và kích hoạt hợp đồng, quản lý thành viên, trả phòng",
+        "Biểu giá, kỳ lập hóa đơn, ghi chỉ số điện nước",
+        "Lập hóa đơn, thanh toán QR, tiền mặt, đối soát",
+        "Báo cáo, theo dõi và xử lý sự cố, đính kèm ảnh",
+        "Hồ sơ ở ghép, tìm bạn, yêu cầu ghép đôi",
+    ]
     links = {
         "guest": [0, 3],
         "tenant": [0, 1, 3, 5, 7, 8, 9],
@@ -295,10 +307,10 @@ def general_diagram(filename):
         "admin": [0, 1, 2],
     }
     cv = Canvas()
-    PW, PH, PSTEP = 360, 54, 98
+    PW, PH, PSTEP = 380, 74, 118
     lx = 330
     rx = lx + PW + 330
-    top = 110
+    top = 120
     cys = [top + i * PSTEP + PH / 2 for i in range(len(pk))]
     sys_l, sys_r = lx - 50, rx + PW - 330 + 50
     sys_r = lx + PW + 50
@@ -308,9 +320,10 @@ def general_diagram(filename):
     for i, name in enumerate(pk):
         y = top + i * PSTEP
         cv.rect(lx, y, PW, PH)
-        tw = 70
-        cv.rect(lx, y - 14, tw, 14)
-        cv.text(lx + PW / 2, y + PH / 2, name, FS, bold=False)
+        tw = text_w(name, FS_SMALL, True) + 28
+        cv.rect(lx, y - TAB_H, tw, TAB_H)
+        cv.text(lx + tw / 2, y - TAB_H / 2, name, FS_SMALL, bold=True)
+        cv.text(lx + PW / 2, y + PH / 2, "\n".join(wrap(summary[i], PW - 40, FS_SMALL)), FS_SMALL)
     mid = (28 + sys_bottom) / 2
     actors = {
         "guest": ("Khách\nvãng lai", 120, (cys[0] + cys[3]) / 2 - 40, "L"),
