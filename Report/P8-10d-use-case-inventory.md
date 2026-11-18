@@ -54,7 +54,7 @@ Nguồn: `rentify-api-spec/reference/rentify.json` (133 endpoint, 10 tag). Dùng
 | T4 | Xem phòng đang thuê | | `GET /me/room-hub` |
 | T5 | Xem hợp đồng | | `GET /me/contracts`, `GET /contracts/{id}` |
 | T6 | Xem hóa đơn (kèm tiền điện nước) | | `GET /me/invoices`, `GET /invoices/{id}` |
-| T7 | Thanh toán hóa đơn bằng QR | «include» Xem hóa đơn | `POST /payments/create-intent` |
+| T7 | Thanh toán hóa đơn bằng QR | «include» Xem chi tiết hóa đơn | `POST /payments/create-intent` |
 | T8 | Xem lịch sử thanh toán | | `GET /me/payments` |
 | T9 | Báo cáo sự cố | «extend» Đính kèm ảnh | `POST /issues`, `/media/presign-upload` |
 | T10 | Theo dõi và hủy sự cố | | `GET /me/issues`, `POST /issues/{id}/cancel` |
@@ -73,16 +73,16 @@ Nguồn: `rentify-api-spec/reference/rentify.json` (133 endpoint, 10 tag). Dùng
 | L4 | Cấu hình kỳ lập hóa đơn | | `/billing-settings` |
 | L5 | Quản lý phòng | «extend» Đánh dấu phòng sẵn sàng cho thuê | `/rooms`, `/me/rooms`, `POST /rooms/{id}/mark-ready` |
 | L6 | Lập hợp đồng | «include» Chọn mẫu hợp đồng; «include» Sinh bản nháp PDF | `/contracts`, `/contract-templates`, `.../apply-template`, `.../generate-draft-document` |
-| L7 | Kích hoạt hợp đồng (tải bản đã ký) | «include» Lập hợp đồng | `POST /contracts/{id}/activate-contract` |
+| L7 | Kích hoạt hợp đồng | «include» Tải hợp đồng đã ký | `POST /contracts/{id}/activate-contract` |
 | L8 | Quản lý người thuê và thành viên hợp đồng | | `/contracts/tenants`, `/contract-members` |
 | L9 | Xử lý trả phòng và hợp đồng bị khóa | | `.../complete-checkout`, `.../lock-cycles/{id}/decision` |
 | L10 | Ghi chỉ số điện nước | «extend» Đính kèm ảnh bằng chứng | `/meter-readings`, `.../evidence` |
-| L11 | Lập và phát hành hóa đơn | «include» Ghi chỉ số điện nước; «extend» Chỉnh sửa, hủy hóa đơn | `/invoices`, `.../generate`, `.../issue-invoice`, `.../cancel-invoice` |
-| L12 | Ghi nhận thanh toán tiền mặt | «include» Xem hóa đơn | `POST /payments/record-cash-payment` |
+| L11 | Lập và phát hành hóa đơn | «extend» Chỉnh sửa hóa đơn; «extend» Hủy hóa đơn | `/invoices`, `.../generate`, `.../issue-invoice`, `.../cancel-invoice` |
+| L12 | Ghi nhận thanh toán tiền mặt | | `POST /payments/record-cash-payment` |
 | L13 | Đối soát giao dịch thanh toán | | `GET /payments` |
 | L14 | Xử lý sự cố | | `/issues`, `PATCH /issues/{id}` |
 | L15 | Trò chuyện và gửi nhắc nhở tự động | «extend» Gửi bot reminder | `/conversations`, `/messages`, `.../bot-reminders` |
-| L16 | Nhận và quản lý thông báo | «include» Đăng ký thiết bị | `/notifications`, `/me/push-devices` |
+| L16 | Nhận và quản lý thông báo | «include» Đăng ký thiết bị nhận thông báo đẩy | `/notifications`, `/me/push-devices` |
 
 ## 1.3.2 Quản trị viên (6)
 
@@ -94,3 +94,68 @@ Nguồn: `rentify-api-spec/reference/rentify.json` (133 endpoint, 10 tag). Dùng
 | A4 | Xem nhật ký kiểm toán | | `/audit-logs` |
 | A5 | Xem thống kê hệ thống | | `GET /dashboard` |
 | A6 | Nhận thông báo hệ thống | | `/notifications` |
+
+## Mô tả use case
+
+### Khách vãng lai (1.3.5)
+
+| Mã | Use case | Mô tả |
+|---|---|---|
+| G1 | Tìm kiếm phòng trọ | Khách tìm các phòng còn trống thuộc tòa nhà đã được duyệt, lọc theo từ khóa, tỉnh/thành và phường/xã. |
+| G2 | Xem chi tiết phòng | Khách xem thông tin phòng gồm giá, diện tích, ảnh, địa chỉ tòa nhà và thông tin liên hệ chủ trọ. |
+| G3 | Tìm kiếm tòa nhà | Khách tìm các tòa nhà đã được quản trị viên phê duyệt theo từ khóa và khu vực. |
+| G4 | Xem chi tiết tòa nhà | Khách xem thông tin công khai của tòa nhà và các phòng thuộc tòa nhà đó. |
+| G5 | Đăng ký tài khoản | Khách tạo tài khoản người thuê hoặc chủ trọ bằng email, sau đó xác thực email bằng liên kết gửi về; có thể yêu cầu gửi lại email xác thực. |
+| G6 | Đăng nhập | Người dùng đăng nhập bằng email và mật khẩu để nhận phiên làm việc theo vai trò. |
+| G7 | Quên và đặt lại mật khẩu | Người dùng yêu cầu đặt lại mật khẩu qua email, sau đó nhập mật khẩu mới bằng mã đặt lại có thời hạn ngắn. |
+
+### Người thuê trọ (1.3.4)
+
+| Mã | Use case | Mô tả |
+|---|---|---|
+| T1 | Đăng nhập, đăng xuất | Người thuê đăng nhập vào ứng dụng, tự động làm mới phiên và đăng xuất khi cần. |
+| T2 | Quản lý hồ sơ cá nhân | Người thuê xem và cập nhật thông tin cá nhân, đổi mật khẩu khi cần. |
+| T3 | Tìm phòng và lưu phòng yêu thích | Người thuê tìm phòng trọ và lưu các phòng quan tâm để xem lại sau. |
+| T4 | Xem phòng đang thuê | Người thuê xem danh sách phòng mình đang thuê hoặc ở cùng theo hợp đồng còn hiệu lực. |
+| T5 | Xem hợp đồng | Người thuê xem các hợp đồng liên quan đến mình, gồm thời hạn, giá thuê, tiền cọc và thành viên. |
+| T6 | Xem hóa đơn và tiền điện nước | Người thuê xem các hóa đơn đã phát hành, gồm tiền phòng, điện, nước và các khoản phụ thu. |
+| T7 | Thanh toán hóa đơn bằng QR | Người thuê chọn hóa đơn cần trả, hệ thống tạo mã QR để quét và chuyển khoản. |
+| T8 | Xem lịch sử thanh toán | Người thuê theo dõi các giao dịch thanh toán đã thực hiện. |
+| T9 | Báo cáo sự cố | Người thuê gửi báo cáo sự cố trong phòng (điện, nước, hư hỏng), có thể đính kèm ảnh minh họa. |
+| T10 | Theo dõi và hủy sự cố | Người thuê xem tiến độ xử lý sự cố và hủy báo cáo chưa được giải quyết. |
+| T11 | Trò chuyện | Người thuê nhắn tin trực tiếp hoặc theo nhóm với chủ trọ và người ở cùng, có thể gửi tệp và tìm lại tin nhắn. |
+| T12 | Nhận và quản lý thông báo | Người thuê nhận thông báo đẩy trên điện thoại, xem danh sách thông báo, đánh dấu đã đọc và tùy chỉnh loại thông báo; ứng dụng đăng ký mã thiết bị với máy chủ để nhận thông báo. |
+| T13 | Quản lý hồ sơ ở ghép | Người thuê tạo và cập nhật hồ sơ tìm bạn ở ghép gồm ngân sách, thói quen sinh hoạt và chế độ hiển thị. |
+| T14 | Tìm bạn ở ghép và gửi yêu cầu ghép | Người thuê tìm hồ sơ phù hợp, gửi yêu cầu ghép đôi; bên nhận có thể chấp nhận hoặc từ chối, bên gửi có thể rút yêu cầu. |
+
+### Chủ trọ (1.3.3)
+
+| Mã | Use case | Mô tả |
+|---|---|---|
+| L1 | Đăng nhập và quản lý hồ sơ | Chủ trọ đăng nhập và cập nhật thông tin cá nhân, tài khoản nhận thanh toán. |
+| L2 | Quản lý tòa nhà | Chủ trọ đăng ký tòa nhà kèm ảnh minh chứng sở hữu để quản trị viên duyệt, sau đó sửa hoặc xóa tòa nhà của mình. |
+| L3 | Thiết lập biểu giá | Chủ trọ cấu hình đơn giá điện, nước và dịch vụ cho từng tòa nhà. |
+| L4 | Cấu hình kỳ lập hóa đơn | Chủ trọ thiết lập quy tắc lập hóa đơn hằng kỳ cho tòa nhà. |
+| L5 | Quản lý phòng | Chủ trọ thêm, sửa, xóa phòng và đánh dấu phòng sẵn sàng cho thuê. |
+| L6 | Lập hợp đồng | Chủ trọ tạo hợp đồng nháp cho phòng, chọn mẫu hợp đồng và sinh bản nháp PDF để in ký. |
+| L7 | Kích hoạt hợp đồng | Sau khi hai bên ký trên giấy, chủ trọ tải bản hợp đồng đã ký lên hệ thống để hợp đồng có hiệu lực. |
+| L8 | Quản lý người thuê và thành viên hợp đồng | Chủ trọ xem danh sách người thuê, thêm hoặc cập nhật thành viên và ghi nhận thành viên rời đi. |
+| L9 | Xử lý trả phòng và hợp đồng bị khóa | Chủ trọ hoàn tất thủ tục trả phòng và quyết định khôi phục hoặc chấm dứt hợp đồng đang bị tạm ngưng. |
+| L10 | Ghi chỉ số điện nước | Chủ trọ nhập chỉ số điện nước hằng kỳ cho từng phòng, có thể đính kèm ảnh làm bằng chứng. |
+| L11 | Lập và phát hành hóa đơn | Chủ trọ tạo hóa đơn theo tòa nhà và kỳ, chỉnh sửa khoản phụ thu, phát hành hàng loạt hoặc hủy hóa đơn khi cần. |
+| L12 | Ghi nhận thanh toán tiền mặt | Chủ trọ ghi nhận khoản người thuê trả bằng tiền mặt cho hóa đơn. |
+| L13 | Đối soát giao dịch thanh toán | Chủ trọ xem các giao dịch thanh toán để đối chiếu dòng tiền. |
+| L14 | Xử lý sự cố | Chủ trọ xem hàng đợi sự cố và cập nhật trạng thái từ đang chờ, đang xử lý đến đã giải quyết. |
+| L15 | Trò chuyện với người thuê | Chủ trọ nhắn tin với người thuê và gửi nhắc nhở tự động theo mẫu trong hội thoại. |
+| L16 | Nhận và quản lý thông báo | Chủ trọ nhận thông báo đẩy và quản lý thông báo; ứng dụng đăng ký mã thiết bị với máy chủ. |
+
+### Quản trị viên (1.3.2)
+
+| Mã | Use case | Mô tả |
+|---|---|---|
+| A1 | Đăng nhập và đổi mật khẩu | Quản trị viên (tài khoản được cấp sẵn) đăng nhập và đổi mật khẩu. |
+| A2 | Duyệt bất động sản | Quản trị viên xem hàng đợi tòa nhà chờ duyệt, xem chi tiết rồi phê duyệt, hoặc từ chối kèm ghi chú bắt buộc. |
+| A3 | Quản lý tài khoản | Quản trị viên xem danh sách người dùng, cập nhật thông tin, khóa hoặc mở khóa, xóa mềm tài khoản. |
+| A4 | Xem nhật ký kiểm toán | Quản trị viên tra cứu nhật ký thao tác của hệ thống để kiểm tra và truy vết. |
+| A5 | Xem thống kê hệ thống | Quản trị viên xem số liệu tổng hợp của toàn hệ thống trong một khoảng thời gian. |
+| A6 | Nhận thông báo hệ thống | Quản trị viên nhận và xem các thông báo liên quan đến hoạt động hệ thống. |
