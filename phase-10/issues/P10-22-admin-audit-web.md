@@ -1,5 +1,7 @@
 # P10-22 — Danh sách và chi tiết nhật ký quản trị trên Web
 
+> **↪ Đã chuyển sang Phase 11 (2026-11-21):** P11-D92; triển khai tại P11-08. Xem [tracker Phase 11](../../phase-11/issues/README.md). Nội dung dưới đây chỉ giữ làm lịch sử.
+
 **Loại:** Frontend · **Trạng thái:** ⚪ Blocked — P10-20  
 **Owner đề xuất:** `ThaiBao11125` · **Reviewer:** FE Lead / PM · **Repo:** `fe`  
 **Phụ thuộc:** P10-20 · **Ước lượng:** chưa chốt · **Issue:** `docs#TBD`

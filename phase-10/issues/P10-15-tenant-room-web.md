@@ -1,5 +1,7 @@
 # P10-15 — Màn phòng của tôi và tổng quan tenant trên Web
 
+> **↪ Phase 11 (2026-11-21):** thay bằng P11-14. Xem [tracker Phase 11](../../phase-11/issues/README.md).
+
 **Loại:** Frontend · **Trạng thái:** 🔵 In progress — thiếu trạng thái thanh toán  
 **Owner đề xuất:** `ThaiBao11125` · **Reviewer:** FE Lead / PM · **Repo:** `fe`  
 **Phụ thuộc:** P10-07; trạng thái thanh toán đáng tin cậy cho tóm tắt hóa đơn chưa thanh toán · **Ước lượng:** chưa chốt · **Issue:** `docs#TBD`

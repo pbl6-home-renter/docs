@@ -1,5 +1,7 @@
 # P10-17 — Danh sách và chi tiết khách thuê trên Web
 
+> **↪ Phase 11 (2026-11-21):** thay bằng P11-11. Xem [tracker Phase 11](../../phase-11/issues/README.md).
+
 **Loại:** Frontend · **Trạng thái:** ⚪ Blocked — P10-16  
 **Owner đề xuất:** `ThaiBao11125` · **Reviewer:** FE Lead / PM · **Repo:** `fe`  
 **Phụ thuộc:** P10-16 · **Ước lượng:** chưa chốt · **Issue:** `docs#TBD`

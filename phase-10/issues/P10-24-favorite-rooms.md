@@ -1,5 +1,7 @@
 # P10-24 — Phòng yêu thích: API và giao diện tenant
 
+> **↪ Phase 11 (2026-11-21):** phần client Web thay bằng P11-12; phần BE/API giữ ở đây. Xem [tracker Phase 11](../../phase-11/issues/README.md).
+
 **Loại:** Backend + client · **Trạng thái:** 🔵 BE/API được duyệt theo P10-D90, code local + SQL pass; chưa migration/deploy/client
 **Owner đề xuất:** BE / `ThaiBao11125` · **Reviewer:** PM / API owner · **Repo:** service owner sau khi chốt, `api-docs`, `fe`  
 **Phụ thuộc:** P10-11, P5-09d · **Ước lượng:** chưa chốt · **Issue:** `docs#TBD`

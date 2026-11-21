@@ -1,5 +1,7 @@
 # P10-19 — API số liệu dashboard quản trị
 
+> **↪ Đã chuyển sang Phase 11 (2026-11-21):** P11-D92; triển khai tại P11-02 và P11-03. Xem [tracker Phase 11](../../phase-11/issues/README.md). Nội dung dưới đây chỉ giữ làm lịch sử.
+
 **Loại:** Backend · **Trạng thái:** ⚪ Blocked — P10-10 chốt nguồn và contract  
 **Owner đề xuất:** BE Lead / người được phân công · **Reviewer:** API owner / PM · **Repo:** service được P10-10 chỉ định, `api-docs`, `api-gateway` nếu cần  
 **Phụ thuộc:** P10-10 · **Ước lượng:** chưa chốt · **Issue:** `docs#TBD`

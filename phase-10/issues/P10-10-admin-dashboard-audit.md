@@ -1,5 +1,7 @@
 # P10-10 — Chốt nguồn dữ liệu dashboard và nhật ký quản trị
 
+> **↪ Đã chuyển sang Phase 11 (2026-11-21):** P11-D92; triển khai tại P11-01 → P11-08. Xem [tracker Phase 11](../../phase-11/issues/README.md). Nội dung dưới đây chỉ giữ làm lịch sử.
+
 **Loại:** Discovery / blocker · **Ưu tiên đề xuất:** Medium · **Trạng thái:** ⚪ Blocked chờ quyết định PM/API owner  
 **Owner đề xuất:** PM + BE Lead · **Repo:** `api-docs`, `Identity-Service`, `Tenancy-Service`, `fe`  
 **Phụ thuộc:** Quyết định phạm vi và nguồn dữ liệu · **Ước lượng:** chưa chốt · **Issue:** `docs#TBD`

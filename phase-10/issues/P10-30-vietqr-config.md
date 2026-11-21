@@ -1,5 +1,7 @@
 # P10-30 — Đối chiếu cấu hình VietQR và thông tin nhận tiền
 
+> **↪ Đã chuyển sang Phase 11 (2026-11-21):** P11-D93; spike tại P11-09. Xem [tracker Phase 11](../../phase-11/issues/README.md). Nội dung dưới đây chỉ giữ làm lịch sử.
+
 **Loại:** Contract / Backend / FE · **Trạng thái:** ⏪ Deferred — chờ PM chốt scope  
 **Owner đề xuất:** PM / Identity & Tenancy owners · **Reviewer:** API owner · **Repo:** `api-docs`, service liên quan, `fe`  
 **Phụ thuộc:** P10-11, P6-D61/D72 · **Ước lượng:** chưa chốt · **Issue:** `docs#TBD`
