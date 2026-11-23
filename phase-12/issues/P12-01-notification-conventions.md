@@ -23,9 +23,8 @@ Có quy ước chung để mọi task P12-02 → P12-08 chỉ cần sửa servic
 - community-service:
   - `docs/notifications.md`: luồng, payload, quy tắc cho service nguồn, danh sách `messageKey`, checklist.
   - `NotificationRequestedSubscriber` log warning khi thiếu `data.messageKey` (vẫn lưu bình thường), kèm unit test.
-  - Thông báo sự cố đổi câu dự phòng từ tiếng Anh sang tiếng Việt.
 - fe:
-  - `src/features/notifications/utils/notification-registry.ts` thay cho `notification-content.ts`: `NOTIFICATION_REGISTRY`, `LEGACY_NOTIFICATION_CODES`, `getNotificationContent`, `getNotificationDestination`.
+  - `src/features/notifications/utils/notification-registry.ts` thay cho `notification-content.ts`: `NOTIFICATION_REGISTRY`, `getNotificationContent`, `getNotificationDestination`.
   - Toast và trang `/notifications` dùng chung registry để chọn nội dung và trang mở.
 
 ## Ngoài phạm vi

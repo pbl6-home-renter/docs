@@ -11,11 +11,11 @@
 
 ## Mục tiêu
 
-Người bị admin khóa/mở khóa thấy thông báo đọc được (không còn `USER_ACCOUNT_LOCKED_TITLE`), kể cả các bản ghi cũ trong lịch sử.
+Người bị admin khóa/mở khóa thấy thông báo đã dịch trên Web thay vì mã `USER_ACCOUNT_LOCKED_TITLE`.
 
 ## Quyết định áp dụng
 
-- `P12-D95`, `P12-D96` (bảng mã cũ).
+- `P12-D95`, `P12-D96`.
 
 ## Thông báo cần gửi
 
@@ -27,17 +27,16 @@ Người bị admin khóa/mở khóa thấy thông báo đọc được (không 
 ## Tham chiếu code
 
 - `Identity-Service/src/modules/users/domain/events/user-account-notification-requested.event.ts`
-- `Identity-Service/src/modules/users/domain/constants/user-notification-code.constant.ts` (bỏ mã, thay bằng câu tiếng Việt)
+- `Identity-Service/src/modules/users/domain/constants/user-notification-code.constant.ts` (giữ nguyên các mã `title`/`body`)
 
 ## Các bước
 
-1. Identity: thêm `data.messageKey`, đổi `title`/`body` sang câu tiếng Việt; cập nhật unit test.
-2. fe: thêm 2 mục registry + i18n; thêm vào `LEGACY_NOTIFICATION_CODES`: `USER_ACCOUNT_LOCKED_TITLE → user.locked`, `USER_ACCOUNT_UNLOCKED_TITLE → user.unlocked`.
-3. Kiểm tra bản ghi cũ (tạo trước khi deploy) trên `/notifications` hiển thị câu đã dịch.
+1. Identity: thêm `data.messageKey` (`user.locked` / `user.unlocked`); cập nhật unit test.
+2. fe: thêm 2 mục registry + i18n.
 
 ## Definition of Done
 
-- [ ] Service nguồn: unit test payload (có `messageKey`, đủ tham số, `title`/`body` là câu tiếng Việt, đúng người nhận, không gửi cho người thao tác).
+- [ ] Service nguồn: unit test payload (có `messageKey`, đủ tham số, `title`/`body` lấy từ class constant, đúng người nhận, không gửi cho người thao tác).
 - [ ] Event ghi outbox trong cùng transaction với thay đổi nghiệp vụ; `npm test`, `npm run build`, `npm run lint` pass.
 - [ ] fe: mục registry + key i18n `vi`/`en` trong `notifications.json`; `npm run build`, `npm run lint`, `npm run i18n:check` pass; không viết file test.
 - [ ] Cập nhật bảng mục 5 trong `community-service/docs/notifications.md` (đổi trạng thái thành "Đã có").
