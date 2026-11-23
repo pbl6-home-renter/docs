@@ -40,7 +40,7 @@ Admin nhận thông báo khi landlord gửi tòa mới, bấm vào mở trang du
 
 ## Definition of Done
 
-- [ ] Service nguồn: unit test payload (có `messageKey`, đủ tham số, `title`/`body` là câu tiếng Việt, đúng người nhận, không gửi cho người thao tác).
+- [ ] Service nguồn: unit test payload (có `messageKey`, đủ tham số, `title`/`body` lấy từ class constant, đúng người nhận, không gửi cho người thao tác).
 - [ ] Event ghi outbox trong cùng transaction với thay đổi nghiệp vụ; `npm test`, `npm run build`, `npm run lint` pass.
 - [ ] fe: mục registry + key i18n `vi`/`en` trong `notifications.json`; `npm run build`, `npm run lint`, `npm run i18n:check` pass; không viết file test.
 - [ ] Cập nhật bảng mục 5 trong `community-service/docs/notifications.md` (đổi trạng thái thành "Đã có").

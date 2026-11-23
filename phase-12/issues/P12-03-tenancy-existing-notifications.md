@@ -11,7 +11,7 @@
 
 ## Mục tiêu
 
-Các thông báo Tenancy đang gửi (luồng khóa landlord, hóa đơn phát hành) có `messageKey`, câu tiếng Việt, và bản ghi cũ hiển thị đúng.
+Các thông báo Tenancy đang gửi (luồng khóa landlord, hóa đơn phát hành) có `messageKey` để Web dịch thay vì hiện mã.
 
 ## Quyết định áp dụng
 
@@ -36,13 +36,13 @@ Các thông báo Tenancy đang gửi (luồng khóa landlord, hóa đơn phát h
 
 ## Các bước
 
-1. Tenancy: thêm `messageKey` + tham số, đổi mã sang câu tiếng Việt; cập nhật unit test.
-2. fe: thêm mục registry + i18n; thêm các mã `CONTRACT_*_TITLE` vào `LEGACY_NOTIFICATION_CODES`.
+1. Tenancy: thêm `messageKey` + tham số; `invoice.issued` chuyển câu tiếng Việt đang viết cứng sang mã trong class constant; cập nhật unit test.
+2. fe: thêm mục registry + i18n.
 3. Kiểm tra lại luồng khóa landlord đầu-cuối (khóa → mở khóa → quyết định) và phát hành hóa đơn.
 
 ## Definition of Done
 
-- [ ] Service nguồn: unit test payload (có `messageKey`, đủ tham số, `title`/`body` là câu tiếng Việt, đúng người nhận, không gửi cho người thao tác).
+- [ ] Service nguồn: unit test payload (có `messageKey`, đủ tham số, `title`/`body` lấy từ class constant, đúng người nhận, không gửi cho người thao tác).
 - [ ] Event ghi outbox trong cùng transaction với thay đổi nghiệp vụ; `npm test`, `npm run build`, `npm run lint` pass.
 - [ ] fe: mục registry + key i18n `vi`/`en` trong `notifications.json`; `npm run build`, `npm run lint`, `npm run i18n:check` pass; không viết file test.
 - [ ] Cập nhật bảng mục 5 trong `community-service/docs/notifications.md` (đổi trạng thái thành "Đã có").
