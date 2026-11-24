@@ -27,7 +27,8 @@
    | `metadata` | jsonb, default `{}` | chỉ field trong allowlist |
    | `source_service` | varchar(30) | `identity` / `tenancy` |
    | `source_event_id` | uuid, nullable, **unique** | dùng cho P11-05 |
-   | `created_at` | timestamptz | |
+   | `occurred_at` | timestamptz | Thời điểm thao tác thực sự xảy ra; P11-05 lấy từ `reviewedAt` trong event |
+   | `created_at` | timestamptz | Thời điểm database tạo dòng audit khi Identity ghi nhận |
 
    Index: `(created_at DESC)`, `(action, created_at)`, `(entity_type, entity_id)`, `(actor_id)`.
 3. **Adapter `DbAuditRecorder`** (infrastructure của module `audit-log`) implement port `AuditRecorder` từ P11-10 và bind vào `AUDIT_RECORDER_DI_TOKEN`:
