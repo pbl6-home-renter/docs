@@ -8,6 +8,7 @@
 | D96 | 2026-11-23 | Web tự tính trang mở từ `messageKey`; `deepLink` chỉ là dự phòng; community chỉ log warning khi thiếu `messageKey` | ✅ Accepted |
 | D97 | 2026-11-23 | Phạm vi thông báo Phase 12 và các mục loại khỏi phạm vi | ✅ Accepted |
 | D98 | 2026-11-23 | Mỗi task thông báo do một BE member làm end-to-end: service nguồn → community → fe | ✅ Accepted |
+| D99 | 2026-11-24 | Locked users may read their own notifications and receive notification Socket events; other business access remains blocked | ✅ Accepted |
 
 ## D95 — Quy ước payload thông báo nghiệp vụ
 
@@ -42,3 +43,9 @@ Chi tiết kỹ thuật: [`community-service/docs/notifications.md`](https://git
 
 - Mỗi task do **một BE member** làm trọn: sửa service nguồn, kiểm tra bản ghi trong community, thêm mục registry + i18n `vi`/`en` ở fe, cập nhật bảng `messageKey` trong `docs/notifications.md`. PR riêng cho từng repo, ghi chung một issue.
 - FE Lead review phần fe; owner community review nếu task đụng community.
+
+## D99 — Notification access for locked accounts
+
+- A locked account may open `/notifications`, list its own notifications, mark its own notifications as read, and read its notification preferences so the Web can decide whether to show a toast. Updating preferences and other business operations remain blocked.
+- Community accepts a Socket connection bearing a `status=locked` access token for notification events only. It does not join the regular user room or a conversation room, and the chat handlers cannot act without an active user identity. Access tokens issued before the lock may still carry `status=active` for up to 15 minutes, as already documented for account locking.
+- The exception supports P12-02's acceptance flow: an account lock notification remains visible after reloading `/notifications`. Authentication and recipient scoping remain required.
