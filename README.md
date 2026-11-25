@@ -16,7 +16,7 @@ PM owns this folder. Docs are grouped by phase (mirrors `PROJECT_PLAN.md`). Crea
 | 9 | `phase-9/` | Event integration end-to-end: Tenant linking, chat context, system/account notices, invoice notifications, landlord lock choreography | [README](phase-9/README.md), [`issues/`](phase-9/issues/README.md), [`decisions.md`](phase-9/decisions.md) |
 | 10 | `phase-10/` | Hoàn thiện tính đúng đắn dữ liệu vận hành, backend cho mobile, favorite/roommate/issue report | [README](phase-10/README.md), [`issues/`](phase-10/issues/README.md), [`decisions.md`](phase-10/decisions.md) |
 | 11 | `phase-11/` | Admin dashboard, audit log thao tác admin, màn Web còn thiếu (khách thuê, yêu thích, khóa landlord, room-hub), spike VietQR sandbox (không gồm mobile) | [README](phase-11/README.md), [`issues/`](phase-11/issues/README.md), [`decisions.md`](phase-11/decisions.md) |
-| 12 | `phase-12/` | Thông báo nghiệp vụ end-to-end: quy ước `messageKey`, registry Web, thông báo duyệt tòa, hợp đồng, thành viên, hóa đơn, khóa tài khoản | [README](phase-12/README.md), [`issues/`](phase-12/issues/README.md), [`decisions.md`](phase-12/decisions.md) |
+| 12 | `phase-12/` | Thông báo nghiệp vụ end-to-end; nghiên cứu kiểm thử hiệu năng xuyên hệ thống (P12-09) | [README](phase-12/README.md), [`issues/`](phase-12/issues/README.md), [`decisions.md`](phase-12/decisions.md) |
 
 **Source of truth (SoT):** `requirement.md` (scope) and `PROJECT_PLAN.md` (schedule), both at the `pm/` root. Never change scope without PM approval; record changes in Notion decision log.
 

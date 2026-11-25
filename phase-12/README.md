@@ -2,6 +2,8 @@
 
 Mục tiêu: mọi sự kiện nghiệp vụ quan trọng (duyệt tòa, hợp đồng, thành viên vào/ra, hóa đơn, khóa tài khoản) đều tạo thông báo **đọc được** cho đúng người, lưu vào lịch sử và mở đúng trang trên Web. Quy ước chung ở [P12-D95](decisions.md#d95--quy-ước-payload-thông-báo-nghiệp-vụ) và tài liệu kỹ thuật [`community-service/docs/notifications.md`](https://github.com/pbl6-home-renter/community-service/blob/main/docs/notifications.md).
 
+**Nghiên cứu bổ sung ngày 2026-11-25:** [P12-09](issues/P12-09-performance-testing-research.md) đề xuất phương án kiểm thử hiệu năng cho Rentify. Task này độc lập với chuỗi task thông báo và chưa bao gồm cam kết triển khai hoặc chạy benchmark. Xem [P12-D99](decisions.md#d99--nghiên-cứu-kiểm-thử-hiệu-năng-trong-phase-12).
+
 Mỗi task do **một BE member làm end-to-end** (service nguồn → community → fe) theo [P12-D98](decisions.md#d98--cách-giao-task). Phase này **không gồm mobile** (mobile chưa dịch theo `messageKey`).
 
 ## Hiện trạng khi bắt đầu phase

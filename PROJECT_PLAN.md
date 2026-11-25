@@ -2,6 +2,8 @@
 
 > **Phase 10 amendments (P10-D88, P10-D89):** Implement the basic roommate profile API (P10-25) and direct match requests with notifications (P10-26) in Tenancy Service. AI scoring and Web UI (P10-27) remain deferred; scope and delivery details are in `phase-10/decisions.md`.
 
+> **Bổ sung nghiên cứu Phase 12 (P12-D99):** P12-09 nghiên cứu phương án kiểm thử hiệu năng đầu tiên cho Rentify. Phạm vi hiện tại chỉ gồm nghiên cứu; việc triển khai, chạy benchmark và chốt ngưỡng mục tiêu cần quyết định sau.
+
 > **Phase 10 amendment (P10-D86):** Implement IssueReport in Community Service with private photos, localized notifications, and Web flows under P10-28/29. The `@issue` chat command remains out of scope.
 
 > **Phase 6 scope amendment:** P6-D78 replaces OCR with manual meter entry and optional image evidence. P6-D64 makes invoice generation landlord initiated; P6-D61 defers payment and deposit settlement. Earlier roadmap text below is historical where it conflicts with these decisions.
