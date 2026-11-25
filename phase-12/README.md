@@ -22,9 +22,12 @@ flowchart LR
   P01 --> P08[P12-08 Thành viên vào/ra]
   P03 --> P06[P12-06 Hủy hóa đơn]
   P04 --> P05[P12-05 Tòa chờ duyệt → admin]
+  P02 --> P09[P12-09 BE Quyền chỉ đọc & thanh toán]
+  P09 --> P10[P12-10 FE Quyền chỉ đọc & thanh toán]
 ```
 
 - P12-02 và P12-03 ưu tiên trước vì đang hiển thị lỗi cho người dùng.
+- P12-09 và P12-10 bổ sung xử lý quyền chỉ đọc và thanh toán hóa đơn cho tài khoản bị khóa theo P12-D100.
 - P12-04, P12-07, P12-08 làm song song sau P12-01.
 - P12-05 làm cuối vì cần API nội bộ mới bên Identity và đang có blocker.
 
