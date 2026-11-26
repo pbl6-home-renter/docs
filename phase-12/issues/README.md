@@ -14,5 +14,6 @@ Bảng này là nguồn trạng thái chính thức; cập nhật cùng lúc v�
 | P12-08 | [Thông báo thành viên được thêm, liên kết và rời hợp đồng](P12-08-contract-member-notification.md) | `Tenancy-Service`, `fe` | BE Tenancy (PM giao) | 2 points | P12-01 | 🟡 Open |
 | P12-09 | [BE: Cho phép tài khoản bị khóa truy cập thông tin chỉ đọc và thanh toán hóa đơn](P12-09-backend-locked-account-readonly-access.md) | `Identity-Service`, `Tenancy-Service`, `api-doc` | `leminhkhai345` / `baoduong17` | 3 points | P12-01, P12-02 | 🟡 Open |
 | P12-10 | [FE: Mở quyền truy cập chỉ đọc và chức năng thanh toán cho tài khoản bị khóa](P12-10-frontend-locked-account-readonly-access.md) | `fe` | FE Lead / FE Team | 3 points | P12-01, P12-02, P12-09 | 🟡 Open |
+| P12-11 | [Làm rõ hành vi tài khoản bị khóa (tenant và landlord)](P12-11-locked-account-behavior-spec.md) | `pm` | PM | 1 point | — | 🟡 Open |
 
-**Tổng:** 21 points. Owner là **đề xuất**, PM xác nhận khi giao.
+**Tổng:** 22 points. Owner là **đề xuất**, PM xác nhận khi giao.

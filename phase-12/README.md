@@ -30,6 +30,7 @@ flowchart LR
 
 - P12-02 và P12-03 ưu tiên trước vì đang hiển thị lỗi cho người dùng.
 - P12-09 và P12-10 bổ sung xử lý quyền chỉ đọc và thanh toán hóa đơn cho tài khoản bị khóa theo P12-D100.
+- [P12-11](issues/P12-11-locked-account-behavior-spec.md) đặc tả hành vi thực tế khi tenant/landlord bị khóa và liệt kê các điểm PM cần chốt; P12-09, P12-10, P11-13 tham chiếu issue này.
 - P12-04, P12-07, P12-08 làm song song sau P12-01.
 - P12-05 làm cuối vì cần API nội bộ mới bên Identity và đang có blocker.
 
