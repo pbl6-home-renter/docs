@@ -56,8 +56,24 @@ Nguồn: tài liệu "Nghiệp vụ khóa tài khoản" (Thu Phương, 25/11/202
 
 ## D107 — Để sau / ngoài phạm vi Phase 13
 
-- **Báo cáo vi phạm và khiếu nại** (hàng chờ báo cáo, form khiếu nại, xử lý của admin): ghi thành issue Deferred P13-11, cần PM duyệt phạm vi trước khi làm. Trong lúc chờ, người bị khóa liên hệ admin ngoài app.
+- ~~**Báo cáo vi phạm và khiếu nại**: ghi thành issue Deferred P13-11, cần PM duyệt phạm vi trước khi làm.~~ → **Đã duyệt ở D109** (27/11/2026).
 - Email báo khóa/mở khóa (community đã có module email, làm sau nếu cần).
 - Đổi người đại diện phòng khi người đại diện bị khóa.
 - Bot nhắc và sự cố (issue report) khi landlord bị khóa: giữ nguyên.
 - Các mục trong tài liệu gốc không tồn tại trong hệ thống: hóa đơn định kỳ tự sinh, quá hạn/nhắc hạn, trả từng phần theo người, yêu cầu thuê, hẹn xem phòng, "chế độ khóa".
+
+## D109 — Báo cáo vi phạm và khiếu nại (duyệt P13-11)
+
+- **Bối cảnh:** D107 để P13-11 ở trạng thái Deferred. PM/leader duyệt phạm vi ngày 27/11/2026.
+- **Quyết định:**
+  - Làm cả **khiếu nại** (người bị khóa xin mở khóa) và **báo cáo vi phạm** (người dùng báo cáo tài khoản khác).
+  - Dữ liệu và API nằm ở **Identity-Service**, cạnh logic khóa/mở khóa, audit và media. Thông báo trong app và email gửi qua outbox sang community như các luồng hiện có.
+  - Mỗi người chỉ có **1 khiếu nại đang chờ**. Khiếu nại bị từ chối thì **7 ngày sau** (tính từ lúc từ chối) mới gửi lại được trong cùng kỳ khóa. Từ chối bắt buộc ghi lý do.
+  - Màn khiếu nại ghi "thường xử lý trong 3 ngày làm việc". Đây chỉ là chữ hiển thị, hệ thống không có hạn xử lý hay tự động gì.
+  - Chấp nhận khiếu nại = mở khóa ngay. Admin mở khóa trực tiếp thì khiếu nại đang chờ cũng được đóng là chấp nhận.
+  - Loại vi phạm dùng 6 loại của P13-09, thêm loại "Khác". Mỗi cặp người báo cáo – người bị báo cáo chỉ có 1 báo cáo đang chờ. Không báo cáo chính mình hoặc admin; tài khoản bị khóa không gửi báo cáo.
+  - Admin xử lý báo cáo bằng "Bỏ qua" hoặc "Khóa tài khoản". Khóa từ báo cáo dùng chung logic khóa hiện có và đóng mọi báo cáo đang chờ về người đó.
+  - Đợt này làm BE + FE web. Mobile tách issue riêng (P13-19).
+  - Email báo khóa/mở khóa thông thường vẫn để sau (D107). Chỉ gửi email kết quả khiếu nại.
+- **Thay thế:** mục "Báo cáo vi phạm và khiếu nại" của D107.
+- **Issues:** P13-11 (tổng), P13-15, P13-16, P13-17, P13-18, P13-19.
