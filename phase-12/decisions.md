@@ -11,6 +11,7 @@
 | D99 | 2026-11-24 | Locked users may read their own notifications and receive notification Socket events; other business access remains blocked | ✅ Accepted |
 | D100 | 2026-11-25 | Tài khoản bị khóa được phép xem thông tin chỉ đọc (phòng, hợp đồng, hóa đơn, tòa nhà) và thực hiện thanh toán; thao tác ghi/chỉnh sửa khác vẫn bị chặn | ✅ Accepted |
 | D109 | 2026-11-27 | P12-05: Tenancy được gọi Identity trước transaction tạo tòa để lấy admin active; lỗi Identity không chặn tạo tòa | ✅ Accepted (PM) |
+| D110 | 2026-11-27 | P12-08: thông báo ngày rời thành viên được gửi ngay khi landlord ghi nhận, chỉ cho thành viên còn lại đã liên kết | ✅ Accepted |
 
 ## D95 — Quy ước payload thông báo nghiệp vụ
 
@@ -75,3 +76,10 @@ Chi tiết kỹ thuật: [`community-service/docs/notifications.md`](https://git
 - PM đồng ý cho Tenancy gọi endpoint nội bộ của Identity trước transaction tạo tòa để lấy ID của tất cả admin đang `active`. Hiện hệ thống có một admin; đây là hiện trạng, không phải giới hạn của contract hoặc lý do để hardcode ID.
 - Khi lấy được người nhận, Tenancy ghi `notification.requested` vào outbox cùng transaction tạo tòa. Nếu Identity lỗi, Tenancy vẫn tạo tòa, ghi warning và bỏ qua thông báo của lần tạo đó; không retry hoặc tự gửi bù.
 - `api-doc` đã mô tả hành vi của `POST /buildings` theo quyết định này. Identity và Tenancy chốt đường dẫn/schema endpoint nội bộ trước khi triển khai và bổ sung contract đó vào `api-doc`.
+
+## D110 — Thông báo khi ghi nhận ngày rời hợp đồng của thành viên
+
+- Hiện chỉ landlord thực hiện thao tác ghi nhận ngày rời thành viên. Theo D95, không gửi `contract.member_left` cho landlord là người thao tác hoặc cho người rời. Chỉ gửi cho các thành viên còn lại đã liên kết tài khoản; nếu không có người nhận thì không tạo `notification.requested` với danh sách rỗng.
+- Gửi thông báo ngay khi thao tác ghi nhận ngày rời thành công, kể cả khi `leftOn` ở tương lai; không chờ đến ngày rời. Lưu `leftOn` (ngày `YYYY-MM-DD`) trong `notification.data` để nội dung lịch sử giữ đúng ảnh chụp tại thời điểm ghi nhận.
+- Web diễn đạt đây là **ngày rời đã được ghi nhận**, không khẳng định thành viên đã rời khi `leftOn` còn ở tương lai.
+- **Issue:** P12-08.
