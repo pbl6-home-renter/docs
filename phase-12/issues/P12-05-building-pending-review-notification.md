@@ -15,7 +15,7 @@ Admin nhận thông báo khi landlord gửi tòa mới, bấm vào mở trang du
 
 ## Quyết định áp dụng
 
-- `P12-D95`, `P12-D97`.
+- `P12-D95`, `P12-D97`, `P12-D109`.
 
 ## Thông báo cần gửi
 
@@ -34,9 +34,11 @@ Admin nhận thông báo khi landlord gửi tòa mới, bấm vào mở trang du
 2. Tenancy: lấy danh sách admin **trước** transaction tạo tòa; gọi thất bại thì vẫn tạo tòa, chỉ log warning và không gửi thông báo.
 3. fe: mục registry (route `ROUTES.ADMIN.BUILDING_DETAIL`) + i18n.
 
-## Blocker
+## Quyết định đã chốt
 
-- Cần BE Lead xác nhận cho phép Tenancy gọi Identity lúc tạo tòa (thêm phụ thuộc runtime).
+- PM xác nhận ngày 2026-11-27: Tenancy được gọi Identity trực tiếp trước transaction tạo tòa để lấy ID của tất cả admin `active`. Hiện hệ thống chỉ có một admin, nhưng không hardcode ID hay giới hạn số người nhận.
+- Nếu Identity lỗi, vẫn tạo tòa, ghi warning và không gửi thông báo cho lần tạo đó; không retry hoặc tự gửi bù. Khi có người nhận, event `notification.requested` được ghi outbox trong cùng transaction tạo tòa.
+- Contract nội bộ đã chốt khi triển khai: `GET /internal/users/admins/active-ids`, xác thực bằng `x-service-token`, trả `data.ids: uuid[]` (có thể rỗng). `api-doc` mô tả endpoint này cùng luồng `POST /buildings` và cách xử lý khi Identity lỗi.
 
 ## Definition of Done
 

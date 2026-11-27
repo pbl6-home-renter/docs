@@ -10,6 +10,7 @@
 | D98 | 2026-11-23 | Mỗi task thông báo do một BE member làm end-to-end: service nguồn → community → fe | ✅ Accepted |
 | D99 | 2026-11-24 | Locked users may read their own notifications and receive notification Socket events; other business access remains blocked | ✅ Accepted |
 | D100 | 2026-11-25 | Tài khoản bị khóa được phép xem thông tin chỉ đọc (phòng, hợp đồng, hóa đơn, tòa nhà) và thực hiện thanh toán; thao tác ghi/chỉnh sửa khác vẫn bị chặn | ✅ Accepted |
+| D109 | 2026-11-27 | P12-05: Tenancy được gọi Identity trước transaction tạo tòa để lấy admin active; lỗi Identity không chặn tạo tòa | ✅ Accepted (PM) |
 
 ## D95 — Quy ước payload thông báo nghiệp vụ
 
@@ -45,7 +46,6 @@ Chi tiết kỹ thuật: [`community-service/docs/notifications.md`](https://git
 - Mỗi task do **một BE member** làm trọn: sửa service nguồn, kiểm tra bản ghi trong community, thêm mục registry + i18n `vi`/`en` ở fe, cập nhật bảng `messageKey` trong `docs/notifications.md`. PR riêng cho từng repo, ghi chung một issue.
 - FE Lead review phần fe; owner community review nếu task đụng community.
 
-<<<<<<< Updated upstream
 ## D99 — Notification access for locked accounts
 
 - A locked account may open `/notifications`, list its own notifications, mark its own notifications as read, and read its notification preferences so the Web can decide whether to show a toast. Updating preferences and other business operations remain blocked.
@@ -69,10 +69,9 @@ Chi tiết kỹ thuật: [`community-service/docs/notifications.md`](https://git
     - Không cho phép tạo phòng, sửa phòng, tạo/hủy hóa đơn.
     - Frontend hiển thị banner cảnh báo tài khoản bị khóa và ẩn/vô hiệu hóa các nút chỉnh sửa/tạo mới.
 - **Issues liên quan:** P12-09 (BE), P12-10 (FE).
-=======
-## D99 — Nghiên cứu kiểm thử hiệu năng trong Phase 12
 
-- PM bổ sung P12-09 như một task nghiên cứu xuyên hệ thống và giao Thu Phương phụ trách. Task này độc lập với chuỗi triển khai thông báo ở D95–D98.
-- Đầu ra là phương án cho lần kiểm thử hiệu năng đầu tiên: luồng ưu tiên, giả định tải, chỉ số đo, công cụ, môi trường, rủi ro và các task triển khai tiếp theo.
-- Quyết định này chưa yêu cầu chạy benchmark trong Phase 12 và không thay đổi mức kiểm thử hiện tại của dự án. Mọi thay đổi về phạm vi triển khai, ngưỡng mục tiêu hoặc lịch trình cần được chốt riêng sau khi review kết quả nghiên cứu.
->>>>>>> Stashed changes
+## D109 — Tra cứu admin để thông báo tòa mới chờ duyệt
+
+- PM đồng ý cho Tenancy gọi endpoint nội bộ của Identity trước transaction tạo tòa để lấy ID của tất cả admin đang `active`. Hiện hệ thống có một admin; đây là hiện trạng, không phải giới hạn của contract hoặc lý do để hardcode ID.
+- Khi lấy được người nhận, Tenancy ghi `notification.requested` vào outbox cùng transaction tạo tòa. Nếu Identity lỗi, Tenancy vẫn tạo tòa, ghi warning và bỏ qua thông báo của lần tạo đó; không retry hoặc tự gửi bù.
+- `api-doc` đã mô tả hành vi của `POST /buildings` theo quyết định này. Identity và Tenancy chốt đường dẫn/schema endpoint nội bộ trước khi triển khai và bổ sung contract đó vào `api-doc`.
