@@ -1,38 +1,49 @@
-# P13-11 — Báo cáo vi phạm và khiếu nại khóa tài khoản
+# P13-11 — Báo cáo vi phạm và khiếu nại khóa tài khoản (issue tổng)
 
-**Trạng thái:** ⏸ Deferred (chờ PM duyệt phạm vi)
-**Người phụ trách (đề xuất):** PM/leader
-**Ước lượng:** chưa ước lượng (dự kiến lớn hơn 3 points, cần tách nhỏ khi duyệt)
-**Phụ thuộc:** —
-**Repo dự kiến:** `Identity-Service`, `community-service`, `fe`, `mobile`, `api-docs`
+**Trạng thái:** 🟡 Open (đã duyệt phạm vi ở P13-D109, 27/11/2026)
+**Người phụ trách:** PM/leader (theo dõi các issue con)
+**Ước lượng:** 12 points, chia thành 5 issue con
+**Phụ thuộc:** P13-09 (danh sách loại vi phạm)
+**Repo:** `Identity-Service`, `api-docs`, `fe`, `mobile`
 
-> Ghi lại để không mất ý tưởng. **Không triển khai** cho tới khi PM duyệt và có quyết định mới trong `decisions.md` (P13-D107).
+> Tên file giữ nguyên để không gãy link cũ. Issue này không có PR riêng; xong khi mọi issue con xong.
 
 ## Vì sao cần
 
 - Admin cần căn cứ trước khi khóa: hiện chỉ có ô lý do tự do, không có nơi người dùng báo cáo vi phạm.
-- Người bị khóa nhầm chưa có cách được mở lại trong app.
+- Người bị khóa nhầm chưa có cách xin mở khóa trong app. FE web hiện đưa tài khoản bị khóa về trang `/forbidden` chung, và `GET /me` không trả lý do khóa.
 
-## Phạm vi đề xuất (theo tài liệu nghiệp vụ gốc)
+## Issue con
 
-### Báo cáo vi phạm
-- Người dùng báo cáo một tài khoản khác kèm loại vi phạm (6 loại ở P13-09) và mô tả.
-- Hàng chờ báo cáo cho admin; admin xem xét rồi mới khóa.
+| ID | Nội dung | Repo | Ước lượng | Phụ thuộc |
+|---|---|---|---|---|
+| [P13-15](P13-15-be-account-appeal.md) | BE: Khiếu nại khóa tài khoản | `Identity-Service`, `api-docs` | 3 points | — |
+| [P13-16](P13-16-be-user-report.md) | BE: Báo cáo vi phạm | `Identity-Service`, `api-docs` | 2 points | P13-15 |
+| [P13-17](P13-17-fe-account-appeal.md) | FE: Trang tài khoản bị khóa, form khiếu nại, hàng chờ khiếu nại | `fe` | 2 points | P13-15 |
+| [P13-18](P13-18-fe-user-report.md) | FE: Gửi báo cáo, hàng chờ báo cáo | `fe` | 2 points | P13-16, P13-09 |
+| [P13-19](P13-19-mobile-report-and-appeal.md) | Mobile: Khiếu nại và báo cáo (⏸ Blocked: mobile chưa có lớp mạng, đăng nhập, chat) | `mobile` | 3 points | P13-15, P13-16 |
 
-### Khiếu nại
-- Nút "Gửi khiếu nại" trên màn tài khoản bị khóa. Form: lý do khóa (chỉ xem), nội dung giải trình (bắt buộc), file đính kèm (không bắt buộc), thông tin liên hệ.
-- Mỗi người chỉ có một khiếu nại đang chờ. Bị từ chối thì gửi lại sau một khoảng thời gian (ví dụ 7 ngày).
-- Hàng chờ khiếu nại riêng cho admin. Chấp nhận → mở khóa. Từ chối → bắt buộc ghi lý do.
-- Kết quả gửi qua thông báo trong app và email (community đã có module email).
+## Câu hỏi đã chốt (P13-D109)
 
-## Câu hỏi cần chốt khi duyệt
+- [x] Có làm báo cáo vi phạm, hay chỉ làm khiếu nại? → **Làm cả hai.**
+- [x] Thời gian xử lý mục tiêu hiển thị cho người khiếu nại? → **"Thường xử lý trong 3 ngày làm việc"**, chỉ là chữ hiển thị.
+- [x] Khoảng chờ gửi lại sau khi bị từ chối? → **7 ngày** tính từ lúc bị từ chối, trong cùng kỳ khóa.
+- [x] Module đặt ở Identity hay community? File đính kèm dùng module media nào? → **Identity-Service**, dùng module `media` của Identity.
+- [x] Mobile có làm trong cùng đợt không? → **Không**, tách thành P13-19.
 
-- [ ] Có làm báo cáo vi phạm, hay chỉ làm khiếu nại?
-- [ ] Thời gian xử lý mục tiêu hiển thị cho người khiếu nại?
-- [ ] Khoảng chờ gửi lại sau khi bị từ chối?
-- [ ] Module đặt ở Identity hay community? File đính kèm dùng module media nào?
-- [ ] Mobile có làm trong cùng đợt không?
+## Luồng tổng quát
 
-## Trong lúc chờ
+```mermaid
+flowchart LR
+  U[Người dùng] -->|Báo cáo| R[(Báo cáo đang chờ)]
+  R -->|Admin: Bỏ qua| D[dismissed]
+  R -->|Admin: Khóa| L[Tài khoản bị khóa]
+  L -->|Gửi khiếu nại| A[(Khiếu nại đang chờ)]
+  A -->|Chấp nhận| UL[Mở khóa]
+  A -->|Từ chối + lý do| RJ[rejected, chờ 7 ngày mới gửi lại]
+```
 
-Màn tài khoản bị khóa hiển thị lý do khóa; người dùng liên hệ admin ngoài app.
+## Definition of Done
+
+- [ ] P13-15 → P13-19 đều Done.
+- [ ] Demo end-to-end trên web: landlord báo cáo tenant → admin khóa từ báo cáo → tenant (web) thấy lý do khóa và gửi khiếu nại → admin từ chối → tenant thấy lý do và ngày được gửi lại → admin chấp nhận lần sau → tài khoản hoạt động lại, có thông báo và email.

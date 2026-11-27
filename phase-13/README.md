@@ -2,7 +2,7 @@
 
 Mục tiêu: khóa tài khoản chỉ chặn **người vi phạm**, không làm hại người thứ ba đang thuê hợp pháp. App không tự đoán điều gì đã xảy ra ngoài đời; sau khi mở khóa, landlord tự cập nhật bằng các thao tác sẵn có.
 
-Nguồn: tài liệu "Nghiệp vụ khóa tài khoản" (Thu Phương, 25/11/2026), đã review và cắt theo phạm vi ở [decisions.md](decisions.md) (P13-D101 → P13-D107). Hành vi code trước phase này: [P12-11](../phase-12/issues/P12-11-locked-account-behavior-spec.md).
+Nguồn: tài liệu "Nghiệp vụ khóa tài khoản" (Thu Phương, 25/11/2026), đã review và cắt theo phạm vi ở [decisions.md](decisions.md) (P13-D101 → P13-D109). Hành vi code trước phase này: [P12-11](../phase-12/issues/P12-11-locked-account-behavior-spec.md).
 
 ## Thay đổi chính so với hiện tại
 
@@ -17,6 +17,8 @@ Nguồn: tài liệu "Nghiệp vụ khóa tài khoản" (Thu Phương, 25/11/202
 | Hóa đơn | Không ghi nhận đã thu | Có trạng thái `paid` (D104) |
 | Ghép bạn | Không xử lý | Ẩn hồ sơ, chặn thao tác, giữ lời mời (D106) |
 | Sau mở khóa | Chọn khôi phục/chấm dứt từng hợp đồng | Banner nhắc kiểm tra |
+| Người bị khóa | Trang `/forbidden` chung, liên hệ admin ngoài app | Thấy lý do khóa, gửi khiếu nại; admin chấp nhận/từ chối (D109) |
+| Căn cứ để khóa | Chỉ có ô lý do tự do | Người dùng báo cáo vi phạm, admin xử lý từ hàng chờ (D109) |
 
 **Giữ nguyên:** khóa có hiệu lực trễ tối đa 15 phút, không thu hồi phiên; quyền chỉ đọc của P12-09/P12-10; hợp đồng đã bị chấm dứt trước đây không xử lý lại; không có cron hết hạn hợp đồng (D105).
 
@@ -32,11 +34,16 @@ flowchart LR
   P06[P13-06 Nhãn khóa trong chat]
   P08[P13-08 Ghép bạn]
   P09[P13-09 Gợi ý lý do khóa]
+  P15[P13-15 BE khiếu nại] --> P16[P13-16 BE báo cáo]
+  P15 --> P17[P13-17 FE khiếu nại]
+  P16 --> P18[P13-18 FE báo cáo]
+  P09 --> P18
+  P16 --> P19[P13-19 Mobile]
 ```
 
 - **Ưu tiên 1:** P13-01 (đang gây lỗi thật: tenant mất phòng, hợp đồng tự chấm dứt) và P13-03 (sửa phần đã làm sai phạm vi).
 - P13-06, P13-07, P13-08, P13-09 làm song song từ đầu.
-- P13-11 Deferred, chỉ làm khi PM duyệt.
+- P13-11 đã duyệt (D109), tách thành P13-15 → P13-19. Làm sau nhóm ưu tiên 1; BE (P13-15, P13-16) trước, FE và mobile theo sau.
 - **Sửa lỗi từ feedback review 26/11:** P13-12 (bug tính tiền, ưu tiên cao), P13-13, P13-14 (làm sau P13-12). Các lỗi cùng đợt đã có task: P12-03, P12-06, P12-09.
 
 ## Quy ước
