@@ -11,7 +11,7 @@ Bảng này là nguồn trạng thái chính thức; cập nhật cùng lúc v�
 | P13-05 | [FE/Mobile: Ẩn QR thanh toán khi landlord bị khóa](P13-05-hide-payment-qr-locked-landlord.md) | `fe`, `mobile` | `ThaiBao11125` + Mobile | PM/leader | 1 point | P13-04 | 🟡 Open |
 | P13-06 | [Nhãn "Tài khoản đã bị khóa" trong chat](P13-06-chat-locked-user-label.md) | `community-service`, `fe`, `mobile`, `api-docs` | `huynhtiennhat0403` + `ThaiBao11125` + Mobile | PM/leader | 2 points | — | 🟡 Open |
 | P13-07 | [Hóa đơn: landlord đánh dấu "Đã thu"](P13-07-invoice-mark-paid.md) | `Tenancy-Service`, `api-docs`, `fe`, `mobile` | `leminhkhai345` + `ThaiBao11125` + Mobile | `baoduong17`, PM/leader | 3 points | — | 🟡 Open |
-| P13-08 | [BE: Ghép bạn với tài khoản bị khóa](P13-08-roommate-locked-user.md) | `Tenancy-Service`, `api-docs` | BE Tenancy (PM giao) | `leminhkhai345` | 1 point | — | 🟡 Open |
+| P13-08 | [BE: Ghép bạn với tài khoản bị khóa](P13-08-roommate-locked-user.md) | `Tenancy-Service`, `api-doc`, `docs` | BE Tenancy (PM giao) | `leminhkhai345` | 1 point | — | 🔵 In progress |
 | P13-09 | [FE: Gợi ý lý do khi admin khóa tài khoản](P13-09-lock-reason-suggestions.md) | `fe` | `ThaiBao11125` | PM/leader | 0.5 point | — | 🟡 Open |
 | P13-10 | [FE: Nhắc landlord cập nhật dữ liệu sau khi mở khóa](P13-10-post-unlock-banner.md) | `fe` | `ThaiBao11125` | PM/leader | 1 point | P13-07 | 🟡 Open |
 | P13-11 | [Báo cáo vi phạm và khiếu nại (issue tổng)](P13-11-report-and-appeal-deferred.md) | nhiều repo | PM/leader | — | = P13-15…19 | P13-09 | 🟡 Open (D109) |
